@@ -74,7 +74,7 @@ button.alt{background:transparent;color:var(--fg);border:1px solid var(--muted)}
     <button id="bAgain" style="display:none">Jogar de novo</button>
     <button id="bLeave" class="alt">Sair da partida</button>
   </div>
-  <p class="help">Na sua vez, o taco aparece. Toque ou arraste na mesa para apontar. Depois puxe a barra de força (à esquerda) para baixo e solte para tacar. A engrenagem liga e desliga a linha de mira. Lisas são 1–7, listradas 9–15.</p>
+  <p class="help">Na sua vez, o taco aparece. Segure e arraste na mesa (mouse ou dedo) para girar o taco; no computador, as setas ← → fazem o ajuste fino. Depois puxe a barra de força (à esquerda) para baixo e solte para tacar. A engrenagem liga e desliga a linha de mira. Lisas são 1–7, listradas 9–15.</p>
 </div>
 
 <script>
@@ -140,13 +140,26 @@ $('name').addEventListener('input', () => { try { localStorage.setItem('sinuca-n
 // ---------- mira e forca ----------
 const canShoot = () => S && !S.moving && !S.over && (solo || S.turn === seat);
 function pos(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height]; }
-function setAim(e) {
+// O taco NAO segue o mouse: ao segurar e arrastar na mesa, ele gira aos poucos (como girar em volta da bola branca)
+let ang = 0, lastP = null;
+function setAng(a) { ang = a; aim = [Math.cos(a), Math.sin(a)]; }
+cv.addEventListener('pointerdown', e => { if (!canShoot()) return; cv.setPointerCapture(e.pointerId); lastP = pos(e); });
+cv.addEventListener('pointermove', e => {
+  if (!lastP || !canShoot()) return;
+  const p = pos(e), c = S.b[0];
+  const ax = lastP[0] - c[1], ay = lastP[1] - c[2], bx = p[0] - c[1], by = p[1] - c[2];
+  const la = Math.sqrt(ax * ax + ay * ay), lb = Math.sqrt(bx * bx + by * by);
+  let d;
+  if (la > 25 && lb > 25) d = Math.atan2(ax * by - ay * bx, ax * bx + ay * by);
+  else d = ((p[0] - lastP[0]) * -aim[1] + (p[1] - lastP[1]) * aim[0]) / 150;
+  setAng(ang + d); lastP = p;
+});
+const endAim = () => { lastP = null; };
+cv.addEventListener('pointerup', endAim); cv.addEventListener('pointercancel', endAim);
+window.addEventListener('keydown', e => {
   if (!canShoot()) return;
-  const [x, y] = pos(e), c = S.b[0], dx = x - c[1], dy = y - c[2], d = Math.sqrt(dx * dx + dy * dy);
-  if (d > 5) aim = [dx / d, dy / d];
-}
-cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); setAim(e); });
-cv.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || e.buttons) setAim(e); });
+  if (e.key === 'ArrowLeft') setAng(ang - 0.01); else if (e.key === 'ArrowRight') setAng(ang + 0.01);
+});
 
 const pwr = $('pwr'), pfill = $('pfill');
 let pdrag = false, py0 = 0;
