@@ -36,7 +36,7 @@ button.alt{background:transparent;color:var(--fg);border:1px solid var(--muted)}
 #pwr.off{opacity:.4;cursor:not-allowed}
 #pval{font-size:12px;color:var(--muted)}
 #bSet{padding:0;width:44px;height:44px;border-radius:50%;background:var(--card);color:var(--fg);border:1px solid var(--muted);font-size:20px}
-#bSet.offg{opacity:.5}
+
 #msg{font-size:15px;min-height:22px;text-align:center}
 .help{color:var(--muted);font-size:13px;margin:0;text-align:center;max-width:620px}
 </style>
@@ -65,7 +65,7 @@ button.alt{background:transparent;color:var(--fg);border:1px solid var(--muted)}
     <div id="side">
       <div id="pwr" title="Arraste para baixo e solte para tacar"><div id="pfill"></div></div>
       <div id="pval">0%</div>
-      <button id="bSet" title="Ligar/desligar a linha de mira">⚙</button>
+      <button id="bSet" title="Configurações (em breve)">⚙</button>
     </div>
     <canvas id="c" width="800" height="400"></canvas>
   </div>
@@ -74,7 +74,7 @@ button.alt{background:transparent;color:var(--fg);border:1px solid var(--muted)}
     <button id="bAgain" style="display:none">Jogar de novo</button>
     <button id="bLeave" class="alt">Sair da partida</button>
   </div>
-  <p class="help">Na sua vez, o taco aparece. Segure e arraste na mesa (mouse ou dedo) para girar o taco; no computador, as setas ← → fazem o ajuste fino. Depois puxe a barra de força (à esquerda) para baixo e solte para tacar. A engrenagem liga e desliga a linha de mira. Lisas são 1–7, listradas 9–15.</p>
+  <p class="help">Na sua vez, o taco aparece. Segure e arraste na mesa (mouse ou dedo) para girar o taco; no computador, as setas ← → fazem o ajuste fino. Depois puxe a barra de força (à esquerda) para baixo e solte para tacar. Lisas são 1–7, listradas 9–15.</p>
 </div>
 
 <script>
@@ -83,7 +83,7 @@ const COL = ['#fff', '#f2c200', '#1e5bd8', '#d62828', '#6a2c91', '#f27d0c', '#1f
 const PK = [[24, 24], [400, 20], [776, 24], [24, 376], [400, 380], [776, 376]], PR = 21;
 const $ = id => document.getElementById(id);
 const cv = $('c'), ctx = cv.getContext('2d');
-let ws = null, seat = 0, solo = false, S = null, aim = [1, 0], power = 0, showGuide = true;
+let ws = null, seat = 0, solo = false, S = null, aim = [1, 0], power = 0;
 
 // ---------- conexao ----------
 function connect(then) {
@@ -173,7 +173,6 @@ pwr.addEventListener('pointerup', () => {
   if (p > 0.04 && canShoot()) send({ t: 'shot', vx: aim[0] * p * 9, vy: aim[1] * p * 9 });
 });
 pwr.addEventListener('pointercancel', () => { pdrag = false; setPower(0); });
-$('bSet').onclick = () => { showGuide = !showGuide; $('bSet').classList.toggle('offg', !showGuide); $('msg').textContent = 'Linha de mira: ' + (showGuide ? 'ligada' : 'desligada'); };
 
 // ---------- desenho ----------
 function ball(b) {
@@ -219,23 +218,32 @@ function guide(c, ux, uy) {
     x += dx * t; y += dy * t; left -= t; pts.push([x, y]);
     if (t === tWall) { if (vert) dx = -dx; else dy = -dy; } else break;
   }
-  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  ctx.setLineDash([7, 6]); ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 2;
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.setLineDash([]);
+  ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = 2.5;
+  // se vai bater numa bola, a linha termina na borda do aro (nao no centro dele)
+  if (hit && pts.length > 1) {
+    const q = pts[pts.length - 2], e = pts[pts.length - 1], sl = Math.hypot(e[0] - q[0], e[1] - q[1]);
+    if (sl > R) pts[pts.length - 1] = [e[0] - dx * R, e[1] - dy * R];
+  }
   ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
   for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
   ctx.stroke();
   if (hit) {
-    // linha da bola atingida: curtinha, mas vai ate a cacapa quando ela esta indo para uma
     const bx = hit.b[1], by = hit.b[2];
     let nx = bx - hit.x, ny = by - hit.y; const nl = Math.sqrt(nx * nx + ny * ny) || 1; nx /= nl; ny /= nl;
+    // aro (bola branca "fantasma") no ponto da batida + tracinho apontando para a bola
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(hit.x, hit.y, R, 0, 7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(hit.x, hit.y); ctx.lineTo(hit.x + nx * R, hit.y + ny * R); ctx.stroke();
+    // linha da bola atingida: curtinha, mas vai ate a cacapa quando ela esta indo para uma
     let len = 60;
     for (const p of PK) {
       const px = p[0] - bx, py = p[1] - by, pr = px * nx + py * ny;
       if (pr > 0 && Math.abs(px * ny - py * nx) < PR - 4) len = Math.max(len, Math.min(pr, 220));
     }
-    ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + nx * len, by + ny * len); ctx.stroke();
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(bx + nx * R, by + ny * R); ctx.lineTo(bx + nx * (R + len), by + ny * (R + len)); ctx.stroke();
   }
-  ctx.setLineDash([]);
 }
 // Taco: aparece atras da bola branca e vai ate a borda da mesa; recua conforme a forca
 function drawCue(c, ux, uy) {
@@ -266,7 +274,7 @@ function draw() {
   if (S) for (const b of S.b) if (b[3]) ball(b);
   if (canShoot()) {
     const c = S.b[0], ux = aim[0], uy = aim[1];
-    if (showGuide) guide(c, ux, uy);
+    guide(c, ux, uy);
     drawCue(c, ux, uy);
   }
   requestAnimationFrame(draw);
