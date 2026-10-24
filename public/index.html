@@ -25,7 +25,18 @@ button.alt{background:transparent;color:var(--fg);border:1px solid var(--muted)}
 .pl{background:var(--card);border-radius:10px;padding:8px 12px;font-size:14px;flex:1;min-width:130px;border:2px solid transparent}
 .pl.on{border-color:var(--green)}
 .pl small{color:var(--muted);display:block}
-canvas{width:100%;height:auto;touch-action:none;border-radius:14px;display:block}
+.table{display:flex;gap:8px;width:100%;align-items:flex-start}
+.table canvas{flex:1;min-width:0;width:auto;height:auto;align-self:flex-start;touch-action:none;border-radius:14px;display:block}
+#side{width:54px;flex:none;align-self:stretch;display:flex;flex-direction:column;align-items:center;gap:8px}
+#pwr{flex:1;min-height:170px;width:38px;border:2px solid #b8892f;border-radius:8px;position:relative;touch-action:none;cursor:ns-resize;overflow:hidden;
+ background:linear-gradient(#111 0 14px,#f2efe6 14px 24px,transparent 24px),linear-gradient(90deg,#b9812f,#f0c878 45%,#a8702a)}
+#pwr::after{content:"";position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(#0007,#0007) 0 25%/100% 2px no-repeat,linear-gradient(#0007,#0007) 0 50%/100% 2px no-repeat,linear-gradient(#0007,#0007) 0 75%/100% 2px no-repeat}
+#pfill{position:absolute;left:0;right:0;top:0;height:0;background:rgba(229,57,47,.55);border-bottom:3px solid #fff;pointer-events:none}
+#pwr.off{opacity:.4;cursor:not-allowed}
+#pval{font-size:12px;color:var(--muted)}
+#bSet{padding:0;width:44px;height:44px;border-radius:50%;background:var(--card);color:var(--fg);border:1px solid var(--muted);font-size:20px}
+#bSet.offg{opacity:.5}
 #msg{font-size:15px;min-height:22px;text-align:center}
 .help{color:var(--muted);font-size:13px;margin:0;text-align:center;max-width:620px}
 </style>
@@ -50,13 +61,20 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:14px;display:block
     <div class="pl on" id="p0"><b id="n0">Jogador 1</b><small id="g0">mesa aberta</small></div>
     <div class="pl" id="p1"><b id="n1">Jogador 2</b><small id="g1">mesa aberta</small></div>
   </div>
-  <canvas id="c" width="800" height="400"></canvas>
+  <div class="table">
+    <div id="side">
+      <div id="pwr" title="Arraste para baixo e solte para tacar"><div id="pfill"></div></div>
+      <div id="pval">0%</div>
+      <button id="bSet" title="Ligar/desligar a linha de mira">⚙</button>
+    </div>
+    <canvas id="c" width="800" height="400"></canvas>
+  </div>
   <div id="msg"></div>
   <div class="row">
     <button id="bAgain" style="display:none">Jogar de novo</button>
     <button id="bLeave" class="alt">Sair da partida</button>
   </div>
-  <p class="help">Na sua vez, arraste para trás a partir de qualquer ponto da mesa (como um estilingue) e solte para tacar. Quanto mais longe, mais forte. Lisas são 1–7, listradas 9–15.</p>
+  <p class="help">Na sua vez, o taco aparece. Toque ou arraste na mesa para apontar. Depois puxe a barra de força (à esquerda) para baixo e solte para tacar. A engrenagem liga e desliga a linha de mira. Lisas são 1–7, listradas 9–15.</p>
 </div>
 
 <script>
@@ -65,7 +83,7 @@ const COL = ['#fff', '#f2c200', '#1e5bd8', '#d62828', '#6a2c91', '#f27d0c', '#1f
 const PK = [[24, 24], [400, 20], [776, 24], [24, 376], [400, 380], [776, 376]], PR = 21;
 const $ = id => document.getElementById(id);
 const cv = $('c'), ctx = cv.getContext('2d');
-let ws = null, seat = 0, solo = false, S = null, drag = null;
+let ws = null, seat = 0, solo = false, S = null, aim = [1, 0], power = 0, showGuide = true;
 
 // ---------- conexao ----------
 function connect(then) {
@@ -106,6 +124,7 @@ function updateUI() {
   $('g0').textContent = gname(S.grp[0]); $('g1').textContent = gname(S.grp[1]);
   $('p0').className = 'pl' + (S.turn === 0 ? ' on' : ''); $('p1').className = 'pl' + (S.turn === 1 ? ' on' : '');
   $('bAgain').style.display = S.over ? '' : 'none';
+  pwr.classList.toggle('off', !canShoot());
 }
 
 // ---------- botoes ----------
@@ -118,19 +137,30 @@ $('bLeave').onclick = () => send({ t: 'leave' });
 $('name').value = (() => { try { return localStorage.getItem('sinuca-name') || ''; } catch (e) { return ''; } })();
 $('name').addEventListener('input', () => { try { localStorage.setItem('sinuca-name', $('name').value); } catch (e) {} });
 
-// ---------- mira ----------
+// ---------- mira e forca ----------
 const canShoot = () => S && !S.moving && !S.over && (solo || S.turn === seat);
 function pos(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height]; }
-cv.addEventListener('pointerdown', e => { if (!canShoot()) return; cv.setPointerCapture(e.pointerId); drag = pos(e); });
-cv.addEventListener('pointermove', e => { if (drag) drag = pos(e); });
-cv.addEventListener('pointerup', () => {
-  if (!drag || !S) { drag = null; return; }
-  const c = S.b[0], dx = c[1] - drag[0], dy = c[2] - drag[1], d = Math.sqrt(dx * dx + dy * dy);
-  drag = null;
-  if (d < 8 || !canShoot()) return;
-  const pw = Math.min(d, 160) / 160;
-  send({ t: 'shot', vx: dx / d * pw * 9, vy: dy / d * pw * 9 });
+function setAim(e) {
+  if (!canShoot()) return;
+  const [x, y] = pos(e), c = S.b[0], dx = x - c[1], dy = y - c[2], d = Math.sqrt(dx * dx + dy * dy);
+  if (d > 5) aim = [dx / d, dy / d];
+}
+cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); setAim(e); });
+cv.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || e.buttons) setAim(e); });
+
+const pwr = $('pwr'), pfill = $('pfill');
+let pdrag = false, py0 = 0;
+function setPower(p) { power = p; pfill.style.height = (p * 100) + '%'; $('pval').textContent = Math.round(p * 100) + '%'; }
+function pset(e) { const r = pwr.getBoundingClientRect(); setPower(Math.max(0, Math.min(1, (e.clientY - py0) / (r.height * 0.85)))); }
+pwr.addEventListener('pointerdown', e => { if (!canShoot()) return; pwr.setPointerCapture(e.pointerId); pdrag = true; py0 = e.clientY; setPower(0); });
+pwr.addEventListener('pointermove', e => { if (pdrag) pset(e); });
+pwr.addEventListener('pointerup', () => {
+  if (!pdrag) return;
+  pdrag = false; const p = power; setPower(0);
+  if (p > 0.04 && canShoot()) send({ t: 'shot', vx: aim[0] * p * 9, vy: aim[1] * p * 9 });
 });
+pwr.addEventListener('pointercancel', () => { pdrag = false; setPower(0); });
+$('bSet').onclick = () => { showGuide = !showGuide; $('bSet').classList.toggle('offg', !showGuide); $('msg').textContent = 'Linha de mira: ' + (showGuide ? 'ligada' : 'desligada'); };
 
 // ---------- desenho ----------
 function ball(b) {
@@ -194,19 +224,37 @@ function guide(c, ux, uy) {
   }
   ctx.setLineDash([]);
 }
+// Taco: aparece atras da bola branca e vai ate a borda da mesa; recua conforme a forca
+function drawCue(c, ux, uy) {
+  const off = R + 5 + power * 70, vx = -ux, vy = -uy, bx = c[1] + vx * off, by = c[2] + vy * off;
+  let t = Infinity;
+  if (vx > 1e-6) t = Math.min(t, (W - bx) / vx); else if (vx < -1e-6) t = Math.min(t, -bx / vx);
+  if (vy > 1e-6) t = Math.min(t, (H - by) / vy); else if (vy < -1e-6) t = Math.min(t, -by / vy);
+  const L = Math.min(Math.max(t, 90), 380), nx = -vy, ny = vx;
+  const poly = (s0, s1, w0, w1) => {
+    ctx.beginPath();
+    ctx.moveTo(bx + vx * s0 + nx * w0, by + vy * s0 + ny * w0); ctx.lineTo(bx + vx * s1 + nx * w1, by + vy * s1 + ny * w1);
+    ctx.lineTo(bx + vx * s1 - nx * w1, by + vy * s1 - ny * w1); ctx.lineTo(bx + vx * s0 - nx * w0, by + vy * s0 - ny * w0);
+    ctx.closePath(); ctx.fill();
+  };
+  const w = s0 => 1.6 + (L > 0 ? s0 / L : 0) * 2.6;
+  const g = ctx.createLinearGradient(bx, by, bx + vx * L, by + vy * L);
+  g.addColorStop(0, '#f0d6a0'); g.addColorStop(1, '#8a5a2b');
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2;
+  ctx.fillStyle = g; poly(0, L, 1.6, 4.2); ctx.restore();
+  ctx.fillStyle = '#f4f1e8'; poly(2.5, 12, w(2.5), w(12));
+  ctx.fillStyle = '#2f6fb3'; poly(0, 2.5, 1.6, w(2.5));
+}
 function draw() {
   ctx.fillStyle = '#5b3a1e'; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = '#1b7a46'; ctx.fillRect(M - 6, M - 6, W - 2 * M + 12, H - 2 * M + 12);
   ctx.fillStyle = '#0b0b0b'; for (const p of PK) { ctx.beginPath(); ctx.arc(p[0], p[1], PR, 0, 7); ctx.fill(); }
   ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.beginPath(); ctx.moveTo(230, M); ctx.lineTo(230, H - M); ctx.stroke();
   if (S) for (const b of S.b) if (b[3]) ball(b);
-  if (drag && canShoot()) {
-    const c = S.b[0], dx = c[1] - drag[0], dy = c[2] - drag[1], d = Math.sqrt(dx * dx + dy * dy) || 1;
-    const pw = Math.min(d, 160) / 160, ux = dx / d, uy = dy / d;
-    guide(c, ux, uy);
-    const off = R + 6 + pw * 60; ctx.strokeStyle = '#d9b27c'; ctx.lineWidth = 5; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(c[1] - ux * off, c[2] - uy * off); ctx.lineTo(c[1] - ux * (off + 170), c[2] - uy * (off + 170)); ctx.stroke();
-    ctx.fillStyle = '#fff'; ctx.font = '12px sans-serif'; ctx.textAlign = 'left'; ctx.fillText('Força ' + Math.round(pw * 100) + '%', M, H - 8);
+  if (canShoot()) {
+    const c = S.b[0], ux = aim[0], uy = aim[1];
+    if (showGuide) guide(c, ux, uy);
+    drawCue(c, ux, uy);
   }
   requestAnimationFrame(draw);
 }
