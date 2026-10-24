@@ -145,6 +145,55 @@ function ball(b) {
   }
   ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.stroke();
 }
+// Linha de mira: vai até a primeira bola, quica na tabela (até 2 vezes) e mostra para onde a bola atingida vai
+function guide(c, ux, uy) {
+  const minX = M + R, maxX = W - M - R, minY = M + R, maxY = H - M - R;
+  let x = c[1], y = c[2], dx = ux, dy = uy, left = 520, hit = null;
+  const pts = [[x, y]];
+  for (let k = 0; k < 3 && left > 0; k++) {
+    let tBall = Infinity, hb = null;
+    for (const b of S.b) {
+      if (!b[3] || b[0] === 0) continue;
+      const fx = b[1] - x, fy = b[2] - y, pr = fx * dx + fy * dy;
+      if (pr <= 0) continue;
+      const d2 = fx * fx + fy * fy - pr * pr;
+      if (d2 >= 4 * R * R) continue;
+      const t = Math.max(0, pr - Math.sqrt(4 * R * R - d2));
+      if (t < tBall) { tBall = t; hb = b; }
+    }
+    let tWall = Infinity, vert = false;
+    if (dx > 1e-6) { tWall = (maxX - x) / dx; vert = true; }
+    else if (dx < -1e-6) { tWall = (minX - x) / dx; vert = true; }
+    let ty = Infinity;
+    if (dy > 1e-6) ty = (maxY - y) / dy; else if (dy < -1e-6) ty = (minY - y) / dy;
+    if (ty < tWall) { tWall = ty; vert = false; }
+    if (tBall <= tWall && tBall <= left) {
+      hit = { x: x + dx * tBall, y: y + dy * tBall, b: hb };
+      pts.push([hit.x, hit.y]);
+      break;
+    }
+    const t = Math.max(0, Math.min(tWall, left));
+    x += dx * t; y += dy * t; left -= t; pts.push([x, y]);
+    if (t === tWall) { if (vert) dx = -dx; else dy = -dy; } else break;
+  }
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.setLineDash([7, 6]); ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.stroke();
+  if (hit) {
+    // linha da bola atingida: curtinha, mas vai ate a cacapa quando ela esta indo para uma
+    const bx = hit.b[1], by = hit.b[2];
+    let nx = bx - hit.x, ny = by - hit.y; const nl = Math.sqrt(nx * nx + ny * ny) || 1; nx /= nl; ny /= nl;
+    let len = 60;
+    for (const p of PK) {
+      const px = p[0] - bx, py = p[1] - by, pr = px * nx + py * ny;
+      if (pr > 0 && Math.abs(px * ny - py * nx) < PR - 4) len = Math.max(len, Math.min(pr, 220));
+    }
+    ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + nx * len, by + ny * len); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+}
 function draw() {
   ctx.fillStyle = '#5b3a1e'; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = '#1b7a46'; ctx.fillRect(M - 6, M - 6, W - 2 * M + 12, H - 2 * M + 12);
@@ -154,8 +203,7 @@ function draw() {
   if (drag && canShoot()) {
     const c = S.b[0], dx = c[1] - drag[0], dy = c[2] - drag[1], d = Math.sqrt(dx * dx + dy * dy) || 1;
     const pw = Math.min(d, 160) / 160, ux = dx / d, uy = dy / d;
-    ctx.setLineDash([6, 6]); ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(c[1], c[2]); ctx.lineTo(c[1] + ux * 240, c[2] + uy * 240); ctx.stroke(); ctx.setLineDash([]);
+    guide(c, ux, uy);
     const off = R + 6 + pw * 60; ctx.strokeStyle = '#d9b27c'; ctx.lineWidth = 5; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(c[1] - ux * off, c[2] - uy * off); ctx.lineTo(c[1] - ux * (off + 170), c[2] - uy * (off + 170)); ctx.stroke();
     ctx.fillStyle = '#fff'; ctx.font = '12px sans-serif'; ctx.textAlign = 'left'; ctx.fillText('Força ' + Math.round(pw * 100) + '%', M, H - 8);
