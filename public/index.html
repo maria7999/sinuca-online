@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Sinuca Online</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎱%3C/text%3E%3C/svg%3E">
 <style>
@@ -20,25 +20,28 @@ button{background:var(--green);color:#fff;border:0;border-radius:10px;padding:12
 button.alt{background:transparent;color:var(--fg);border:1px solid var(--muted)}
 .row{display:flex;gap:8px}
 #status{min-height:20px;text-align:center;font-size:14px}
-#game{display:none;width:100%;max-width:820px;flex-direction:column;align-items:center;gap:10px}
-.bar{width:100%;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.pl{background:var(--card);border-radius:10px;padding:8px 12px;font-size:14px;flex:1;min-width:130px;border:2px solid transparent}
+html{overscroll-behavior:none}
+#game{display:none;position:fixed;inset:0;z-index:5;flex-direction:column;background:#0b1f17;color:#ecebe6;padding:env(safe-area-inset-top,0px) 6px env(safe-area-inset-bottom,0px);user-select:none;-webkit-user-select:none;touch-action:none}
+.bar{display:flex;gap:6px;flex:none;padding:4px 2px 0}
+.pl{background:rgba(255,255,255,.07);border-radius:10px;padding:5px 10px;font-size:13px;flex:1;min-width:0;border:2px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pl.on{border-color:var(--green)}
-.pl small{color:var(--muted);display:block}
-.table{display:flex;gap:8px;width:100%;align-items:flex-start}
-.table canvas{flex:1;min-width:0;width:auto;height:auto;align-self:flex-start;touch-action:none;border-radius:14px;display:block}
-#side{width:54px;flex:none;align-self:stretch;display:flex;flex-direction:column;align-items:center;gap:8px}
-#pwr{flex:1;min-height:170px;width:38px;border:2px solid #b8892f;border-radius:8px;position:relative;touch-action:none;cursor:ns-resize;overflow:hidden;
- background:linear-gradient(#111 0 14px,#f2efe6 14px 24px,transparent 24px),linear-gradient(90deg,#b9812f,#f0c878 45%,#a8702a)}
-#pwr::after{content:"";position:absolute;inset:0;pointer-events:none;
- background:linear-gradient(#0007,#0007) 0 25%/100% 2px no-repeat,linear-gradient(#0007,#0007) 0 50%/100% 2px no-repeat,linear-gradient(#0007,#0007) 0 75%/100% 2px no-repeat}
-#pfill{position:absolute;left:0;right:0;top:0;height:0;background:rgba(229,57,47,.55);border-bottom:3px solid #fff;pointer-events:none}
+.pl small{color:#9fb3a8;display:block;font-size:11px;overflow:hidden;text-overflow:ellipsis}
+#msg{flex:none;font-size:13px;height:20px;line-height:20px;text-align:center;color:#d8e6dc;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 4px}
+#stage{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center}
+#tw{position:relative;flex:none}
+#c{position:absolute;left:50%;top:50%;touch-action:none;border-radius:14px;display:block}
+#bAgain{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;box-shadow:0 4px 18px #0009}
+#ctl{flex:none;display:flex;align-items:flex-end;gap:10px;padding:4px 2px 8px}
+#btns{display:flex;gap:8px;flex:none}
+.ib{padding:0;width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,.07);color:#ecebe6;border:1px solid rgba(255,255,255,.18);font-size:20px}
+#pw{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+#pval{font-size:11px;font-weight:700;letter-spacing:.06em;color:#e8b83a;padding-left:6px}
+#pwr{height:48px;width:100%;border:2px solid #b8892f;border-radius:10px;position:relative;touch-action:none;cursor:ew-resize;overflow:hidden;background:linear-gradient(90deg,#b9812f,#f0c878 45%,#a8702a)}
+#pwr::before{content:"";position:absolute;left:8px;right:8px;top:50%;height:10px;transform:translateY(-50%);border-radius:5px;pointer-events:none;background:linear-gradient(90deg,#2f6fb3 0 6px,#f4f1e8 6px 16px,#f0d6a0 16px,#8a5a2b)}
+#pwr::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(#0007,#0007) 25% 0/2px 100% no-repeat,linear-gradient(#0007,#0007) 50% 0/2px 100% no-repeat,linear-gradient(#0007,#0007) 75% 0/2px 100% no-repeat}
+#pfill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(229,57,47,.55);border-right:3px solid #fff;pointer-events:none}
 #pwr.off{opacity:.4;cursor:not-allowed}
-#pval{font-size:12px;color:var(--muted)}
-#bSet{padding:0;width:44px;height:44px;border-radius:50%;background:var(--card);color:var(--fg);border:1px solid var(--muted);font-size:20px}
-
-#msg{font-size:15px;min-height:22px;text-align:center}
-.help{color:var(--muted);font-size:13px;margin:0;text-align:center;max-width:620px}
+#helpBox{display:none;position:absolute;left:8px;right:8px;bottom:84px;z-index:10;background:rgba(0,0,0,.9);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.4;color:#e6e6e0}
 </style>
 </head>
 <body>
@@ -61,20 +64,23 @@ button.alt{background:transparent;color:var(--fg);border:1px solid var(--muted)}
     <div class="pl on" id="p0"><b id="n0">Jogador 1</b><small id="g0">mesa aberta</small></div>
     <div class="pl" id="p1"><b id="n1">Jogador 2</b><small id="g1">mesa aberta</small></div>
   </div>
-  <div class="table">
-    <div id="side">
-      <div id="pwr" title="Arraste para baixo e solte para tacar"><div id="pfill"></div></div>
-      <div id="pval">0%</div>
-      <button id="bSet" title="Configurações (em breve)">⚙</button>
-    </div>
-    <canvas id="c" width="800" height="400"></canvas>
-  </div>
   <div id="msg"></div>
-  <div class="row">
+  <div id="stage">
+    <div id="tw"><canvas id="c" width="1600" height="800"></canvas></div>
     <button id="bAgain" style="display:none">Jogar de novo</button>
-    <button id="bLeave" class="alt">Sair da partida</button>
   </div>
-  <p class="help">Na sua vez, o taco aparece. Segure e arraste na mesa (mouse ou dedo) para girar o taco; no computador, as setas ← → fazem o ajuste fino. Depois puxe a barra de força (à esquerda) para baixo e solte para tacar. Lisas são 1–7, listradas 9–15.</p>
+  <div id="helpBox">Na sua vez, o taco aparece. Segure e arraste na mesa (dedo ou mouse) para girar o taco; no computador, as setas ← → fazem o ajuste fino. Depois puxe a barra de força (embaixo) para a direita e solte para tacar. Lisas são 1–7, listradas 9–15.</div>
+  <div id="ctl">
+    <div id="btns">
+      <button class="ib" id="bSet" title="Ajuda">⚙</button>
+      <button class="ib" id="bFull" title="Tela cheia">⛶</button>
+      <button class="ib" id="bLeave" title="Sair da partida">✕</button>
+    </div>
+    <div id="pw">
+      <div id="pval">PUXE E SOLTE ➜</div>
+      <div id="pwr" title="Arraste para a direita e solte para tacar"><div id="pfill"></div></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -114,7 +120,7 @@ function onMsg(m) {
   else if (m.t === 'lobby') { showLobby(); }
 }
 function showLobby() { $('game').style.display = 'none'; $('lobby').style.display = 'flex'; }
-function showGame() { $('lobby').style.display = 'none'; $('game').style.display = 'flex'; $('status').textContent = ''; $('bAgain').style.display = 'none'; }
+function showGame() { $('lobby').style.display = 'none'; $('game').style.display = 'flex'; layout(); $('status').textContent = ''; $('bAgain').style.display = 'none'; }
 
 const gname = g => g === 'solid' ? 'lisas (1–7)' : g === 'stripe' ? 'listradas (9–15)' : 'mesa aberta';
 function updateUI() {
@@ -139,7 +145,31 @@ $('name').addEventListener('input', () => { try { localStorage.setItem('sinuca-n
 
 // ---------- mira e forca ----------
 const canShoot = () => S && !S.moving && !S.over && (solo || S.turn === seat);
-function pos(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height]; }
+let rot = false;
+function pos(e) {
+  const r = cv.getBoundingClientRect(), rx = e.clientX - r.left, ry = e.clientY - r.top;
+  if (rot) return [ry / r.height * W, (1 - rx / r.width) * H];
+  return [rx * W / r.width, ry * H / r.height];
+}
+// Layout: no celular em pe a mesa e girada 90 graus e preenche a area disponivel
+function layout() {
+  const st = $('stage'), aw = st.clientWidth, ah = st.clientHeight;
+  if (!aw || !ah) return;
+  rot = window.innerHeight > window.innerWidth;
+  let vw, vh;
+  if (rot) { vw = Math.min(aw, ah / 2); vh = vw * 2; } else { vw = Math.min(aw, ah * 2); vh = vw / 2; }
+  $('tw').style.width = vw + 'px'; $('tw').style.height = vh + 'px';
+  if (rot) { cv.style.width = vh + 'px'; cv.style.height = vw + 'px'; cv.style.transform = 'translate(-50%,-50%) rotate(90deg)'; }
+  else { cv.style.width = vw + 'px'; cv.style.height = vh + 'px'; cv.style.transform = 'translate(-50%,-50%)'; }
+}
+new ResizeObserver(layout).observe($('stage'));
+window.addEventListener('resize', layout);
+$('bSet').onclick = () => { const h = $('helpBox'); h.style.display = h.style.display === 'block' ? 'none' : 'block'; };
+$('bFull').onclick = () => {
+  const d = document.documentElement;
+  if (document.fullscreenElement) document.exitFullscreen();
+  else if (d.requestFullscreen) d.requestFullscreen().catch(() => {});
+};
 // O taco NAO segue o mouse: ao segurar e arrastar na mesa, ele gira aos poucos (como girar em volta da bola branca)
 let ang = 0, lastP = null;
 function setAng(a) { ang = a; aim = [Math.cos(a), Math.sin(a)]; }
@@ -162,10 +192,10 @@ window.addEventListener('keydown', e => {
 });
 
 const pwr = $('pwr'), pfill = $('pfill');
-let pdrag = false, py0 = 0;
-function setPower(p) { power = p; pfill.style.height = (p * 100) + '%'; $('pval').textContent = Math.round(p * 100) + '%'; }
-function pset(e) { const r = pwr.getBoundingClientRect(); setPower(Math.max(0, Math.min(1, (e.clientY - py0) / (r.height * 0.85)))); }
-pwr.addEventListener('pointerdown', e => { if (!canShoot()) return; pwr.setPointerCapture(e.pointerId); pdrag = true; py0 = e.clientY; setPower(0); });
+let pdrag = false, px0 = 0;
+function setPower(p) { power = p; pfill.style.width = (p * 100) + '%'; $('pval').textContent = p > 0 ? Math.round(p * 100) + '%' : 'PUXE E SOLTE ➜'; }
+function pset(e) { const r = pwr.getBoundingClientRect(); setPower(Math.max(0, Math.min(1, (e.clientX - px0) / (r.width * 0.85)))); }
+pwr.addEventListener('pointerdown', e => { if (!canShoot()) return; pwr.setPointerCapture(e.pointerId); pdrag = true; px0 = e.clientX; setPower(0); });
 pwr.addEventListener('pointermove', e => { if (pdrag) pset(e); });
 pwr.addEventListener('pointerup', () => {
   if (!pdrag) return;
@@ -269,6 +299,7 @@ function drawCue(c, ux, uy) {
   ctx.fillStyle = '#2f6fb3'; poly(0, 2.5, 1.6, w(2.5));
 }
 function draw() {
+  ctx.setTransform(2, 0, 0, 2, 0, 0);
   ctx.fillStyle = '#5b3a1e'; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = '#1b7a46'; ctx.fillRect(M - 6, M - 6, W - 2 * M + 12, H - 2 * M + 12);
   ctx.fillStyle = '#0b0b0b'; for (const p of PK) { ctx.beginPath(); ctx.arc(p[0], p[1], PR, 0, 7); ctx.fill(); }
