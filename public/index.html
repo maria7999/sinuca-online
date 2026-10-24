@@ -438,7 +438,7 @@ function ball(b) {
 // Linha de mira: vai até a primeira bola, quica na tabela (até 2 vezes) e mostra para onde a bola atingida vai
 function guide(c, ux, uy) {
   const minX = M + R, maxX = W - M - R, minY = M + R, maxY = H - M - R;
-  let x = c[1], y = c[2], dx = ux, dy = uy, left = 520, hit = null;
+  let x = c[1], y = c[2], dx = ux, dy = uy, left = 520, hit = null, wall = null;
   const pts = [[x, y]];
   for (let k = 0; k < 3 && left > 0; k++) {
     let tBall = Infinity, hb = null;
@@ -464,18 +464,24 @@ function guide(c, ux, uy) {
     }
     const t = Math.max(0, Math.min(tWall, left));
     x += dx * t; y += dy * t; left -= t; pts.push([x, y]);
-    if (t === tWall) { if (vert) dx = -dx; else dy = -dy; } else break;
+    // bateu na tabela antes de qualquer bola: para aqui e mostra so a bolinha na tabela + uma linha curta do rebote
+    if (t === tWall) wall = { x, y, dx: vert ? -dx : dx, dy: vert ? dy : -dy };
+    break;
   }
   ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.setLineDash([]);
   ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = 2.5;
   // se vai bater numa bola, a linha termina na borda do aro (nao no centro dele)
-  if (hit && pts.length > 1) {
+  if ((hit || wall) && pts.length > 1) {
     const q = pts[pts.length - 2], e = pts[pts.length - 1], sl = Math.hypot(e[0] - q[0], e[1] - q[1]);
     if (sl > R) pts[pts.length - 1] = [e[0] - dx * R, e[1] - dy * R];
   }
   ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
   for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
   ctx.stroke();
+  if (wall) {
+    ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(wall.x, wall.y, R, 0, 7); ctx.stroke();
+    ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(wall.x + wall.dx * R, wall.y + wall.dy * R); ctx.lineTo(wall.x + wall.dx * (R + 65), wall.y + wall.dy * (R + 65)); ctx.stroke();
+  }
   if (hit) {
     const bx = hit.b[1], by = hit.b[2];
     let nx = bx - hit.x, ny = by - hit.y; const nl = Math.sqrt(nx * nx + ny * ny) || 1; nx /= nl; ny /= nl;
