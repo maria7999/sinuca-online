@@ -381,7 +381,7 @@ function stat(t) { $('status').textContent = t || ''; $('qbar').style.display = 
 function onMsg(m) {
   if (m.t === 'wait') { stat(m.m); }
   else if (m.t === 'error') { stat(''); toast(m.m); }
-  else if (m.t === 'match') { seat = m.seat; solo = !!m.solo; S = null; showGame(); }
+  else if (m.t === 'match') { seat = m.seat; solo = !!m.solo; S = null; railList = []; railSeen = false; showGame(); }
   else if (m.t === 'state') {
     S = m;
     if (m.m) $('msg').textContent = m.m;
@@ -446,7 +446,7 @@ function pos(e) {
 }
 // Layout: no celular em pe a mesa e girada 90 graus e preenche a area disponivel
 const pcMQ = matchMedia('(min-width:900px) and (orientation:landscape) and (hover:hover) and (pointer:fine)');
-let lastPc = null, railGeo = { w: 0 };
+let lastPc = null, railGeo = { w: 0 }, railList = [], railSeen = false;
 function layout() {
   const pc = pcMQ.matches;
   document.body.classList.toggle('pc', pc);
@@ -777,33 +777,44 @@ const TBL = (() => {
   g.save(); g.translate(W - 44, H); g.rotate(Math.PI); deco(W - 88, LW, LP); g.restore();
   g.save(); g.translate(0, H - 44); g.rotate(-Math.PI / 2); deco(H - 88, [[0, H - 88]], SP); g.restore();
   g.save(); g.translate(W, 44); g.rotate(Math.PI / 2); deco(H - 88, [[0, H - 88]], SP); g.restore();
-  // cacapas: aro vermelho-escuro e buraco preto
+  // cacapas: boca funda com redinha em formato de tigela, aro de couro e friso dourado
+  const lerp = (x, y, t) => x + (y - x) * t;
   for (const [px, py] of PK) {
-    const rg = g.createRadialGradient(px, py, PR - 4, px, py, PR + 4);
-    rg.addColorStop(0, '#2a0a04'); rg.addColorStop(1, '#7a2a0c');
-    g.fillStyle = rg; g.beginPath(); g.arc(px, py, PR + 4, 0, 7); g.fill();
-    g.strokeStyle = 'rgba(250,190,90,.7)'; g.lineWidth = 1; g.stroke();
-    const hg = g.createRadialGradient(px, py, 2, px, py, PR);
-    hg.addColorStop(0, '#000'); hg.addColorStop(.8, '#030201'); hg.addColorStop(1, '#1a0904');
-    g.fillStyle = hg; g.beginPath(); g.arc(px, py, PR, 0, 7); g.fill();
-    // redinha: malha em losangos dentro da cacapa (fundo marrom, nao mais preto)
+    let ox = px - W / 2, oy = py - H / 2; const ol = Math.hypot(ox, oy) || 1; ox /= ol; oy /= ol;
+    // sombra da boca caindo no pano
+    const so = g.createRadialGradient(px, py, PR, px, py, PR + 14); so.addColorStop(0, 'rgba(0,0,30,.6)'); so.addColorStop(1, 'rgba(0,0,30,0)');
+    g.fillStyle = so; g.beginPath(); g.arc(px, py, PR + 14, 0, 7); g.fill();
+    // aro de couro escuro
+    const lr = g.createRadialGradient(px - 4, py - 4, PR - 2, px, py, PR + 6);
+    lr.addColorStop(0, '#70452a'); lr.addColorStop(.5, '#3d2315'); lr.addColorStop(1, '#1b0f08');
+    g.fillStyle = lr; g.beginPath(); g.arc(px, py, PR + 5, 0, 7); g.fill();
+    g.strokeStyle = 'rgba(20,8,3,.9)'; g.lineWidth = 1; g.beginPath(); g.arc(px, py, PR + 5, 0, 7); g.stroke();
+    g.strokeStyle = 'rgba(250,205,110,.55)'; g.lineWidth = .6; g.beginPath(); g.arc(px, py, PR + 3.4, 0, 7); g.stroke();
+    // interior: fundo escuro e redinha curvada para dentro
     g.save(); g.beginPath(); g.arc(px, py, PR, 0, 7); g.clip();
-    const ng = g.createRadialGradient(px, py, 1, px, py, PR);
-    ng.addColorStop(0, '#1b0e08'); ng.addColorStop(1, '#3a1d0e');
-    g.fillStyle = ng; g.fillRect(px - PR, py - PR, 2 * PR, 2 * PR);
-    const st = 4.6;
-    for (const [col, lw, off] of [['rgba(12,5,2,.9)', 1.7, .7], ['rgba(176,108,62,.95)', .9, 0]]) {
-      g.strokeStyle = col; g.lineWidth = lw; g.beginPath();
-      for (let d = -2 * PR; d <= 2 * PR; d += st) {
-        g.moveTo(px - PR + d + off, py - PR + off); g.lineTo(px + PR + d + off, py + PR + off);
-        g.moveTo(px + PR + d + off, py - PR + off); g.lineTo(px - PR + d + off, py + PR + off);
-      }
-      g.stroke();
+    const cx = px + ox * PR * .2, cy = py + oy * PR * .2;
+    const bg = g.createRadialGradient(cx, cy, 1, px, py, PR); bg.addColorStop(0, '#050201'); bg.addColorStop(1, '#2a160b');
+    g.fillStyle = bg; g.fillRect(px - PR, py - PR, 2 * PR, 2 * PR);
+    const NL = 20, TW = 1.4, STEPS = 22, col = t => [lerp(26, 176, t), lerp(14, 116, t), lerp(8, 66, t)];
+    const rimPt = th => [px + PR * Math.cos(th), py + PR * Math.sin(th)];
+    const at = (th, f) => { const q = rimPt(th); return [lerp(cx, q[0], f), lerp(cy, q[1], f)]; };
+    for (const sg of [1, -1]) for (let i = 0; i < NL; i++) {
+      const c0 = i / NL * Math.PI * 2, pts = [];
+      for (let k = 0; k <= STEPS; k++) { const t = k / STEPS, f = Math.pow(Math.sin(t * Math.PI / 2), .85); pts.push([...at(c0 + sg * TW * t, f), t]); }
+      g.lineCap = 'round'; g.strokeStyle = 'rgba(4,1,0,.9)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
+      for (const q of pts) g.lineTo(q[0], q[1]); g.stroke();
+      g.lineWidth = .8;
+      for (let k = 1; k <= STEPS; k++) { const c = col(pts[k][2]); g.strokeStyle = 'rgb(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ')'; g.beginPath(); g.moveTo(pts[k - 1][0], pts[k - 1][1]); g.lineTo(pts[k][0], pts[k][1]); g.stroke(); }
     }
-    const vg = g.createRadialGradient(px, py, 2, px, py, PR);
-    vg.addColorStop(0, 'rgba(0,0,0,.55)'); vg.addColorStop(.6, 'rgba(0,0,0,.18)'); vg.addColorStop(1, 'rgba(0,0,0,.45)');
-    g.fillStyle = vg; g.fillRect(px - PR, py - PR, 2 * PR, 2 * PR);
+    // profundidade: escuro no fundo e sombra da borda no lado de cima/esquerda
+    const dk = g.createRadialGradient(cx, cy, 0, cx, cy, PR * .8); dk.addColorStop(0, 'rgba(0,0,0,.92)'); dk.addColorStop(.5, 'rgba(0,0,0,.45)'); dk.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = dk; g.fillRect(px - PR, py - PR, 2 * PR, 2 * PR);
+    const lip = g.createLinearGradient(px - PR, py - PR, px + PR, py + PR); lip.addColorStop(0, 'rgba(0,0,0,.7)'); lip.addColorStop(.55, 'rgba(0,0,0,.1)'); lip.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = lip; g.fillRect(px - PR, py - PR, 2 * PR, 2 * PR);
     g.restore();
+    // friso dourado na boca
+    const gg = g.createLinearGradient(px - PR, py - PR, px + PR, py + PR); gg.addColorStop(0, '#8d6420'); gg.addColorStop(.5, '#f6dc8a'); gg.addColorStop(1, '#b98a2c');
+    g.strokeStyle = gg; g.lineWidth = 1.7; g.beginPath(); g.arc(px, py, PR + .6, 0, 7); g.stroke();
   }
   return c;
 })();
@@ -820,11 +831,25 @@ function drawRail() {
   for (let y = y0 + 4; y < y1 - r - 10; y += 130) rg.fillRect(cx - 28, y, 56, 6);
   rg.fillStyle = '#d9ae45'; rg.beginPath(); rg.arc(cx, y0, 28, Math.PI, 0); rg.fill();
   if (!S) return;
-  const dead = S.b.filter(b => !b[3] && b[0] > 0).sort((a, b) => a[0] - b[0]);
-  const bd = 2 * R * k * 0.88, sc = bd / (2 * R);
-  dead.forEach((b, i) => {
-    const y = Math.max(y0 + bd / 2, y1 - r - bd / 2 - i * (bd + 2));
-    rg.save(); rg.translate(cx, y); rg.scale(sc, sc); ball([b[0], 0, 0, 1], rg); rg.restore();
+  // bolas encacapadas: entram pelo alto do tubo, descem rolando, fazem a curva e param no fim do braco (as proximas ficam atras)
+  const now = performance.now();
+  if (!railSeen) { railSeen = true; S.b.filter(x => !x[3] && x[0] > 0).sort((p, q) => p[0] - q[0]).forEach(x => railList.push({ n: x[0], t0: -1e9 })); }
+  for (const x of S.b) {
+    if (x[0] === 0) continue;
+    const i = railList.findIndex(e => e.n === x[0]);
+    if (x[3]) { if (i >= 0) { railList.splice(i, 1); } } else if (i < 0) railList.push({ n: x[0], t0: now });
+  }
+  const bd = 2 * R * k * 0.88, sc = bd / (2 * R), gap = bd + 2;
+  const ys = y0 + bd / 2 + 6, L1 = y1 - r - ys, La = Math.PI * r / 2, Lt = L1 + La + (cx - r), A = 900, VM = 520, tc = VM / A;
+  const pt = q => q <= L1 ? [cx, ys + q] : q <= L1 + La ? [cx - r + r * Math.cos((q - L1) / r), y1 - r + r * Math.sin((q - L1) / r)] : [cx - r - (q - L1 - La), y1];
+  let prev = Infinity;
+  railList.forEach((e, i) => {
+    const t = Math.max(0, (now - e.t0) / 1000), free = t < tc ? .5 * A * t * t : .5 * A * tc * tc + VM * (t - tc);
+    const q = Math.min(Lt - bd / 2 - 5 - i * gap, free, prev - gap); prev = q;
+    const [bx, by] = pt(Math.max(0, q)), st = BS[e.n];
+    if (e.lx !== undefined) { const dx = (bx - e.lx) / sc, dy = (by - e.ly) / sc, d = Math.hypot(dx, dy); if (d > 0.02 && d < 40) rollBall(st, dx, dy); }
+    e.lx = bx; e.ly = by;
+    rg.save(); rg.translate(bx, by); rg.scale(sc, sc); ball([e.n, 0, 0, 1], rg); rg.restore();
   });
 }
 function draw() {
