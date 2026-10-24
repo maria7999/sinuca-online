@@ -597,7 +597,7 @@ function ballShadow(b) {
 // Linha de mira: vai até a primeira bola, quica na tabela (até 2 vezes) e mostra para onde a bola atingida vai
 function guide(c, ux, uy) {
   const minX = M + R, maxX = W - M - R, minY = M + R, maxY = H - M - R;
-  let x = c[1], y = c[2], dx = ux, dy = uy, left = 520, hit = null, wall = null;
+  let x = c[1], y = c[2], dx = ux, dy = uy, left = 1e4, hit = null, wall = null; // sem limite de comprimento: a linha alcanca qualquer bola ate o fim da mesa
   const pts = [[x, y]];
   for (let k = 0; k < 3 && left > 0; k++) {
     let tBall = Infinity, hb = null;
@@ -785,8 +785,6 @@ const TBL = (() => {
     // sombra da boca no pano
     const so = g.createRadialGradient(px, py, PR, px, py, PR + 20); so.addColorStop(0, 'rgba(0,0,30,.55)'); so.addColorStop(1, 'rgba(0,0,30,0)');
     g.fillStyle = so; g.beginPath(); g.arc(px, py, PR + 20, 0, 7); g.fill();
-    // aro escuro da boca
-    g.fillStyle = '#140a05'; g.beginPath(); g.arc(px, py, PR + 1.6, 0, 7); g.fill();
     // interior: fundo escuro e redinha de losangos (tigela: losangos mais apertados perto da borda)
     g.save(); g.beginPath(); g.arc(px, py, PR, 0, 7); g.clip();
     const cx = px + ox * PR * .16, cy = py + oy * PR * .16;
@@ -808,36 +806,74 @@ const TBL = (() => {
     const lip = g.createLinearGradient(px - ox * PR, py - oy * PR, px + ox * PR, py + oy * PR); lip.addColorStop(0, 'rgba(0,0,0,.6)'); lip.addColorStop(.6, 'rgba(0,0,0,.05)'); lip.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = lip; g.fillRect(px - PR, py - PR, 2 * PR, 2 * PR);
     g.restore();
-    // peca de couro em volta (faixa em arco com pontas arredondadas)
-    const rm = PR + 1.2 + WD / 2, e0 = [px + rm * Math.cos(a0), py + rm * Math.sin(a0)], e1 = [px + rm * Math.cos(a1), py + rm * Math.sin(a1)];
-    const path = () => {
-      g.beginPath(); g.arc(px, py, PR + 1.2 + WD, a0, a1); g.arc(px, py, PR + 1.2, a1, a0, true); g.closePath();
-      for (const e of [e0, e1]) { g.moveTo(e[0] + WD / 2, e[1]); g.arc(e[0], e[1], WD / 2, 0, Math.PI * 2); }
+    // couro PRETO por fora da mesa (em cima da moldura, nao do pano), com arco dourado aberto para o pano
+    g.save();
+    if (side) { g.translate(px, sy < 0 ? 0 : H); g.scale(1, sy < 0 ? 1 : -1); }
+    else { g.translate(sx < 0 ? 0 : W, sy < 0 ? 0 : H); g.scale(sx < 0 ? 1 : -1, sy < 0 ? 1 : -1); }
+    // coordenadas locais: origem na quina (ou no meio da borda), +y para dentro da mesa
+    const T = 30, ar = 4, Dq = 15;
+    const gx = side ? 0 : 24, gy = side ? 23 : 24, Rg = side ? 20 : 22.5;      // circulo do arco dourado
+    const wx = side ? 0 : 27, wy = side ? 24 : 27, wr = side ? 16.5 : 17;       // janela da redinha
+    const xhOf = i => gx + Math.sqrt((Rg + i) * (Rg + i) - (T - i - gy) * (T - i - gy));
+    const lpath = i => {
+      g.beginPath();
+      if (side) {
+        const wt = 27 - i, wb = 31 - i, rc = 7, xe = Math.sqrt((Rg + i) * (Rg + i) - (T - i - gy) * (T - i - gy)), a1 = Math.atan2(T - i - gy, xe);
+        g.moveTo(-wt + rc, i); g.lineTo(wt - rc, i); g.quadraticCurveTo(wt, i, wt, i + rc);
+        g.lineTo(wb, T - i - 3); g.quadraticCurveTo(wb, T - i, wb - 3, T - i); g.lineTo(xe, T - i);
+        g.arc(gx, gy, Rg + i, a1, Math.PI - a1, true);
+        g.lineTo(-wb + 3, T - i); g.quadraticCurveTo(-wb, T - i, -wb, T - i - 3);
+        g.lineTo(-wt, i + rc); g.quadraticCurveTo(-wt, i, -wt + rc, i); g.closePath();
+      } else {
+        const rc = 16, A = 66, xh = xhOf(i), a1 = Math.atan2(T - i - gy, xh - gx);
+        g.moveTo(rc, i); g.lineTo(A - ar, i); g.arc(A - ar, ar, ar - i, -Math.PI / 2, 0);
+        g.lineTo(A - i, T - ar); g.arc(A - ar, T - ar, ar - i, 0, Math.PI / 2);
+        g.lineTo(xh, T - i);
+        g.arc(gx, gy, Rg + i, a1, Math.PI / 2 - a1, true);
+        g.lineTo(T - i, A - ar); g.arc(T - ar, A - ar, ar - i, 0, Math.PI / 2);
+        g.lineTo(ar, A - i); g.arc(ar, A - ar, ar - i, Math.PI / 2, Math.PI);
+        g.lineTo(i, rc); g.arc(rc, rc, rc - i, Math.PI, Math.PI * 1.5); g.closePath();
+      }
     };
-    g.save(); g.shadowColor = 'rgba(0,0,25,.65)'; g.shadowBlur = 7; g.shadowOffsetX = 1.5; g.shadowOffsetY = 2.5;
-    g.fillStyle = '#3a2214'; path(); g.fill(); g.restore();
-    g.save(); path(); g.clip();
-    const lg = g.createRadialGradient(px - ox * 6, py - oy * 6, PR, px, py, PR + WD + 6); lg.addColorStop(0, '#5b3822'); lg.addColorStop(.6, '#3d2314'); lg.addColorStop(1, '#25140a');
-    g.fillStyle = lg; g.fillRect(px - 50, py - 50, 100, 100);
-    const D = 10;
-    for (let i = -10; i <= 10; i++) for (let j = -10; j <= 10; j++) {
-      const x = px + (i + j + 1) * D / 2, y = py + (i - j) * D / 2; if (Math.hypot(x - px, y - py) > PR + WD + 8) continue;
-      const pg = g.createRadialGradient(x - 1, y - 1.5, 0, x, y, D * .62); pg.addColorStop(0, 'rgba(176,118,78,.55)'); pg.addColorStop(.55, 'rgba(110,70,44,.2)'); pg.addColorStop(1, 'rgba(0,0,0,0)');
-      g.fillStyle = pg; g.beginPath(); g.arc(x, y, D * .62, 0, 7); g.fill();
+    // gola escura de couro dentro do arco; a redinha aparece so pela janela
+    g.save(); g.beginPath(); g.arc(gx, gy, Rg, 0, 7); g.moveTo(wx + wr, wy); g.arc(wx, wy, wr, 0, 7);
+    const cgr = g.createRadialGradient(wx, wy, wr, wx, wy, Rg + Math.hypot(gx - wx, gy - wy));
+    cgr.addColorStop(0, '#030304'); cgr.addColorStop(.5, '#131316'); cgr.addColorStop(1, '#2c2c32');
+    g.fillStyle = cgr; g.fill('evenodd'); g.restore();
+    g.strokeStyle = 'rgba(0,0,0,.75)'; g.lineWidth = 1.6; g.beginPath(); g.arc(wx, wy, wr, 0, 7); g.stroke();
+    // peca de couro preto com sombra no pano e na madeira
+    g.save(); g.shadowColor = 'rgba(0,0,20,.7)'; g.shadowBlur = 5 * K; g.shadowOffsetY = 1.5 * K;
+    g.fillStyle = '#111114'; lpath(0); g.fill(); g.restore();
+    g.save(); lpath(0); g.clip();
+    const lgr = g.createRadialGradient(gx - 4, gy - 4, Rg, gx, gy, Rg + 44); lgr.addColorStop(0, '#34343a'); lgr.addColorStop(.45, '#1c1c20'); lgr.addColorStop(1, '#0b0b0d');
+    g.fillStyle = lgr; g.fillRect(-40, -10, 140, 90);
+    // acolchoado: cada losango com leve relevo
+    for (let k = -14; k <= 14; k++) for (let m = -14; m <= 14; m++) {
+      const x = (k + m + 1) * Dq / 2, y = (m - k) * Dq / 2; if (x < -36 || x > 72 || y < -4 || y > 72) continue;
+      const pg = g.createRadialGradient(x - 1.2, y - 1.8, 0, x, y, Dq * .6); pg.addColorStop(0, 'rgba(255,255,255,.17)'); pg.addColorStop(.55, 'rgba(255,255,255,.05)'); pg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = pg; g.beginPath(); g.arc(x, y, Dq * .6, 0, 7); g.fill();
     }
-    g.lineWidth = 1.3; g.strokeStyle = 'rgba(14,6,2,.85)'; g.lineJoin = 'round';
-    g.beginPath(); for (let i = -10; i <= 10; i++) { const c = i * D; g.moveTo(px + c - 55, py - 55); g.lineTo(px + c + 55, py + 55); g.moveTo(px + c + 55, py - 55); g.lineTo(px + c - 55, py + 55); } g.stroke();
-    g.setLineDash([1.6, 1.8]); g.lineWidth = .6; g.strokeStyle = 'rgba(226,184,132,.8)';
-    g.beginPath(); for (let i = -10; i <= 10; i++) { const c = i * D + 1.1; g.moveTo(px + c - 55, py - 55 + 1.1); g.lineTo(px + c + 55, py + 55 + 1.1); g.moveTo(px + c + 55, py - 55 + 1.1); g.lineTo(px + c - 55, py + 55 + 1.1); } g.stroke();
-    g.beginPath(); g.arc(px, py, PR + 1.2 + WD - 2.2, a0, a1); g.stroke();
+    g.lineJoin = 'round'; g.lineWidth = 1.3; g.strokeStyle = 'rgba(0,0,0,.85)'; g.beginPath();
+    for (let c = -150; c <= 200; c += Dq) { g.moveTo(c, -5); g.lineTo(c + 100, 95); g.moveTo(c, -5); g.lineTo(c - 100, 95); } g.stroke();
+    g.setLineDash([1.7, 1.8]); g.lineWidth = .65; g.strokeStyle = 'rgba(218,208,188,.8)'; g.beginPath();
+    for (let c = -150; c <= 200; c += Dq) { g.moveTo(c + 1.1, -5); g.lineTo(c + 101.1, 95); g.moveTo(c + 1.1, -5); g.lineTo(c - 98.9, 95); } g.stroke();
     g.setLineDash([]);
+    // brilho do couro na borda de cima/de fora
+    g.strokeStyle = 'rgba(255,255,255,.16)'; g.lineWidth = 1.6; lpath(.9); g.stroke();
     g.restore();
-    g.strokeStyle = 'rgba(12,5,1,.9)'; g.lineWidth = 1; g.save(); path(); g.stroke(); g.restore();
-    // friso dourado na borda interna da faixa
-    const gg = g.createLinearGradient(px - PR, py - PR, px + PR, py + PR); gg.addColorStop(0, '#9a6f22'); gg.addColorStop(.45, '#fbe49a'); gg.addColorStop(1, '#b8872a');
-    g.lineCap = 'round'; g.strokeStyle = 'rgba(40,20,4,.9)'; g.lineWidth = 3.6; g.beginPath(); g.arc(px, py, PR + 1.2, a0, a1); g.stroke();
-    g.strokeStyle = gg; g.lineWidth = 2.2; g.beginPath(); g.arc(px, py, PR + 1.2, a0, a1); g.stroke();
-    g.strokeStyle = 'rgba(255,245,200,.7)'; g.lineWidth = .6; g.beginPath(); g.arc(px, py, PR + .6, a0 + .15, a1 - .15); g.stroke();
+    // costura tracejada ao longo da borda e contorno escuro
+    g.save(); g.setLineDash([2, 1.9]); g.strokeStyle = 'rgba(222,212,190,.88)'; g.lineWidth = .8; lpath(2.6); g.stroke(); g.restore();
+    g.strokeStyle = 'rgba(0,0,0,.95)'; g.lineWidth = 1.1; lpath(0); g.stroke();
+    // friso dourado: arco em volta da boca, abrindo para o pano, com as pontas abertas na linha do pano
+    const xg = Math.sqrt(Rg * Rg - (T - gy) * (T - gy)), ga = Math.atan2(T - gy, xg), ae = side ? Math.PI - ga : Math.PI / 2 - ga;
+    const gg = g.createLinearGradient(gx - Rg, gy - Rg, gx + Rg, gy + Rg); gg.addColorStop(0, '#9a6f22'); gg.addColorStop(.45, '#fbe49a'); gg.addColorStop(1, '#b8872a');
+    g.lineCap = 'butt'; g.strokeStyle = 'rgba(25,12,0,.9)'; g.lineWidth = 4.2; g.beginPath(); g.arc(gx, gy, Rg, ga, ae, true); g.stroke();
+    g.strokeStyle = gg; g.lineWidth = 2.6; g.beginPath(); g.arc(gx, gy, Rg, ga, ae, true); g.stroke();
+    g.strokeStyle = 'rgba(255,248,210,.75)'; g.lineWidth = .6; g.beginPath(); g.arc(gx, gy, Rg + .5, ga + .12, ae - .12, true); g.stroke();
+    g.fillStyle = gg; g.strokeStyle = 'rgba(25,12,0,.9)'; g.lineWidth = .7;
+    const flare = (x0, y0, dx, dy, nx, ny) => { g.beginPath(); g.moveTo(x0 - dx * 2 + nx * 2.4, y0 - dy * 2 + ny * 2.4); g.lineTo(x0 + dx * 3.6, y0 + dy * 3.6); g.lineTo(x0 - dx * 2, y0 - dy * 2); g.closePath(); g.fill(); g.stroke(); };
+    if (side) { flare(xg, T, 1, 0, 0, -1); flare(-xg, T, -1, 0, 0, -1); } else { flare(xg + gx, T, 1, 0, 0, -1); flare(T, xg + gx, 0, 1, -1, 0); }
+    g.restore();
   }
   return c;
 })();
