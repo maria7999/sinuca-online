@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sinuca Online</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎱%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#f4f1ea;--fg:#1d1d1b;--card:#fff;--muted:#6b6a65;--green:#2e9e5b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17191a;--fg:#ecebe6;--card:#232627;--muted:#9a9a93}}
+:root[data-theme="dark"]{--bg:#17191a;--fg:#ecebe6;--card:#232627;--muted:#9a9a93}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px;min-height:100vh}
+h1{margin:8px 0 0;font-size:28px}
+.sub{color:var(--muted);margin:0;text-align:center;font-size:14px}
+.card{background:var(--card);border-radius:14px;padding:18px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px}
+input{padding:12px;border-radius:10px;border:1px solid var(--muted);background:var(--bg);color:var(--fg);font-size:16px;width:100%}
+button{background:var(--green);color:#fff;border:0;border-radius:10px;padding:12px 16px;font-size:16px;cursor:pointer}
+button.alt{background:transparent;color:var(--fg);border:1px solid var(--muted)}
+.row{display:flex;gap:8px}
+#status{min-height:20px;text-align:center;font-size:14px}
+#game{display:none;width:100%;max-width:820px;flex-direction:column;align-items:center;gap:10px}
+.bar{width:100%;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.pl{background:var(--card);border-radius:10px;padding:8px 12px;font-size:14px;flex:1;min-width:130px;border:2px solid transparent}
+.pl.on{border-color:var(--green)}
+.pl small{color:var(--muted);display:block}
+.table{display:flex;gap:8px;width:100%;align-items:flex-start}
+.table canvas{flex:1;min-width:0;width:auto;height:auto;align-self:flex-start;touch-action:none;border-radius:14px;display:block}
+#side{width:54px;flex:none;align-self:stretch;display:flex;flex-direction:column;align-items:center;gap:8px}
+#pwr{flex:1;min-height:170px;width:38px;border:2px solid #b8892f;border-radius:8px;position:relative;touch-action:none;cursor:ns-resize;overflow:hidden;
+ background:linear-gradient(#111 0 14px,#f2efe6 14px 24px,transparent 24px),linear-gradient(90deg,#b9812f,#f0c878 45%,#a8702a)}
+#pwr::after{content:"";position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(#0007,#0007) 0 25%/100% 2px no-repeat,linear-gradient(#0007,#0007) 0 50%/100% 2px no-repeat,linear-gradient(#0007,#0007) 0 75%/100% 2px no-repeat}
+#pfill{position:absolute;left:0;right:0;top:0;height:0;background:rgba(229,57,47,.55);border-bottom:3px solid #fff;pointer-events:none}
+#pwr.off{opacity:.4;cursor:not-allowed}
+#pval{font-size:12px;color:var(--muted)}
+#bSet{padding:0;width:44px;height:44px;border-radius:50%;background:var(--card);color:var(--fg);border:1px solid var(--muted);font-size:20px}
+
+#msg{font-size:15px;min-height:22px;text-align:center}
+.help{color:var(--muted);font-size:13px;margin:0;text-align:center;max-width:620px}
+</style>
+</head>
+<body>
+<div id="lobby" style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%">
+  <h1>🎱 Sinuca Online</h1>
+  <p class="sub">Bola 8, 1 contra 1, de graça. Sem cadastro.</p>
+  <div class="card">
+    <input id="name" placeholder="Seu apelido" maxlength="16" autocomplete="off">
+    <button id="bQueue">Jogar agora (achar adversário)</button>
+    <button id="bPractice" class="alt">Treinar sozinho</button>
+    <hr style="width:100%;border:0;border-top:1px solid var(--muted);opacity:.3">
+    <button id="bCreate" class="alt">Criar sala para um amigo</button>
+    <div class="row"><input id="code" placeholder="Código da sala" maxlength="6" autocomplete="off"><button id="bJoin" style="white-space:nowrap">Entrar</button></div>
+    <div id="status"></div>
+  </div>
+</div>
+
+<div id="game">
+  <div class="bar">
+    <div class="pl on" id="p0"><b id="n0">Jogador 1</b><small id="g0">mesa aberta</small></div>
+    <div class="pl" id="p1"><b id="n1">Jogador 2</b><small id="g1">mesa aberta</small></div>
+  </div>
+  <div class="table">
+    <div id="side">
+      <div id="pwr" title="Arraste para baixo e solte para tacar"><div id="pfill"></div></div>
+      <div id="pval">0%</div>
+      <button id="bSet" title="Configurações (em breve)">⚙</button>
+    </div>
+    <canvas id="c" width="800" height="400"></canvas>
+  </div>
+  <div id="msg"></div>
+  <div class="row">
+    <button id="bAgain" style="display:none">Jogar de novo</button>
+    <button id="bLeave" class="alt">Sair da partida</button>
+  </div>
+  <p class="help">Na sua vez, o taco aparece. Segure e arraste na mesa (mouse ou dedo) para girar o taco; no computador, as setas ← → fazem o ajuste fino. Depois puxe a barra de força (à esquerda) para baixo e solte para tacar. Lisas são 1–7, listradas 9–15.</p>
+</div>
+
+<script>
+const W = 800, H = 400, R = 10, M = 30;
+const COL = ['#fff', '#f2c200', '#1e5bd8', '#d62828', '#6a2c91', '#f27d0c', '#1f8a3d', '#8b1e1e', '#111'];
+const PK = [[24, 24], [400, 20], [776, 24], [24, 376], [400, 380], [776, 376]], PR = 21;
+const $ = id => document.getElementById(id);
+const cv = $('c'), ctx = cv.getContext('2d');
+let ws = null, seat = 0, solo = false, S = null, aim = [1, 0], power = 0;
+
+// ---------- conexao ----------
+function connect(then) {
+  if (ws && ws.readyState === 1) { then(); return; }
+  if (ws && ws.readyState === 0) { ws.addEventListener('open', then, { once: true }); return; }
+  const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
+  ws = new WebSocket(proto + location.host);
+  ws.onopen = () => { $('status').textContent = ''; then(); };
+  ws.onmessage = e => { let m; try { m = JSON.parse(e.data); } catch (x) { return; } onMsg(m); };
+  ws.onclose = () => {
+    showLobby();
+    $('status').textContent = 'Conexão perdida. Recarregue a página para jogar de novo.';
+  };
+}
+function send(o) { connect(() => ws.send(JSON.stringify(o))); }
+function nm() { return $('name').value.trim() || 'Jogador'; }
+
+function onMsg(m) {
+  if (m.t === 'wait') { $('status').textContent = m.m; }
+  else if (m.t === 'error') { $('status').textContent = m.m; }
+  else if (m.t === 'match') { seat = m.seat; solo = !!m.solo; S = null; showGame(); }
+  else if (m.t === 'state') {
+    S = m;
+    if (m.m) $('msg').textContent = m.m;
+    updateUI();
+  }
+  else if (m.t === 'info') { $('msg').textContent = m.m; }
+  else if (m.t === 'lobby') { showLobby(); }
+}
+function showLobby() { $('game').style.display = 'none'; $('lobby').style.display = 'flex'; }
+function showGame() { $('lobby').style.display = 'none'; $('game').style.display = 'flex'; $('status').textContent = ''; $('bAgain').style.display = 'none'; }
+
+const gname = g => g === 'solid' ? 'lisas (1–7)' : g === 'stripe' ? 'listradas (9–15)' : 'mesa aberta';
+function updateUI() {
+  if (!S) return;
+  $('n0').textContent = S.names[0] + (!solo && seat === 0 ? ' (você)' : '');
+  $('n1').textContent = S.names[1] + (!solo && seat === 1 ? ' (você)' : '');
+  $('g0').textContent = gname(S.grp[0]); $('g1').textContent = gname(S.grp[1]);
+  $('p0').className = 'pl' + (S.turn === 0 ? ' on' : ''); $('p1').className = 'pl' + (S.turn === 1 ? ' on' : '');
+  $('bAgain').style.display = S.over ? '' : 'none';
+  pwr.classList.toggle('off', !canShoot());
+}
+
+// ---------- botoes ----------
+$('bQueue').onclick = () => send({ t: 'queue', name: nm() });
+$('bPractice').onclick = () => send({ t: 'practice', name: nm() });
+$('bCreate').onclick = () => send({ t: 'create', name: nm() });
+$('bJoin').onclick = () => { const c = $('code').value.trim(); if (c) send({ t: 'join', name: nm(), code: c }); };
+$('bAgain').onclick = () => send({ t: 'again' });
+$('bLeave').onclick = () => send({ t: 'leave' });
+$('name').value = (() => { try { return localStorage.getItem('sinuca-name') || ''; } catch (e) { return ''; } })();
+$('name').addEventListener('input', () => { try { localStorage.setItem('sinuca-name', $('name').value); } catch (e) {} });
+
+// ---------- mira e forca ----------
+const canShoot = () => S && !S.moving && !S.over && (solo || S.turn === seat);
+function pos(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height]; }
+// O taco NAO segue o mouse: ao segurar e arrastar na mesa, ele gira aos poucos (como girar em volta da bola branca)
+let ang = 0, lastP = null;
+function setAng(a) { ang = a; aim = [Math.cos(a), Math.sin(a)]; }
+cv.addEventListener('pointerdown', e => { if (!canShoot()) return; cv.setPointerCapture(e.pointerId); lastP = pos(e); });
+cv.addEventListener('pointermove', e => {
+  if (!lastP || !canShoot()) return;
+  const p = pos(e), c = S.b[0];
+  const ax = lastP[0] - c[1], ay = lastP[1] - c[2], bx = p[0] - c[1], by = p[1] - c[2];
+  const la = Math.sqrt(ax * ax + ay * ay), lb = Math.sqrt(bx * bx + by * by);
+  let d;
+  if (la > 25 && lb > 25) d = Math.atan2(ax * by - ay * bx, ax * bx + ay * by);
+  else d = ((p[0] - lastP[0]) * -aim[1] + (p[1] - lastP[1]) * aim[0]) / 150;
+  setAng(ang + d); lastP = p;
+});
+const endAim = () => { lastP = null; };
+cv.addEventListener('pointerup', endAim); cv.addEventListener('pointercancel', endAim);
+window.addEventListener('keydown', e => {
+  if (!canShoot()) return;
+  if (e.key === 'ArrowLeft') setAng(ang - 0.01); else if (e.key === 'ArrowRight') setAng(ang + 0.01);
+});
+
+const pwr = $('pwr'), pfill = $('pfill');
+let pdrag = false, py0 = 0;
+function setPower(p) { power = p; pfill.style.height = (p * 100) + '%'; $('pval').textContent = Math.round(p * 100) + '%'; }
+function pset(e) { const r = pwr.getBoundingClientRect(); setPower(Math.max(0, Math.min(1, (e.clientY - py0) / (r.height * 0.85)))); }
+pwr.addEventListener('pointerdown', e => { if (!canShoot()) return; pwr.setPointerCapture(e.pointerId); pdrag = true; py0 = e.clientY; setPower(0); });
+pwr.addEventListener('pointermove', e => { if (pdrag) pset(e); });
+pwr.addEventListener('pointerup', () => {
+  if (!pdrag) return;
+  pdrag = false; const p = power; setPower(0);
+  if (p > 0.04 && canShoot()) send({ t: 'shot', vx: aim[0] * p * 9, vy: aim[1] * p * 9 });
+});
+pwr.addEventListener('pointercancel', () => { pdrag = false; setPower(0); });
+
+// ---------- desenho ----------
+function ball(b) {
+  const n = b[0], x = b[1], y = b[2], str = n > 8;
+  ctx.save(); ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.clip();
+  ctx.fillStyle = n === 0 || str ? '#fff' : COL[n]; ctx.fillRect(x - R, y - R, 2 * R, 2 * R);
+  if (str) { ctx.fillStyle = COL[n - 8]; ctx.fillRect(x - R, y - 5, 2 * R, 10); }
+  ctx.restore();
+  if (n) {
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y, 4.6, 0, 7); ctx.fill();
+    ctx.fillStyle = '#111'; ctx.font = 'bold 7px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(n, x, y + .5);
+  }
+  ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.stroke();
+}
+// Linha de mira: vai até a primeira bola, quica na tabela (até 2 vezes) e mostra para onde a bola atingida vai
+function guide(c, ux, uy) {
+  const minX = M + R, maxX = W - M - R, minY = M + R, maxY = H - M - R;
+  let x = c[1], y = c[2], dx = ux, dy = uy, left = 520, hit = null;
+  const pts = [[x, y]];
+  for (let k = 0; k < 3 && left > 0; k++) {
+    let tBall = Infinity, hb = null;
+    for (const b of S.b) {
+      if (!b[3] || b[0] === 0) continue;
+      const fx = b[1] - x, fy = b[2] - y, pr = fx * dx + fy * dy;
+      if (pr <= 0) continue;
+      const d2 = fx * fx + fy * fy - pr * pr;
+      if (d2 >= 4 * R * R) continue;
+      const t = Math.max(0, pr - Math.sqrt(4 * R * R - d2));
+      if (t < tBall) { tBall = t; hb = b; }
+    }
+    let tWall = Infinity, vert = false;
+    if (dx > 1e-6) { tWall = (maxX - x) / dx; vert = true; }
+    else if (dx < -1e-6) { tWall = (minX - x) / dx; vert = true; }
+    let ty = Infinity;
+    if (dy > 1e-6) ty = (maxY - y) / dy; else if (dy < -1e-6) ty = (minY - y) / dy;
+    if (ty < tWall) { tWall = ty; vert = false; }
+    if (tBall <= tWall && tBall <= left) {
+      hit = { x: x + dx * tBall, y: y + dy * tBall, b: hb };
+      pts.push([hit.x, hit.y]);
+      break;
+    }
+    const t = Math.max(0, Math.min(tWall, left));
+    x += dx * t; y += dy * t; left -= t; pts.push([x, y]);
+    if (t === tWall) { if (vert) dx = -dx; else dy = -dy; } else break;
+  }
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.setLineDash([]);
+  ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = 2.5;
+  // se vai bater numa bola, a linha termina na borda do aro (nao no centro dele)
+  if (hit && pts.length > 1) {
+    const q = pts[pts.length - 2], e = pts[pts.length - 1], sl = Math.hypot(e[0] - q[0], e[1] - q[1]);
+    if (sl > R) pts[pts.length - 1] = [e[0] - dx * R, e[1] - dy * R];
+  }
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.stroke();
+  if (hit) {
+    const bx = hit.b[1], by = hit.b[2];
+    let nx = bx - hit.x, ny = by - hit.y; const nl = Math.sqrt(nx * nx + ny * ny) || 1; nx /= nl; ny /= nl;
+    // aro (bola branca "fantasma") no ponto da batida + tracinho apontando para a bola
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(hit.x, hit.y, R, 0, 7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(hit.x, hit.y); ctx.lineTo(hit.x + nx * R, hit.y + ny * R); ctx.stroke();
+    // linha de rebote: para onde a bola branca desvia depois da batida (mais curta que a linha da bola atingida)
+    const dot = dx * nx + dy * ny, rx0 = dx - dot * nx, ry0 = dy - dot * ny, rl = Math.sqrt(rx0 * rx0 + ry0 * ry0);
+    if (rl > 0.08) {
+      const rx = rx0 / rl, ry = ry0 / rl, REB = 30;
+      ctx.beginPath(); ctx.moveTo(hit.x + rx * R, hit.y + ry * R); ctx.lineTo(hit.x + rx * (R + REB), hit.y + ry * (R + REB)); ctx.stroke();
+    }
+    // linha da bola atingida: sempre curtinha (tamanho fixo), nunca estica ate a cacapa
+    const len = 60;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(bx + nx * R, by + ny * R); ctx.lineTo(bx + nx * (R + len), by + ny * (R + len)); ctx.stroke();
+  }
+}
+// Taco: aparece atras da bola branca e vai ate a borda da mesa; recua conforme a forca
+function drawCue(c, ux, uy) {
+  const off = R + 5 + power * 70, vx = -ux, vy = -uy, bx = c[1] + vx * off, by = c[2] + vy * off;
+  let t = Infinity;
+  if (vx > 1e-6) t = Math.min(t, (W - bx) / vx); else if (vx < -1e-6) t = Math.min(t, -bx / vx);
+  if (vy > 1e-6) t = Math.min(t, (H - by) / vy); else if (vy < -1e-6) t = Math.min(t, -by / vy);
+  const L = Math.min(Math.max(t, 90), 380), nx = -vy, ny = vx;
+  const poly = (s0, s1, w0, w1) => {
+    ctx.beginPath();
+    ctx.moveTo(bx + vx * s0 + nx * w0, by + vy * s0 + ny * w0); ctx.lineTo(bx + vx * s1 + nx * w1, by + vy * s1 + ny * w1);
+    ctx.lineTo(bx + vx * s1 - nx * w1, by + vy * s1 - ny * w1); ctx.lineTo(bx + vx * s0 - nx * w0, by + vy * s0 - ny * w0);
+    ctx.closePath(); ctx.fill();
+  };
+  const w = s0 => 1.6 + (L > 0 ? s0 / L : 0) * 2.6;
+  const g = ctx.createLinearGradient(bx, by, bx + vx * L, by + vy * L);
+  g.addColorStop(0, '#f0d6a0'); g.addColorStop(1, '#8a5a2b');
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2;
+  ctx.fillStyle = g; poly(0, L, 1.6, 4.2); ctx.restore();
+  ctx.fillStyle = '#f4f1e8'; poly(2.5, 12, w(2.5), w(12));
+  ctx.fillStyle = '#2f6fb3'; poly(0, 2.5, 1.6, w(2.5));
+}
+function draw() {
+  ctx.fillStyle = '#5b3a1e'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#1b7a46'; ctx.fillRect(M - 6, M - 6, W - 2 * M + 12, H - 2 * M + 12);
+  ctx.fillStyle = '#0b0b0b'; for (const p of PK) { ctx.beginPath(); ctx.arc(p[0], p[1], PR, 0, 7); ctx.fill(); }
+  ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.beginPath(); ctx.moveTo(230, M); ctx.lineTo(230, H - M); ctx.stroke();
+  if (S) for (const b of S.b) if (b[3]) ball(b);
+  if (canShoot()) {
+    const c = S.b[0], ux = aim[0], uy = aim[1];
+    guide(c, ux, uy);
+    drawCue(c, ux, uy);
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
