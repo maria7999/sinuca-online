@@ -235,12 +235,14 @@ function guide(c, ux, uy) {
     ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(hit.x, hit.y, R, 0, 7); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(hit.x, hit.y); ctx.lineTo(hit.x + nx * R, hit.y + ny * R); ctx.stroke();
-    // linha da bola atingida: curtinha, mas vai ate a cacapa quando ela esta indo para uma
-    let len = 60;
-    for (const p of PK) {
-      const px = p[0] - bx, py = p[1] - by, pr = px * nx + py * ny;
-      if (pr > 0 && Math.abs(px * ny - py * nx) < PR - 4) len = Math.max(len, Math.min(pr, 220));
+    // linha de rebote: para onde a bola branca desvia depois da batida (mais curta que a linha da bola atingida)
+    const dot = dx * nx + dy * ny, rx0 = dx - dot * nx, ry0 = dy - dot * ny, rl = Math.sqrt(rx0 * rx0 + ry0 * ry0);
+    if (rl > 0.08) {
+      const rx = rx0 / rl, ry = ry0 / rl, REB = 30;
+      ctx.beginPath(); ctx.moveTo(hit.x + rx * R, hit.y + ry * R); ctx.lineTo(hit.x + rx * (R + REB), hit.y + ry * (R + REB)); ctx.stroke();
     }
+    // linha da bola atingida: sempre curtinha (tamanho fixo), nunca estica ate a cacapa
+    const len = 60;
     ctx.lineWidth = 2.5;
     ctx.beginPath(); ctx.moveTo(bx + nx * R, by + ny * R); ctx.lineTo(bx + nx * (R + len), by + ny * (R + len)); ctx.stroke();
   }
