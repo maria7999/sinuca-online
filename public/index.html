@@ -94,12 +94,11 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
   </div>
   <div id="msg"></div>
   <div class="row">
-    <button id="bShoot" disabled>Tacar</button>
     <button id="bAgain" style="display:none">Jogar de novo</button>
     <button id="bMute" class="alt" aria-label="Som">🔊</button>
     <button id="bLeave" class="alt">Sair da partida</button>
   </div>
-  <p class="help">Mirar: clique e arraste na mesa (a linha só gira enquanto você segura o botão). Força: arraste a barra de força e solte para tacar. Setas do teclado fazem o ajuste fino e Enter taca. No celular: arraste para trás e solte.</p>
+  <p class="help">Mirar: clique e arraste na mesa (a linha só gira enquanto você segura o botão). Força: arraste a barra de força e solte para tacar. Setas do teclado fazem o ajuste fino. No celular: arraste para trás e solte.</p>
 </div>
 
 <script>
@@ -253,15 +252,13 @@ pwEl.addEventListener('pointerdown', e => { if (!canShoot()) return; powing = tr
 pwEl.addEventListener('pointermove', e => { if (powing) powAt(e); });
 pwEl.addEventListener('pointerup', e => { if (!powing) return; powing = false; powAt(e); shootNow(); });
 pwEl.addEventListener('pointercancel', () => { powing = false; });
-$('bShoot').onclick = shootNow;
-// ajuste fino pelo teclado: setas giram a mira (esq/dir) e mudam a forca (cima/baixo); Enter taca
+// ajuste fino pelo teclado: setas giram a mira (esq/dir) e mudam a forca (cima/baixo)
 document.addEventListener('keydown', e => {
   if (!canShoot() || $('game').style.display === 'none' || /INPUT|TEXTAREA/.test((document.activeElement || {}).tagName || '')) return;
   const k = e.key, st = e.shiftKey ? .05 : .006;
   if (k === 'ArrowLeft' || k === 'ArrowRight') {
     const a = Math.atan2(aim[1], aim[0]) + (k === 'ArrowLeft' ? -st : st); aim = [Math.cos(a), Math.sin(a)]; e.preventDefault();
   } else if (k === 'ArrowUp' || k === 'ArrowDown') { setPow(aimPow + (k === 'ArrowUp' ? .02 : -.02)); e.preventDefault(); }
-  else if (k === 'Enter' && document.activeElement && document.activeElement.tagName !== 'BUTTON') { shootNow(); e.preventDefault(); }
 });
 
 // ---------- mesa (desenhada uma vez) ----------
@@ -560,7 +557,7 @@ function ray(c, ux, uy) {
 }
 
 // ---------- painel: efeito, forca e trilho das bolas ----------
-let eff = [0, 0], railVert = true, railKey = '', lastPw = -1, lastCan = null;
+let eff = [0, 0], railVert = true, railKey = '', lastPw = -1;
 const rail = $('rail'), rx = rail.getContext('2d');
 function layout() {
   const gm = $('game'); if (gm.style.display === 'none') return;
@@ -621,8 +618,6 @@ function frame() {
         drag = [c.x - aim[0] * k, c.y - aim[1] * k];
       } else drag = null;
     }
-    const can = !!(canShoot() && c.act);
-    if (can !== lastCan) { lastCan = can; $('bShoot').disabled = !can; }
     if (drag && canShoot() && c.act) {
       const dx = c.x - drag[0], dy = c.y - drag[1], d = Math.hypot(dx, dy) || 1, pw = Math.min(d, 160) / 160, ux = dx / d, uy = dy / d;
       pwCur = pw;
