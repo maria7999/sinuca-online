@@ -765,12 +765,13 @@ const buildTbl = () => {
     g.strokeStyle = 'rgba(0,10,60,.55)'; g.lineWidth = 1; g.stroke();
     g.strokeStyle = 'rgba(180,215,255,.6)'; g.beginPath(); g.moveTo(pts[3][0], pts[3][1]); g.lineTo(pts[2][0], pts[2][1]); g.stroke();
   };
-  cush([[48, RW], [376, RW], [368, M], [56, M]], 0, RW, 0, M);
-  cush([[424, RW], [752, RW], [744, M], [432, M]], 0, RW, 0, M);
-  cush([[48, H - RW], [376, H - RW], [368, H - M], [56, H - M]], 0, H - RW, 0, H - M);
-  cush([[424, H - RW], [752, H - RW], [744, H - M], [432, H - M]], 0, H - RW, 0, H - M);
-  cush([[RW, 48], [RW, 352], [M, 344], [M, 56]], RW, 0, M, 0);
-  cush([[W - RW, 48], [W - RW, 352], [W - M, 344], [W - M, 56]], W - RW, 0, W - M, 0);
+  const LA = 53, LB = 60; // onde o couro dos cantos termina (topo/base, laterais): a almofada comeca rente a ele
+  cush([[LA, RW], [376, RW], [368, M], [LA, M]], 0, RW, 0, M);
+  cush([[424, RW], [W - LA, RW], [W - LA, M], [432, M]], 0, RW, 0, M);
+  cush([[LA, H - RW], [376, H - RW], [368, H - M], [LA, H - M]], 0, H - RW, 0, H - M);
+  cush([[424, H - RW], [W - LA, H - RW], [W - LA, H - M], [432, H - M]], 0, H - RW, 0, H - M);
+  cush([[RW, LB], [RW, H - LB], [M, H - LB], [M, LB]], RW, 0, M, 0);
+  cush([[W - RW, LB], [W - RW, H - LB], [W - M, H - LB], [W - M, LB]], W - RW, 0, W - M, 0);
   g.strokeStyle = 'rgba(60,15,0,.7)'; g.lineWidth = 1; g.strokeRect(RW - .5, RW - .5, W - 2 * RW + 1, H - 2 * RW + 1);
   // enfeites da moldura: voltas, paineis de marmore escuro e perolas (desenhado em coordenadas locais da borda)
   const panel = (x, y, w, h) => {
@@ -836,6 +837,34 @@ const buildTbl = () => {
       // canto de couro preto (imagem), com a redinha da mesa aparecendo pelo buraco
       const HX = 28, HY = 28;
       g.save(); g.translate(sx < 0 ? 0 : W, sy < 0 ? 0 : H); g.scale(sx < 0 ? 1 : -1, sy < 0 ? 1 : -1);
+      // base de couro preto cobrindo toda a espessura da moldura (topo ate LA, lateral ate LB), para o couro encaixar rente a tabela
+      const TT = 30, rr = 3, rco = 18;
+      const bp = i => {
+        g.beginPath(); g.moveTo(rco, i); g.lineTo(LA - rr, i); g.arc(LA - rr, rr, rr - i, -Math.PI / 2, 0);
+        g.lineTo(LA - i, TT - rr); g.arc(LA - rr, TT - rr, rr - i, 0, Math.PI / 2);
+        g.lineTo(TT - i, TT - i); g.lineTo(TT - i, LB - rr); g.arc(TT - rr, LB - rr, rr - i, 0, Math.PI / 2);
+        g.lineTo(rr, LB - i); g.arc(rr, LB - rr, rr - i, Math.PI / 2, Math.PI);
+        g.lineTo(i, rco); g.arc(rco, rco, rco - i, Math.PI, Math.PI * 1.5); g.closePath();
+      };
+      const HRb = CORNER_HR * CORNER_PPU * .98; // buraco da caçapa: a base nao cobre a redinha
+      const bpH = () => { bp(0); g.moveTo(HX + HRb, HY); g.arc(HX, HY, HRb, 0, 7); };
+      g.save(); g.shadowColor = 'rgba(0,0,20,.6)'; g.shadowBlur = 4 * K; g.shadowOffsetY = 1.2 * K; g.fillStyle = '#121215'; bpH(); g.fill('evenodd'); g.restore();
+      g.save(); bpH(); g.clip('evenodd');
+      const bgr = g.createLinearGradient(0, 0, LA, LB); bgr.addColorStop(0, '#2a2a2f'); bgr.addColorStop(.5, '#17171a'); bgr.addColorStop(1, '#0d0d0f');
+      g.fillStyle = bgr; g.fillRect(0, 0, 70, 70);
+      const DQ = 13;
+      for (let k = -14; k <= 14; k++) for (let m = -14; m <= 14; m++) {
+        const x = (k + m + 1) * DQ / 2, y = (m - k) * DQ / 2; if (x < -4 || x > 66 || y < -4 || y > 66) continue;
+        const pg = g.createRadialGradient(x - 1, y - 1.5, 0, x, y, DQ * .6); pg.addColorStop(0, 'rgba(255,255,255,.14)'); pg.addColorStop(.55, 'rgba(255,255,255,.04)'); pg.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = pg; g.beginPath(); g.arc(x, y, DQ * .6, 0, 7); g.fill();
+      }
+      g.lineWidth = 1.2; g.strokeStyle = 'rgba(0,0,0,.85)'; g.beginPath();
+      for (let c = -150; c <= 200; c += DQ) { g.moveTo(c, -5); g.lineTo(c + 100, 95); g.moveTo(c, -5); g.lineTo(c - 100, 95); } g.stroke();
+      g.setLineDash([1.7, 1.8]); g.lineWidth = .65; g.strokeStyle = 'rgba(218,208,188,.8)'; g.beginPath();
+      for (let c = -150; c <= 200; c += DQ) { g.moveTo(c + 1.1, -5); g.lineTo(c + 101.1, 95); g.moveTo(c + 1.1, -5); g.lineTo(c - 98.9, 95); } g.stroke();
+      g.restore();
+      g.save(); g.setLineDash([2, 1.9]); g.strokeStyle = 'rgba(222,212,190,.88)'; g.lineWidth = .8; bp(2.4); g.stroke(); g.restore();
+      g.strokeStyle = 'rgba(0,0,0,.95)'; g.lineWidth = 1.1; bp(0); g.stroke();
       g.shadowColor = 'rgba(0,0,20,.6)'; g.shadowBlur = 5 * K; g.shadowOffsetY = 1.5 * K;
       g.drawImage(CORNER, HX - CORNER_HX * CORNER_PPU, HY - CORNER_HY * CORNER_PPU, CORNER.width * CORNER_PPU, CORNER.height * CORNER_PPU);
       g.restore();
