@@ -452,26 +452,41 @@ window.addEventListener('load', loadTex);
 const BS = 44, bc = document.createElement('canvas'); bc.width = bc.height = BS;
 const bx = bc.getContext('2d'), img = bx.createImageData(BS, BS), ID = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 const LX = -.35, LY = -.55, LZ = .76, HX = -.185, HY = -.291, HZ = .931;
+// shading fisico simples: calculado em espaco linear (gamma 2.2) com difusa + bounce verde da mesa
+// + brilho (specular) + reflexo de ambiente com Fresnel (lampada/janela refletidas, aro brilhante)
+const LIN = RGB.map(c => c.map(v => Math.pow(v / 255, 2.2)));
+const TONE = new Uint8Array(3072);
+for (let i = 0; i < 3072; i++) { let x = i / 1024; x = x < .8 ? x : .8 + .2 * Math.tanh((x - .8) / .2); TONE[i] = Math.round(255 * Math.pow(x, 1 / 2.2)); }
+const tn = x => TONE[x <= 0 ? 0 : x >= 2.99 ? 3071 : (x * 1024) | 0];
+const sm = x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x);
 function shade(n, m) {
-  const d = img.data, r = SC * R, c = BS / 2;
+  const d = img.data, r = SC * R, c = BS / 2, wh = LIN[0];
+  const base = LIN[n === 0 ? 0 : n <= 8 ? n : n - 8];
   for (let py = 0; py < BS; py++) for (let px = 0; px < BS; px++) {
     const u = (px + .5 - c) / r, v = (py + .5 - c) / r, q2 = u * u + v * v, k = (py * BS + px) * 4, rr = Math.sqrt(q2);
     if (rr > 1.04) { d[k + 3] = 0; continue; }
     const w = Math.sqrt(Math.max(0, 1 - q2));
     const qy = m[1] * u + m[4] * v + m[7] * w, qz = m[2] * u + m[5] * v + m[8] * w, az = Math.abs(qz);
-    let col = RGB[0];
-    if (n === 0) { if (qz > .965) col = [200, 30, 30]; }
-    else if (az > .9) col = RGB[0];
-    else if (n < 8) col = RGB[n];
-    else if (n === 8) col = RGB[8];
-    else if (Math.abs(qy) < .52) col = RGB[n - 8];
-    const df = Math.max(0, u * LX + v * LY + w * LZ);
-    let sp = Math.max(0, u * HX + v * HY + w * HZ); sp *= sp; sp *= sp; sp *= sp; sp *= sp; sp *= sp; sp *= sp;
-    const iw = 1 - w, fr = iw * iw * iw, gl = Math.max(0, 1 - Math.hypot(u + .32, v + .42) / .26), bn = Math.max(0, v) * .12;
-    const sh = (.26 + .82 * df) * (.8 + .2 * w) * (1 - .2 * Math.max(0, v) * q2), sv = sp * 200 + gl * gl * 150 + fr * 28;
-    d[k] = Math.min(255, col[0] * sh + sv + bn * 30);
-    d[k + 1] = Math.min(255, col[1] * sh + sv + bn * 120);
-    d[k + 2] = Math.min(255, col[2] * sh + sv + bn * 40);
+    // cor da superficie (bordas suavizadas em vez de corte seco)
+    let t = 1, col0 = base[0], col1 = base[1], col2 = base[2];
+    if (n > 8) { t = sm((.52 - Math.abs(qy)) / .03 + .5); col0 = wh[0] + (base[0] - wh[0]) * t; col1 = wh[1] + (base[1] - wh[1]) * t; col2 = wh[2] + (base[2] - wh[2]) * t; }
+    if (n > 0) { const p = sm((az - .895) / .02); col0 += (wh[0] - col0) * p; col1 += (wh[1] - col1) * p; col2 += (wh[2] - col2) * p; }
+    else { const p = sm((qz - .955) / .012); col0 += (.62 - col0) * p; col1 += (.03 - col1) * p; col2 += (.03 - col2) * p; }
+    // luz
+    const df = Math.max(0, (u * LX + v * LY + w * LZ + .12) / 1.12);
+    const amb = .10 + .09 * Math.max(0, -v), bn = Math.max(0, v), ao = 1 - .32 * Math.pow(bn, 1.6);
+    const dr = (amb + 1.05 * df) * ao + bn * .05, dg = (amb + 1.02 * df) * ao + bn * .16, db = (amb + .95 * df) * ao + bn * .06;
+    // brilho
+    let sp = Math.max(0, u * HX + v * HY + w * HZ); const sp2 = Math.pow(sp, 14); sp = Math.pow(sp, 150);
+    const spec = sp * 1.7 + sp2 * .09;
+    // reflexo de ambiente (clearcoat) com Fresnel
+    const rx = 2 * w * u, ry = 2 * w * v, rz = 2 * w * w - 1;
+    const l1 = sm(((rx * LX + ry * LY + rz * LZ) - .9) / .07) * 1.6, l2 = sm(((rx * .5 + ry * -.4 + rz * .77) - .95) / .04) * .55;
+    const env = .05 + .2 * Math.max(0, -ry) + .03 * Math.max(0, rz) + l1 + l2;
+    const iw = 1 - w, fr = .05 + .95 * iw * iw * iw * iw * iw, ef = env * fr * .9 + iw * iw * .05;
+    d[k] = tn(col0 * dr + spec + ef);
+    d[k + 1] = tn(col1 * dg + spec + ef);
+    d[k + 2] = tn(col2 * db + spec + ef);
     d[k + 3] = rr < 1 ? 255 : 255 * (1.04 - rr) / .04;
   }
   bx.putImageData(img, 0, 0);
@@ -479,9 +494,12 @@ function shade(n, m) {
 function drawBallAt(n, m, x, y, s, sh, cx = ctx) {
   const r = R * s;
   if (sh) {
-    const g = cx.createRadialGradient(x + 2 * s, y + 3.2 * s, r * .2, x + 2 * s, y + 3.2 * s, r * 1.25);
-    g.addColorStop(0, 'rgba(0,0,0,.5)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-    cx.fillStyle = g; cx.beginPath(); cx.arc(x + 2 * s, y + 3.2 * s, r * 1.25, 0, 7); cx.fill();
+    let g = cx.createRadialGradient(x + 1.6 * s, y + 2.6 * s, r * .3, x + 1.6 * s, y + 2.6 * s, r * 1.55);
+    g.addColorStop(0, 'rgba(0,0,0,.32)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    cx.fillStyle = g; cx.beginPath(); cx.arc(x + 1.6 * s, y + 2.6 * s, r * 1.55, 0, 7); cx.fill();
+    g = cx.createRadialGradient(x + .7 * s, y + 1.3 * s, r * .55, x + .7 * s, y + 1.3 * s, r * 1.08);
+    g.addColorStop(0, 'rgba(0,0,0,.6)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    cx.fillStyle = g; cx.beginPath(); cx.arc(x + .7 * s, y + 1.3 * s, r * 1.08, 0, 7); cx.fill();
   }
   shade(n, m);
   const k = BS / SC; cx.drawImage(bc, x - k / 2 * s, y - k / 2 * s, k * s, k * s);
@@ -608,7 +626,21 @@ function frame() {
         if (Math.hypot(d.tx - d.x, d.ty - d.y) > 60) { d.x = d.tx; d.y = d.ty; } else { d.x += (d.tx - d.x) * .6; d.y += (d.ty - d.y) * .6; }
         spin(d, d.x - ox, d.y - oy);
       } else if (d.s > 0) { d.s = Math.max(0, d.s - .07); d.x += (d.px - d.x) * .3; d.y += (d.py - d.y) * .3; }
-      if (d.s > 0) drawBallAt(d.n, d.M, d.x, d.y, d.s, 1);
+      if (d.s > 0) {
+        // depois da 1a bola encacapada (grupos definidos): minhas bolas brilham, as do adversario ficam apagadas
+        const mine = solo ? S.turn : seat, myG = S.grp && S.grp[mine];
+        let st = 0;
+        if (myG && d.n > 0 && d.n !== 8 && d.act) st = (d.n < 8 ? 'solid' : 'stripe') === myG ? 1 : -1;
+        if (st > 0) {
+          const pu = .8 + .2 * Math.sin(performance.now() / 350), gr = R * 2.1 * d.s;
+          const gg = ctx.createRadialGradient(d.x, d.y, R * .8, d.x, d.y, gr);
+          gg.addColorStop(0, 'rgba(255,255,255,' + (.85 * pu) + ')'); gg.addColorStop(.45, 'rgba(255,255,255,' + (.32 * pu) + ')'); gg.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(d.x, d.y, gr, 0, 7); ctx.fill();
+        }
+        if (st < 0) ctx.globalAlpha = .35;
+        drawBallAt(d.n, d.M, d.x, d.y, d.s, 1);
+        ctx.globalAlpha = 1;
+      }
     }
     const c = D[0];
     pwCur = 0;
