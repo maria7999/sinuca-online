@@ -62,6 +62,7 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
 <script>
 const W = 800, H = 400, HT = 444, R = 10, M = 30, SC = 2, PR = 21;
 const PK = [[24, 24], [400, 20], [776, 24], [24, 376], [400, 380], [776, 376]];
+const PV = [[17, 17], [400, 13], [783, 17], [17, 383], [400, 387], [783, 383]];
 const RGB = [[250, 248, 240], [242, 194, 0], [30, 91, 216], [214, 40, 40], [106, 44, 145], [242, 125, 12], [31, 138, 61], [139, 30, 30], [20, 20, 20]];
 const $ = id => document.getElementById(id);
 const cv = $('c'), ctx = cv.getContext('2d');
@@ -196,19 +197,29 @@ const TB = document.createElement('canvas'); TB.width = W * SC; TB.height = HT *
   g.fillStyle = lg; g.fillRect(M, M, W - 2 * M, H - 2 * M);
   g.strokeStyle = 'rgba(255,255,255,.2)'; g.lineWidth = 1; g.beginPath(); g.moveTo(230, M); g.lineTo(230, H - M); g.stroke();
   g.fillStyle = 'rgba(255,255,255,.35)'; for (const x of [230, 560]) { g.beginPath(); g.arc(x, 200, 2, 0, 7); g.fill(); }
-  // cacapas
+  // cacapas embutidas na moldura: o buraco fica sob a madeira e so uma borda minima entra no feltro
   g.save(); g.beginPath(); tr(); g.clip();
-  for (const [px, py] of PK) {
-    const l = g.createRadialGradient(px, py, PR - 2, px, py, PR + 9); l.addColorStop(0, '#2b1809'); l.addColorStop(1, '#5a3519');
-    g.fillStyle = l; g.beginPath(); g.arc(px, py, PR + 9, 0, 7); g.fill();
-    g.strokeStyle = '#c9a24a'; g.lineWidth = 2.2; g.beginPath(); g.arc(px, py, PR + 3.5, 0, 7); g.stroke();
-    g.strokeStyle = 'rgba(255,240,180,.55)'; g.lineWidth = .7; g.beginPath(); g.arc(px, py, PR + 4.6, Math.PI * 1.1, Math.PI * 1.7); g.stroke();
-    const h = g.createRadialGradient(px, py - 3, 2, px, py, PR); h.addColorStop(0, '#000'); h.addColorStop(1, '#1c1c1c');
-    g.fillStyle = h; g.beginPath(); g.arc(px, py, PR, 0, 7); g.fill();
-    g.save(); g.beginPath(); g.arc(px, py, PR - 1, 0, 7); g.clip(); g.strokeStyle = 'rgba(130,130,130,.18)'; g.lineWidth = .6;
-    for (let k = -PR * 2; k < PR * 2; k += 4.5) { g.beginPath(); g.moveTo(px + k, py - PR); g.lineTo(px + k + PR, py + PR); g.moveTo(px + k, py + PR); g.lineTo(px + k + PR, py - PR); g.stroke(); }
+  PV.forEach(([px, py], i) => {
+    const mid = i % 3 === 1, ho = mid ? 17 : 18, rc = mid ? 27 : 35;
+    g.save(); g.beginPath(); g.rect(0, 0, W, H); g.rect(M, M, W - 2 * M, H - 2 * M); g.clip('evenodd');
+    const l = g.createRadialGradient(px - 4, py - 4, ho * .6, px, py, rc);
+    l.addColorStop(0, '#3a2210'); l.addColorStop(.45, '#5d3a1c'); l.addColorStop(1, '#3b2411');
+    g.fillStyle = l; g.beginPath(); g.arc(px, py, rc, 0, 7); g.fill();
+    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 1.2; g.beginPath(); g.arc(px, py, rc, 0, 7); g.stroke();
+    g.strokeStyle = 'rgba(255,225,170,.18)'; g.lineWidth = .8; g.beginPath(); g.arc(px, py, rc - 2, 0, 7); g.stroke();
+    g.setLineDash([2, 2.5]); g.strokeStyle = 'rgba(230,200,150,.35)'; g.lineWidth = .7; g.beginPath(); g.arc(px, py, rc - 5, 0, 7); g.stroke(); g.setLineDash([]);
+    g.strokeStyle = '#c9a24a'; g.lineWidth = 2.4; g.beginPath(); g.arc(px, py, ho + 2.2, 0, 7); g.stroke();
+    g.strokeStyle = 'rgba(255,245,200,.6)'; g.lineWidth = .8; g.beginPath(); g.arc(px, py, ho + 3.2, Math.PI * 1.05, Math.PI * 1.65); g.stroke();
     g.restore();
-  }
+    const h = g.createRadialGradient(px + 3, py + 3, 1, px, py, ho); h.addColorStop(0, '#171717'); h.addColorStop(.7, '#050505'); h.addColorStop(1, '#000');
+    g.fillStyle = h; g.beginPath(); g.arc(px, py, ho, 0, 7); g.fill();
+    g.save(); g.beginPath(); g.arc(px, py, ho - .5, 0, 7); g.clip(); g.strokeStyle = 'rgba(140,140,140,.2)'; g.lineWidth = .6;
+    for (let k = -ho * 2; k < ho * 2; k += 4.5) { g.beginPath(); g.moveTo(px + k, py - ho); g.lineTo(px + k + ho, py + ho); g.moveTo(px + k, py + ho); g.lineTo(px + k + ho, py - ho); g.stroke(); }
+    const sd = g.createRadialGradient(px, py, ho * .5, px, py, ho); sd.addColorStop(0, 'rgba(0,0,0,0)'); sd.addColorStop(1, 'rgba(0,0,0,.85)');
+    g.fillStyle = sd; g.fillRect(px - ho, py - ho, 2 * ho, 2 * ho);
+    g.restore();
+    g.strokeStyle = 'rgba(0,0,0,.7)'; g.lineWidth = 1.2; g.beginPath(); g.arc(px, py, ho, 0, 7); g.stroke();
+  });
   g.restore();
   // diamantes
   const dia = (x, y) => {
@@ -296,8 +307,8 @@ function sync(m) {
     if (b[3] && !d.act) { d.act = 1; d.s = 1; d.x = d.tx; d.y = d.ty; d.M = rot0(); }
     else if (!b[3] && d.act) {
       d.act = 0; clack(.5, 1);
-      let bp = PK[0]; for (const p of PK) if (Math.hypot(p[0] - d.x, p[1] - d.y) < Math.hypot(bp[0] - d.x, bp[1] - d.y)) bp = p;
-      d.px = bp[0]; d.py = bp[1]; if (i) potted.push(i);
+      let bi = 0; PK.forEach((p, j) => { if (Math.hypot(p[0] - d.x, p[1] - d.y) < Math.hypot(PK[bi][0] - d.x, PK[bi][1] - d.y)) bi = j; });
+      d.px = PV[bi][0]; d.py = PV[bi][1]; if (i) potted.push(i);
     }
   });
   if (D.every(d => d.act)) potted = [];
