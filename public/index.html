@@ -299,6 +299,8 @@ const COL = ['#fff', '#f2c200', '#1e5bd8', '#d62828', '#6a2c91', '#f27d0c', '#1f
 const PK = [[24, 24], [400, 20], [776, 24], [24, 376], [400, 380], [776, 376]], PR = 21;
 const $ = id => document.getElementById(id);
 const cv = $('c'), ctx = cv.getContext('2d');
+const SC = window.devicePixelRatio > 1.1 ? 3 : 2; // nitidez do desenho (3x em telas de alta densidade)
+cv.width = W * SC; cv.height = H * SC;
 let ws = null, seat = 0, solo = false, S = null, aim = [1, 0], power = 0;
 
 
@@ -521,17 +523,76 @@ pwr.addEventListener('pointerup', () => {
 pwr.addEventListener('pointercancel', () => { pdrag = false; setPower(0); });
 
 // ---------- desenho ----------
-function ball(b, g = ctx) {
-  const n = b[0], x = b[1], y = b[2], str = n > 8;
-  g.save(); g.beginPath(); g.arc(x, y, R, 0, 7); g.clip();
-  g.fillStyle = n === 0 || str ? '#fff' : COL[n]; g.fillRect(x - R, y - R, 2 * R, 2 * R);
-  if (str) { g.fillStyle = COL[n - 8]; g.fillRect(x - R, y - 5, 2 * R, 10); }
-  g.restore();
-  if (n) {
-    g.fillStyle = '#fff'; g.beginPath(); g.arc(x, y, 4.6, 0, 7); g.fill();
-    g.fillStyle = '#111'; g.font = 'bold 7px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(n, x, y + .5);
+// Bolas 3D: cada bola e uma esfera com rotacao propria (gira ao rolar), luz no canto superior esquerdo e brilho
+const COLRGB = COL.map(h => { if (h.length === 4) h = '#' + h[1] + h[1] + h[2] + h[2] + h[3] + h[3]; return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; });
+const BD = 64, BS = [];
+for (let n = 0; n < 16; n++) {
+  const c = document.createElement('canvas'); c.width = c.height = BD;
+  BS.push({ m: [1, 0, 0, 0, 1, 0, 0, 0, 1], px: null, py: 0, dirty: true, c, g: c.getContext('2d') });
+}
+function rollBall(s, dx, dy) {
+  const d = Math.hypot(dx, dy), a = d / R, ax = -dy / d, ay = dx / d, c = Math.cos(a), sn = Math.sin(a), t = 1 - c, m = s.m;
+  const Q = [c + ax * ax * t, ax * ay * t, ay * sn, ax * ay * t, c + ay * ay * t, -ax * sn, -ay * sn, ax * sn, c], o = new Array(9);
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) o[i * 3 + j] = Q[i * 3] * m[j] + Q[i * 3 + 1] * m[3 + j] + Q[i * 3 + 2] * m[6 + j];
+  // mantem a matriz ortonormal (evita deriva numerica)
+  let l = Math.hypot(o[0], o[1], o[2]); o[0] /= l; o[1] /= l; o[2] /= l;
+  const dt = o[3] * o[0] + o[4] * o[1] + o[5] * o[2]; o[3] -= dt * o[0]; o[4] -= dt * o[1]; o[5] -= dt * o[2];
+  l = Math.hypot(o[3], o[4], o[5]); o[3] /= l; o[4] /= l; o[5] /= l;
+  o[6] = o[1] * o[5] - o[2] * o[4]; o[7] = o[2] * o[3] - o[0] * o[5]; o[8] = o[0] * o[4] - o[1] * o[3];
+  s.m = o; s.dirty = true;
+}
+function updateRoll() {
+  for (const b of S.b) {
+    const s = BS[b[0]];
+    if (!b[3]) { s.px = null; continue; }
+    if (s.px !== null) { const dx = b[1] - s.px, dy = b[2] - s.py, d = Math.hypot(dx, dy); if (d > 0.03 && d < 40) rollBall(s, dx, dy); }
+    s.px = b[1]; s.py = b[2];
   }
-  g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, R, 0, 7); g.stroke();
+}
+const sstep = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+function renderBall(n) {
+  const s = BS[n], m = s.m, g = s.g, r = BD / 2, img = g.createImageData(BD, BD), px = img.data;
+  const str = n > 8, base = n === 0 ? [248, 246, 238] : COLRGB[str ? n - 8 : n];
+  for (let y = 0; y < BD; y++) for (let x = 0; x < BD; x++) {
+    const u = (x + .5 - r) / r, v = (y + .5 - r) / r, d2 = u * u + v * v;
+    if (d2 > 1.08) continue;
+    const dd = Math.sqrt(d2), al = Math.max(0, Math.min(1, (1 - dd) * r + .5));
+    if (al <= 0) continue;
+    const w = Math.sqrt(Math.max(0, 1 - d2));
+    const by = m[1] * u + m[4] * v + m[7] * w, bz = m[2] * u + m[5] * v + m[8] * w;
+    let cr = base[0], cg = base[1], cb = base[2];
+    if (str) { const t = sstep(.47, .53, Math.abs(by)); cr = cr * (1 - t) + 245 * t; cg = cg * (1 - t) + 245 * t; cb = cb * (1 - t) + 240 * t; }
+    if (n > 0) { const t = sstep(.885, .897, Math.abs(bz)); cr = cr * (1 - t) + 250 * t; cg = cg * (1 - t) + 250 * t; cb = cb * (1 - t) + 246 * t; }
+    else { const t = sstep(.955, .965, bz); cr = cr * (1 - t) + 214 * t; cg = cg * (1 - t) + 40 * t; cb = cb * (1 - t) + 36 * t; }
+    // luz suave + brilho (especular) + escurecimento nas bordas
+    const nl = Math.max(0, -.42 * u - .5 * v + .75 * w), sp = Math.pow(Math.max(0, -.225 * u - .268 * v + .937 * w), 55);
+    const amb = .3 + .8 * nl, rim = .7 + .3 * w, bounce = Math.max(0, .35 * u + .4 * v) * .12;
+    const k = amb * rim + bounce, i = (y * BD + x) * 4;
+    px[i] = Math.min(255, cr * k + sp * 255 * .85); px[i + 1] = Math.min(255, cg * k + sp * 255 * .85); px[i + 2] = Math.min(255, cb * k + sp * 255 * .85);
+    px[i + 3] = al * 255;
+  }
+  g.clearRect(0, 0, BD, BD); g.putImageData(img, 0, 0);
+  if (n > 0) {
+    g.font = 'bold 14px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    for (const sg of [1, -1]) {
+      const cx = sg * m[2] * r, cy = sg * m[5] * r, z = sg * m[8];
+      if (z < .12) continue;
+      g.save(); g.globalAlpha = Math.min(1, (z - .12) / .3); g.translate(r + cx, r + cy);
+      g.rotate(Math.atan2(cy, cx)); g.scale(Math.max(z, .08), 1);
+      g.rotate(Math.atan2(sg * m[3], sg * m[0]) - Math.atan2(cy, cx));
+      g.fillStyle = '#151515'; g.fillText(n, 0, .5); g.restore();
+    }
+  }
+  s.dirty = false;
+}
+function ball(b, g = ctx) {
+  const s = BS[b[0]]; if (s.dirty) renderBall(b[0]);
+  g.drawImage(s.c, b[1] - R, b[2] - R, 2 * R, 2 * R);
+}
+function ballShadow(b) {
+  const x = b[1] + 2.2, y = b[2] + 3, gr = ctx.createRadialGradient(x, y, R * .35, x, y, R * 1.35);
+  gr.addColorStop(0, 'rgba(0,0,20,.5)'); gr.addColorStop(.6, 'rgba(0,0,20,.22)'); gr.addColorStop(1, 'rgba(0,0,20,0)');
+  ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, R * 1.35, 0, 7); ctx.fill();
 }
 // Linha de mira: vai até a primeira bola, quica na tabela (até 2 vezes) e mostra para onde a bola atingida vai
 function guide(c, ux, uy) {
@@ -622,7 +683,7 @@ function drawCue(c, ux, uy) {
 }
 // ---------- mesa (desenhada uma vez, num canvas separado) ----------
 const TBL = (() => {
-  const K = 2, c = document.createElement('canvas'); c.width = W * K; c.height = H * K;
+  const K = SC, c = document.createElement('canvas'); c.width = W * K; c.height = H * K;
   const g = c.getContext('2d'); g.scale(K, K);
   let seed = 5; const rnd = () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   const RW = 19; // espessura da moldura laranja
@@ -636,6 +697,16 @@ const TBL = (() => {
   side(0, 0, W, RW, 0, 0, 0, RW); side(0, H - RW, W, RW, 0, H, 0, H - RW);
   side(0, 0, RW, H, 0, 0, RW, 0); side(W - RW, 0, RW, H, W, 0, W - RW, 0);
   g.strokeStyle = '#f6c05a'; g.lineWidth = 1.2; g.strokeRect(.8, .8, W - 1.6, H - 1.6);
+  // veios da madeira na moldura
+  g.save(); g.beginPath(); g.rect(0, 0, W, H); g.rect(RW, RW, W - 2 * RW, H - 2 * RW); g.clip('evenodd');
+  for (let i = 0; i < 900; i++) {
+    const hz = i % 2 === 0, len = 30 + rnd() * 120, a0 = rnd() * (hz ? W : H), off = rnd() * RW;
+    const top = rnd() < .5; g.strokeStyle = rnd() < .55 ? 'rgba(80,28,4,' + (.07 + rnd() * .12) + ')' : 'rgba(255,200,130,' + (.05 + rnd() * .1) + ')'; g.lineWidth = .4 + rnd() * .7; g.beginPath();
+    if (hz) { const y = top ? off : H - off; g.moveTo(a0, y); g.bezierCurveTo(a0 + len / 3, y + (rnd() - .5) * 1.4, a0 + 2 * len / 3, y + (rnd() - .5) * 1.4, a0 + len, y + (rnd() - .5) * 1.2); }
+    else { const x = top ? off : W - off; g.moveTo(x, a0); g.bezierCurveTo(x + (rnd() - .5) * 1.4, a0 + len / 3, x + (rnd() - .5) * 1.4, a0 + 2 * len / 3, x + (rnd() - .5) * 1.2, a0 + len); }
+    g.stroke();
+  }
+  g.restore();
   // pano azul: luz no centro, bordas escuras
   g.fillStyle = '#062a86'; g.fillRect(RW, RW, W - 2 * RW, H - 2 * RW);
   const fg = g.createRadialGradient(W / 2, H / 2, 20, W / 2, H / 2, W * .6);
@@ -646,6 +717,18 @@ const TBL = (() => {
   const sh = (x0, y0, x1, y1, rx, ry, rw, rh) => { const l = g.createLinearGradient(x0, y0, x1, y1); l.addColorStop(0, 'rgba(0,5,40,.4)'); l.addColorStop(1, 'rgba(0,5,40,0)'); g.fillStyle = l; g.fillRect(rx, ry, rw, rh); };
   sh(0, M, 0, M + 18, M, M, W - 2 * M, 18); sh(0, H - M, 0, H - M - 18, M, H - M - 18, W - 2 * M, 18);
   sh(M, 0, M + 18, 0, M, M, 18, H - 2 * M); sh(W - M, 0, W - M - 18, 0, W - M - 18, M, 18, H - 2 * M);
+  g.restore();
+  // pano mais realista: trama fina, fibras, luz de cima
+  g.save(); g.beginPath(); g.rect(M, M, W - 2 * M, H - 2 * M); g.clip();
+  g.lineWidth = .5; g.strokeStyle = 'rgba(255,255,255,.022)'; g.beginPath();
+  for (let y = M; y < H - M; y += 1.5) { g.moveTo(M, y); g.lineTo(W - M, y); } g.stroke();
+  g.strokeStyle = 'rgba(0,0,40,.03)'; g.beginPath();
+  for (let x = M; x < W - M; x += 1.5) { g.moveTo(x, M); g.lineTo(x, H - M); } g.stroke();
+  for (let i = 0; i < 3500; i++) { const fx = M + rnd() * (W - 2 * M), fy = M + rnd() * (H - 2 * M); g.strokeStyle = rnd() < .5 ? 'rgba(150,200,255,.05)' : 'rgba(0,0,40,.07)'; g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx + (rnd() - .5) * 4, fy + (rnd() - .5) * 4); g.stroke(); }
+  const sp = g.createRadialGradient(W * .5, H * .42, 10, W * .5, H * .5, W * .55);
+  sp.addColorStop(0, 'rgba(110,180,255,.16)'); sp.addColorStop(.6, 'rgba(60,120,230,.05)'); sp.addColorStop(1, 'rgba(0,0,40,.18)');
+  g.fillStyle = sp; g.fillRect(M, M, W - 2 * M, H - 2 * M);
+  for (const [qx, qy] of PK) { const ps = g.createRadialGradient(qx, qy, PR, qx, qy, PR + 26); ps.addColorStop(0, 'rgba(0,5,40,.55)'); ps.addColorStop(1, 'rgba(0,5,40,0)'); g.fillStyle = ps; g.fillRect(qx - PR - 26, qy - PR - 26, 2 * PR + 52, 2 * PR + 52); }
   g.restore();
   // linha de cabeceira
   g.strokeStyle = 'rgba(255,255,255,.3)'; g.lineWidth = 1; g.beginPath(); g.moveTo(230, M); g.lineTo(230, H - M); g.stroke();
@@ -745,9 +828,10 @@ function drawRail() {
   });
 }
 function draw() {
-  ctx.setTransform(2, 0, 0, 2, 0, 0);
+  ctx.setTransform(SC, 0, 0, SC, 0, 0);
+  ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(TBL, 0, 0, W, H);
-  if (S) for (const b of S.b) if (b[3]) ball(b);
+  if (S) { updateRoll(); for (const b of S.b) if (b[3]) ballShadow(b); for (const b of S.b) if (b[3]) ball(b); }
   if (canShoot()) {
     const c = S.b[0], ux = aim[0], uy = aim[1];
     guide(c, ux, uy);
