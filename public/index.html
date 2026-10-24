@@ -49,7 +49,7 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
     <div class="pl on" id="p0"><b id="n0">Jogador 1</b><small id="g0">mesa aberta</small></div>
     <div class="pl" id="p1"><b id="n1">Jogador 2</b><small id="g1">mesa aberta</small></div>
   </div>
-  <canvas id="c" width="1600" height="888"></canvas>
+  <canvas id="c" width="1648" height="936"></canvas>
   <div id="msg"></div>
   <div class="row">
     <button id="bAgain" style="display:none">Jogar de novo</button>
@@ -60,9 +60,9 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
 </div>
 
 <script>
-const W = 800, H = 400, HT = 444, R = 10, M = 30, SC = 2, PR = 21;
+const W = 800, H = 400, F = 12, CW = W + 2 * F, CH = H + 2 * F + 44, R = 10, M = 30, SC = 2, PR = 21;
 const PK = [[24, 24], [400, 20], [776, 24], [24, 376], [400, 380], [776, 376]];
-const PV = [[17, 17], [400, 13], [783, 17], [17, 383], [400, 387], [783, 383]];
+const PV = [[19, 19], [400, 11], [781, 19], [19, 381], [400, 389], [781, 381]];
 const RGB = [[250, 248, 240], [242, 194, 0], [30, 91, 216], [214, 40, 40], [106, 44, 145], [242, 125, 12], [31, 138, 61], [139, 30, 30], [20, 20, 20]];
 const $ = id => document.getElementById(id);
 const cv = $('c'), ctx = cv.getContext('2d');
@@ -145,7 +145,7 @@ $('name').addEventListener('input', () => { try { localStorage.setItem('sinuca-n
 
 // ---------- mira ----------
 const canShoot = () => S && D && !S.moving && !S.over && (solo || S.turn === seat);
-function pos(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * HT / r.height]; }
+function pos(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * CW / r.width - F, (e.clientY - r.top) * CH / r.height - F]; }
 cv.addEventListener('pointerdown', e => { if (!canShoot()) return; cv.setPointerCapture(e.pointerId); drag = pos(e); });
 cv.addEventListener('pointermove', e => { if (drag) drag = pos(e); });
 cv.addEventListener('pointerup', () => {
@@ -159,82 +159,96 @@ cv.addEventListener('pointerup', () => {
 });
 
 // ---------- mesa (desenhada uma vez) ----------
-const TB = document.createElement('canvas'); TB.width = W * SC; TB.height = HT * SC;
+const TB = document.createElement('canvas'); TB.width = CW * SC; TB.height = CH * SC;
 (function () {
   const g = TB.getContext('2d'); g.scale(SC, SC);
-  const tr = () => g.roundRect(0, 0, W, H, 16);
-  g.fillStyle = '#0c0907'; g.fillRect(0, 0, W, HT);
-  // madeira
-  const w = g.createLinearGradient(0, 0, 0, H);
-  w.addColorStop(0, '#8a5630'); w.addColorStop(.5, '#603719'); w.addColorStop(1, '#3f2410');
-  g.fillStyle = w; g.beginPath(); tr(); g.fill();
-  g.save(); g.beginPath(); tr(); g.clip();
-  const gr = a => Math.random() < .5 ? `rgba(25,10,0,${rnd(.04, .1)})` : `rgba(255,205,150,${rnd(.03, .07)})`;
-  for (let i = 0; i < 300; i++) {
-    g.strokeStyle = gr(); g.lineWidth = rnd(.3, 1); const y = rnd(0, H);
-    g.beginPath(); g.moveTo(0, y); g.bezierCurveTo(250, y + rnd(-3, 3), 550, y + rnd(-3, 3), W, y + rnd(-2, 2)); g.stroke();
-  }
-  for (const sx of [0, W - 24]) {
-    g.save(); g.beginPath(); g.rect(sx, 0, 24, H); g.clip(); g.fillStyle = w; g.fillRect(sx, 0, 24, H);
-    for (let i = 0; i < 45; i++) { g.strokeStyle = gr(); g.lineWidth = rnd(.3, 1); const x = sx + rnd(0, 24); g.beginPath(); g.moveTo(x, 0); g.lineTo(x + rnd(-1, 1), H); g.stroke(); }
-    g.restore();
-  }
-  g.strokeStyle = 'rgba(255,225,180,.35)'; g.lineWidth = 1.2; g.beginPath(); g.roundRect(1, 1, W - 2, H - 2, 15); g.stroke();
-  g.restore();
-  // borracha e feltro
-  g.fillStyle = '#0b4a28'; g.fillRect(24, 24, W - 48, H - 48);
-  g.strokeStyle = 'rgba(120,220,160,.35)'; g.lineWidth = 1; g.strokeRect(24.5, 24.5, W - 49, H - 49);
+  g.fillStyle = '#0c0907'; g.fillRect(0, 0, CW, CH);
+  g.save(); g.translate(F, F);
+  const frame = () => { g.beginPath(); g.roundRect(-F, -F, W + 2 * F, H + 2 * F, 18); };
+  // moldura cobre/laranja
+  const fg = g.createLinearGradient(-F, -F, W + F, H + F);
+  fg.addColorStop(0, '#f39a36'); fg.addColorStop(.35, '#d4701b'); fg.addColorStop(.7, '#c0601a'); fg.addColorStop(1, '#8f420f');
+  g.fillStyle = fg; frame(); g.fill();
+  const hl = g.createLinearGradient(0, -F, 0, H + F);
+  hl.addColorStop(0, 'rgba(255,230,170,.35)'); hl.addColorStop(.12, 'rgba(255,230,170,0)'); hl.addColorStop(.88, 'rgba(0,0,0,0)'); hl.addColorStop(1, 'rgba(40,10,0,.35)');
+  g.fillStyle = hl; frame(); g.fill();
+  g.strokeStyle = 'rgba(60,22,4,.9)'; g.lineWidth = 1.4; g.beginPath(); g.roundRect(-F + .7, -F + .7, W + 2 * F - 1.4, H + 2 * F - 1.4, 17.5); g.stroke();
+  g.strokeStyle = 'rgba(255,200,120,.55)'; g.lineWidth = .8; g.beginPath(); g.roundRect(-F + 2.5, -F + 2.5, W + 2 * F - 5, H + 2 * F - 5, 15.5); g.stroke();
+  // arabescos na borda externa
+  const orn = (x, y, r, f) => { g.save(); g.translate(x, y); g.rotate(r); g.scale(f, 1); g.beginPath(); g.arc(0, 0, 1.9, .4, 4.6); g.moveTo(1.9, 0); g.quadraticCurveTo(5, 2.2, 8, 0); g.stroke(); g.restore(); };
+  g.strokeStyle = 'rgba(95,36,6,.65)'; g.lineWidth = .8;
+  for (let x = 12, i = 0; x < W - 12; x += 9, i++) { const f = i % 2 ? -1 : 1; orn(x, -7.5, 0, f); orn(x, H + 7.5, 0, f); }
+  for (let y = 12, i = 0; y < H - 12; y += 9, i++) { const f = i % 2 ? -1 : 1; orn(-7.5, y, Math.PI / 2, f); orn(W + 7.5, y, Math.PI / 2, f); }
+  // feltro
+  g.save(); g.beginPath(); g.rect(18, 18, W - 36, H - 36); g.clip();
   const f = g.createRadialGradient(400, 185, 30, 400, 200, 470);
   f.addColorStop(0, '#3aae66'); f.addColorStop(.6, '#238a4f'); f.addColorStop(1, '#145f35');
-  g.fillStyle = f; g.fillRect(M, M, W - 2 * M, H - 2 * M);
-  for (let i = 0; i < 9000; i++) { g.fillStyle = Math.random() < .5 ? 'rgba(0,0,0,.05)' : 'rgba(255,255,255,.05)'; g.fillRect(rnd(M, W - M), rnd(M, H - M), .8, .8); }
-  for (const [x0, y0, x1, y1] of [[0, M, 0, M + 12], [0, H - M, 0, H - M - 12], [M, 0, M + 12, 0], [W - M, 0, W - M - 12, 0]]) {
-    const s = g.createLinearGradient(x0, y0, x1, y1); s.addColorStop(0, 'rgba(0,0,0,.42)'); s.addColorStop(1, 'rgba(0,0,0,0)');
-    g.fillStyle = s; g.fillRect(M, M, W - 2 * M, H - 2 * M);
-  }
+  g.fillStyle = f; g.fillRect(18, 18, W - 36, H - 36);
+  for (let i = 0; i < 9000; i++) { g.fillStyle = Math.random() < .5 ? 'rgba(0,0,0,.05)' : 'rgba(255,255,255,.05)'; g.fillRect(rnd(18, W - 18), rnd(18, H - 18), .8, .8); }
   const lg = g.createRadialGradient(400, 170, 40, 400, 200, 430);
   lg.addColorStop(0, 'rgba(255,255,255,.11)'); lg.addColorStop(1, 'rgba(0,0,0,.3)');
-  g.fillStyle = lg; g.fillRect(M, M, W - 2 * M, H - 2 * M);
+  g.fillStyle = lg; g.fillRect(18, 18, W - 36, H - 36);
+  g.restore();
+  // almofadas com bisel claro e pontas em angulo
+  const cush = (pts, x0, y0, x1, y1) => {
+    const c = g.createLinearGradient(x0, y0, x1, y1);
+    c.addColorStop(0, '#0b4426'); c.addColorStop(.55, '#1f8a4d'); c.addColorStop(1, '#3dbb72');
+    g.fillStyle = c; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); g.fill();
+    g.strokeStyle = 'rgba(0,0,0,.4)'; g.lineWidth = .8; g.stroke();
+    g.strokeStyle = 'rgba(200,255,220,.5)'; g.lineWidth = .8; g.beginPath(); g.moveTo(pts[2][0], pts[2][1]); g.lineTo(pts[3][0], pts[3][1]); g.stroke();
+  };
+  cush([[40, 18], [380, 18], [368, 30], [52, 30]], 0, 18, 0, 30);
+  cush([[420, 18], [760, 18], [748, 30], [432, 30]], 0, 18, 0, 30);
+  cush([[40, 382], [380, 382], [368, 370], [52, 370]], 0, 382, 0, 370);
+  cush([[420, 382], [760, 382], [748, 370], [432, 370]], 0, 382, 0, 370);
+  cush([[18, 40], [18, 360], [30, 348], [30, 52]], 18, 0, 30, 0);
+  cush([[782, 40], [782, 360], [770, 348], [770, 52]], 782, 0, 770, 0);
+  for (const [x0, y0, x1, y1] of [[0, M, 0, M + 12], [0, H - M, 0, H - M - 12], [M, 0, M + 12, 0], [W - M, 0, W - M - 12, 0]]) {
+    const sd = g.createLinearGradient(x0, y0, x1, y1); sd.addColorStop(0, 'rgba(0,0,0,.4)'); sd.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = sd; g.fillRect(52, 52, W - 104, H - 104);
+  }
   g.strokeStyle = 'rgba(255,255,255,.2)'; g.lineWidth = 1; g.beginPath(); g.moveTo(230, M); g.lineTo(230, H - M); g.stroke();
   g.fillStyle = 'rgba(255,255,255,.35)'; for (const x of [230, 560]) { g.beginPath(); g.arc(x, 200, 2, 0, 7); g.fill(); }
-  // cacapas embutidas na moldura: o buraco fica sob a madeira e so uma borda minima entra no feltro
-  g.save(); g.beginPath(); tr(); g.clip();
+  g.strokeStyle = 'rgba(50,18,2,.9)'; g.lineWidth = 1.2; g.strokeRect(18, 18, W - 36, H - 36);
+  // paineis de marmore escuro com perolas
+  const panel = (x, y, w, h, vert) => {
+    const len = vert ? h : w, th = vert ? w : h, pt = (a, b) => vert ? [x + b, y + a] : [x + a, y + b];
+    g.save(); g.beginPath(); g.roundRect(x, y, w, h, 3); g.clip();
+    const pg = vert ? g.createLinearGradient(x, 0, x + w, 0) : g.createLinearGradient(0, y, 0, y + h);
+    pg.addColorStop(0, '#0c0c10'); pg.addColorStop(.5, '#2a2a30'); pg.addColorStop(1, '#0a0a0d');
+    g.fillStyle = pg; g.fillRect(x, y, w, h);
+    for (let i = 0; i < 6; i++) {
+      g.strokeStyle = `rgba(255,255,255,${rnd(.35, .85)})`; g.lineWidth = rnd(.3, .9);
+      let a = rnd(0, len), b = rnd(0, th); g.beginPath(); g.moveTo(...pt(a, b));
+      for (let k = 0; k < 5; k++) { a += rnd(6, 26); b += rnd(-5, 5); g.lineTo(...pt(a, b)); }
+      g.stroke();
+    }
+    g.restore();
+    g.strokeStyle = 'rgba(30,10,0,.9)'; g.lineWidth = 1; g.beginPath(); g.roundRect(x, y, w, h, 3); g.stroke();
+    g.strokeStyle = 'rgba(255,190,110,.6)'; g.lineWidth = .6; g.beginPath(); g.roundRect(x - .6, y - .6, w + 1.2, h + 1.2, 3.6); g.stroke();
+    for (const k of [.22, .52, .82]) {
+      const [cx, cy] = pt(len * k, th / 2), pr = g.createRadialGradient(cx - .6, cy - .6, .3, cx, cy, 2.8);
+      pr.addColorStop(0, '#fff'); pr.addColorStop(.7, '#f6d9de'); pr.addColorStop(1, '#e58aa0');
+      g.fillStyle = pr; g.beginPath(); g.arc(cx, cy, 2.7, 0, 7); g.fill(); g.strokeStyle = 'rgba(90,10,30,.7)'; g.lineWidth = .6; g.stroke();
+    }
+  };
+  panel(50, -3, 322, 12); panel(428, -3, 322, 12); panel(50, H - 9, 322, 12); panel(428, H - 9, 322, 12);
+  panel(-3, 50, 12, 300, 1); panel(W - 9, 50, 12, 300, 1);
+  // cacapas: buracos escuros e lisos
   PV.forEach(([px, py], i) => {
-    const mid = i % 3 === 1, ho = mid ? 17 : 18, rc = mid ? 27 : 35;
-    g.save(); g.beginPath(); g.rect(0, 0, W, H); g.rect(M, M, W - 2 * M, H - 2 * M); g.clip('evenodd');
-    const l = g.createRadialGradient(px - 4, py - 4, ho * .6, px, py, rc);
-    l.addColorStop(0, '#3a2210'); l.addColorStop(.45, '#5d3a1c'); l.addColorStop(1, '#3b2411');
-    g.fillStyle = l; g.beginPath(); g.arc(px, py, rc, 0, 7); g.fill();
-    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 1.2; g.beginPath(); g.arc(px, py, rc, 0, 7); g.stroke();
-    g.strokeStyle = 'rgba(255,225,170,.18)'; g.lineWidth = .8; g.beginPath(); g.arc(px, py, rc - 2, 0, 7); g.stroke();
-    g.setLineDash([2, 2.5]); g.strokeStyle = 'rgba(230,200,150,.35)'; g.lineWidth = .7; g.beginPath(); g.arc(px, py, rc - 5, 0, 7); g.stroke(); g.setLineDash([]);
-    g.strokeStyle = '#c9a24a'; g.lineWidth = 2.4; g.beginPath(); g.arc(px, py, ho + 2.2, 0, 7); g.stroke();
-    g.strokeStyle = 'rgba(255,245,200,.6)'; g.lineWidth = .8; g.beginPath(); g.arc(px, py, ho + 3.2, Math.PI * 1.05, Math.PI * 1.65); g.stroke();
-    g.restore();
-    const h = g.createRadialGradient(px + 3, py + 3, 1, px, py, ho); h.addColorStop(0, '#171717'); h.addColorStop(.7, '#050505'); h.addColorStop(1, '#000');
+    const ho = i % 3 === 1 ? 19 : 22, h = g.createRadialGradient(px, py, ho * .2, px, py, ho);
+    h.addColorStop(0, '#030102'); h.addColorStop(.75, '#0a0304'); h.addColorStop(1, '#2a0e0a');
     g.fillStyle = h; g.beginPath(); g.arc(px, py, ho, 0, 7); g.fill();
-    g.save(); g.beginPath(); g.arc(px, py, ho - .5, 0, 7); g.clip(); g.strokeStyle = 'rgba(140,140,140,.2)'; g.lineWidth = .6;
-    for (let k = -ho * 2; k < ho * 2; k += 4.5) { g.beginPath(); g.moveTo(px + k, py - ho); g.lineTo(px + k + ho, py + ho); g.moveTo(px + k, py + ho); g.lineTo(px + k + ho, py - ho); g.stroke(); }
-    const sd = g.createRadialGradient(px, py, ho * .5, px, py, ho); sd.addColorStop(0, 'rgba(0,0,0,0)'); sd.addColorStop(1, 'rgba(0,0,0,.85)');
-    g.fillStyle = sd; g.fillRect(px - ho, py - ho, 2 * ho, 2 * ho);
-    g.restore();
-    g.strokeStyle = 'rgba(0,0,0,.7)'; g.lineWidth = 1.2; g.beginPath(); g.arc(px, py, ho, 0, 7); g.stroke();
+    g.strokeStyle = 'rgba(20,5,0,.85)'; g.lineWidth = 1.2; g.stroke();
   });
   g.restore();
-  // diamantes
-  const dia = (x, y) => {
-    g.fillStyle = '#f3ead2'; g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = .6;
-    g.beginPath(); g.moveTo(x, y - 3.6); g.lineTo(x + 2.4, y); g.lineTo(x, y + 3.6); g.lineTo(x - 2.4, y); g.closePath(); g.fill(); g.stroke();
-  };
-  for (const k of [1, 2, 3]) for (const x of [50 + 325 * k / 4, 425 + 325 * k / 4]) { dia(x, 12); dia(x, H - 12); }
-  for (const y of [125, 200, 275]) { dia(12, y); dia(W - 12, y); }
   // faixa de baixo: forca e bolas encacapadas
-  const st = g.createLinearGradient(0, H, 0, HT); st.addColorStop(0, '#2b1b0f'); st.addColorStop(1, '#120c07');
-  g.fillStyle = st; g.fillRect(0, H, W, HT - H);
-  g.strokeStyle = '#080604'; g.fillStyle = '#080604'; g.lineWidth = 1.5;
-  g.strokeStyle = '#b8913f'; g.beginPath(); g.roundRect(326, H + 7, 456, 30, 15); g.fillStyle = '#080604'; g.fill(); g.stroke();
-  g.beginPath(); g.roundRect(68, H + 13, 244, 18, 9); g.fill(); g.stroke();
-  g.fillStyle = '#e8d7a8'; g.font = '600 11px system-ui,sans-serif'; g.textBaseline = 'middle'; g.fillText('FORÇA', 22, H + 22.5);
+  const y0 = H + 2 * F, st = g.createLinearGradient(0, y0, 0, CH); st.addColorStop(0, '#2b1b0f'); st.addColorStop(1, '#120c07');
+  g.fillStyle = st; g.fillRect(0, y0, CW, CH - y0);
+  g.strokeStyle = '#c9742a'; g.lineWidth = 1.5; g.fillStyle = '#080604';
+  g.beginPath(); g.roundRect(338, y0 + 7, 456, 30, 15); g.fill(); g.stroke();
+  g.beginPath(); g.roundRect(68 + F, y0 + 13, 244, 18, 9); g.fill(); g.stroke();
+  g.fillStyle = '#e8d7a8'; g.font = '600 11px system-ui,sans-serif'; g.textBaseline = 'middle'; g.fillText('FORÇA', 22 + F, y0 + 22.5);
 })();
 
 // ---------- bolas (sombreadas pixel a pixel, com giro 3D) ----------
@@ -347,7 +361,7 @@ function ray(c, ux, uy) {
 // ---------- desenho ----------
 function frame() {
   ctx.setTransform(SC, 0, 0, SC, 0, 0);
-  ctx.drawImage(TB, 0, 0, W, HT);
+  ctx.drawImage(TB, 0, 0, CW, CH); ctx.translate(F, F);
   if (S && D) {
     for (const d of D) {
       if (d.act) {
@@ -357,7 +371,7 @@ function frame() {
       } else if (d.s > 0) { d.s = Math.max(0, d.s - .07); d.x += (d.px - d.x) * .3; d.y += (d.py - d.y) * .3; }
       if (d.s > 0) drawBallAt(d.n, d.M, d.x, d.y, d.s, 1);
     }
-    potted.forEach((i, j) => drawBallAt(D[i].n, ID, 349 + j * 28, H + 22, 1, 0));
+    potted.forEach((i, j) => drawBallAt(D[i].n, ID, 349 + j * 28, H + F + 22, 1, 0));
     const c = D[0];
     pwCur = 0;
     if (drag && canShoot() && c.act) {
@@ -382,7 +396,7 @@ function frame() {
   // barra de forca
   if (pwCur > 0) {
     const g = ctx.createLinearGradient(70, 0, 310, 0); g.addColorStop(0, '#3ecf74'); g.addColorStop(.6, '#e8c93a'); g.addColorStop(1, '#e0483a');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(70, H + 15, 240 * pwCur, 14, 7); ctx.fill();
+    ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(70, H + F + 15, 240 * pwCur, 14, 7); ctx.fill();
   }
   requestAnimationFrame(frame);
 }
