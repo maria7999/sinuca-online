@@ -777,44 +777,67 @@ const TBL = (() => {
   g.save(); g.translate(W - 44, H); g.rotate(Math.PI); deco(W - 88, LW, LP); g.restore();
   g.save(); g.translate(0, H - 44); g.rotate(-Math.PI / 2); deco(H - 88, [[0, H - 88]], SP); g.restore();
   g.save(); g.translate(W, 44); g.rotate(Math.PI / 2); deco(H - 88, [[0, H - 88]], SP); g.restore();
-  // cacapas: boca funda com redinha em formato de tigela, aro de couro e friso dourado
-  const lerp = (x, y, t) => x + (y - x) * t;
+  // cacapas: boca funda com redinha em losangos e peca de couro acolchoado com friso dourado em volta
   for (const [px, py] of PK) {
-    let ox = px - W / 2, oy = py - H / 2; const ol = Math.hypot(ox, oy) || 1; ox /= ol; oy /= ol;
-    // sombra da boca caindo no pano
-    const so = g.createRadialGradient(px, py, PR, px, py, PR + 14); so.addColorStop(0, 'rgba(0,0,30,.6)'); so.addColorStop(1, 'rgba(0,0,30,0)');
-    g.fillStyle = so; g.beginPath(); g.arc(px, py, PR + 14, 0, 7); g.fill();
-    // aro de couro escuro
-    const lr = g.createRadialGradient(px - 4, py - 4, PR - 2, px, py, PR + 6);
-    lr.addColorStop(0, '#70452a'); lr.addColorStop(.5, '#3d2315'); lr.addColorStop(1, '#1b0f08');
-    g.fillStyle = lr; g.beginPath(); g.arc(px, py, PR + 5, 0, 7); g.fill();
-    g.strokeStyle = 'rgba(20,8,3,.9)'; g.lineWidth = 1; g.beginPath(); g.arc(px, py, PR + 5, 0, 7); g.stroke();
-    g.strokeStyle = 'rgba(250,205,110,.55)'; g.lineWidth = .6; g.beginPath(); g.arc(px, py, PR + 3.4, 0, 7); g.stroke();
-    // interior: fundo escuro e redinha curvada para dentro
+    const side = Math.abs(px - W / 2) < 100, sx = side ? 0 : Math.sign(px - W / 2), sy = Math.sign(py - H / 2), nl = Math.hypot(sx, sy);
+    const ox = sx / nl, oy = sy / nl, fo = Math.atan2(oy, ox), half = (side ? 80 : 55) * Math.PI / 180;
+    const a0 = fo + half, a1 = fo + 2 * Math.PI - half, WD = 15;
+    // sombra da boca no pano
+    const so = g.createRadialGradient(px, py, PR, px, py, PR + 20); so.addColorStop(0, 'rgba(0,0,30,.55)'); so.addColorStop(1, 'rgba(0,0,30,0)');
+    g.fillStyle = so; g.beginPath(); g.arc(px, py, PR + 20, 0, 7); g.fill();
+    // aro escuro da boca
+    g.fillStyle = '#140a05'; g.beginPath(); g.arc(px, py, PR + 1.6, 0, 7); g.fill();
+    // interior: fundo escuro e redinha de losangos (tigela: losangos mais apertados perto da borda)
     g.save(); g.beginPath(); g.arc(px, py, PR, 0, 7); g.clip();
-    const cx = px + ox * PR * .2, cy = py + oy * PR * .2;
-    const bg = g.createRadialGradient(cx, cy, 1, px, py, PR); bg.addColorStop(0, '#050201'); bg.addColorStop(1, '#2a160b');
+    const cx = px + ox * PR * .16, cy = py + oy * PR * .16;
+    const bg = g.createRadialGradient(cx, cy, 1, px, py, PR); bg.addColorStop(0, '#080301'); bg.addColorStop(1, '#2a150a');
     g.fillStyle = bg; g.fillRect(px - PR, py - PR, 2 * PR, 2 * PR);
-    const NL = 20, TW = 1.4, STEPS = 22, col = t => [lerp(26, 176, t), lerp(14, 116, t), lerp(8, 66, t)];
-    const rimPt = th => [px + PR * Math.cos(th), py + PR * Math.sin(th)];
-    const at = (th, f) => { const q = rimPt(th); return [lerp(cx, q[0], f), lerp(cy, q[1], f)]; };
-    for (const sg of [1, -1]) for (let i = 0; i < NL; i++) {
-      const c0 = i / NL * Math.PI * 2, pts = [];
-      for (let k = 0; k <= STEPS; k++) { const t = k / STEPS, f = Math.pow(Math.sin(t * Math.PI / 2), .85); pts.push([...at(c0 + sg * TW * t, f), t]); }
-      g.lineCap = 'round'; g.strokeStyle = 'rgba(4,1,0,.9)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
-      for (const q of pts) g.lineTo(q[0], q[1]); g.stroke();
-      g.lineWidth = .8;
-      for (let k = 1; k <= STEPS; k++) { const c = col(pts[k][2]); g.strokeStyle = 'rgb(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ')'; g.beginPath(); g.moveTo(pts[k - 1][0], pts[k - 1][1]); g.lineTo(pts[k][0], pts[k][1]); g.stroke(); }
+    const LD = PR * 1.55, DS = 5.2, warp = (x, y) => { const rr = Math.hypot(x, y); if (rr < 1e-6) return [cx, cy]; const f = PR * Math.sin(Math.min(1, rr / LD) * Math.PI / 2) / rr; return [cx + x * f, cy + y * f]; };
+    for (const sg of [1, -1]) for (let k = -14; k <= 14; k++) {
+      const dxv = .7071, dyv = sg * .7071, nx = .7071, ny = -sg * .7071, u = k * DS;
+      g.beginPath(); let first = true;
+      for (let t = -LD * 1.5; t <= LD * 1.5; t += 1.6) {
+        const q = warp(nx * u + dxv * t, ny * u + dyv * t);
+        if (first) { g.moveTo(q[0], q[1]); first = false; } else g.lineTo(q[0], q[1]);
+      }
+      g.strokeStyle = 'rgba(6,2,0,.9)'; g.lineWidth = 1.2; g.stroke();
+      g.strokeStyle = 'rgba(178,128,80,.9)'; g.lineWidth = .62; g.stroke();
     }
-    // profundidade: escuro no fundo e sombra da borda no lado de cima/esquerda
-    const dk = g.createRadialGradient(cx, cy, 0, cx, cy, PR * .8); dk.addColorStop(0, 'rgba(0,0,0,.92)'); dk.addColorStop(.5, 'rgba(0,0,0,.45)'); dk.addColorStop(1, 'rgba(0,0,0,0)');
+    const dk = g.createRadialGradient(cx, cy, 0, cx, cy, PR * .75); dk.addColorStop(0, 'rgba(0,0,0,.85)'); dk.addColorStop(.55, 'rgba(0,0,0,.35)'); dk.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = dk; g.fillRect(px - PR, py - PR, 2 * PR, 2 * PR);
-    const lip = g.createLinearGradient(px - PR, py - PR, px + PR, py + PR); lip.addColorStop(0, 'rgba(0,0,0,.7)'); lip.addColorStop(.55, 'rgba(0,0,0,.1)'); lip.addColorStop(1, 'rgba(0,0,0,0)');
+    const lip = g.createLinearGradient(px - ox * PR, py - oy * PR, px + ox * PR, py + oy * PR); lip.addColorStop(0, 'rgba(0,0,0,.6)'); lip.addColorStop(.6, 'rgba(0,0,0,.05)'); lip.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = lip; g.fillRect(px - PR, py - PR, 2 * PR, 2 * PR);
     g.restore();
-    // friso dourado na boca
-    const gg = g.createLinearGradient(px - PR, py - PR, px + PR, py + PR); gg.addColorStop(0, '#8d6420'); gg.addColorStop(.5, '#f6dc8a'); gg.addColorStop(1, '#b98a2c');
-    g.strokeStyle = gg; g.lineWidth = 1.7; g.beginPath(); g.arc(px, py, PR + .6, 0, 7); g.stroke();
+    // peca de couro em volta (faixa em arco com pontas arredondadas)
+    const rm = PR + 1.2 + WD / 2, e0 = [px + rm * Math.cos(a0), py + rm * Math.sin(a0)], e1 = [px + rm * Math.cos(a1), py + rm * Math.sin(a1)];
+    const path = () => {
+      g.beginPath(); g.arc(px, py, PR + 1.2 + WD, a0, a1); g.arc(px, py, PR + 1.2, a1, a0, true); g.closePath();
+      for (const e of [e0, e1]) { g.moveTo(e[0] + WD / 2, e[1]); g.arc(e[0], e[1], WD / 2, 0, Math.PI * 2); }
+    };
+    g.save(); g.shadowColor = 'rgba(0,0,25,.65)'; g.shadowBlur = 7; g.shadowOffsetX = 1.5; g.shadowOffsetY = 2.5;
+    g.fillStyle = '#3a2214'; path(); g.fill(); g.restore();
+    g.save(); path(); g.clip();
+    const lg = g.createRadialGradient(px - ox * 6, py - oy * 6, PR, px, py, PR + WD + 6); lg.addColorStop(0, '#5b3822'); lg.addColorStop(.6, '#3d2314'); lg.addColorStop(1, '#25140a');
+    g.fillStyle = lg; g.fillRect(px - 50, py - 50, 100, 100);
+    const D = 10;
+    for (let i = -10; i <= 10; i++) for (let j = -10; j <= 10; j++) {
+      const x = px + (i + j + 1) * D / 2, y = py + (i - j) * D / 2; if (Math.hypot(x - px, y - py) > PR + WD + 8) continue;
+      const pg = g.createRadialGradient(x - 1, y - 1.5, 0, x, y, D * .62); pg.addColorStop(0, 'rgba(176,118,78,.55)'); pg.addColorStop(.55, 'rgba(110,70,44,.2)'); pg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = pg; g.beginPath(); g.arc(x, y, D * .62, 0, 7); g.fill();
+    }
+    g.lineWidth = 1.3; g.strokeStyle = 'rgba(14,6,2,.85)'; g.lineJoin = 'round';
+    g.beginPath(); for (let i = -10; i <= 10; i++) { const c = i * D; g.moveTo(px + c - 55, py - 55); g.lineTo(px + c + 55, py + 55); g.moveTo(px + c + 55, py - 55); g.lineTo(px + c - 55, py + 55); } g.stroke();
+    g.setLineDash([1.6, 1.8]); g.lineWidth = .6; g.strokeStyle = 'rgba(226,184,132,.8)';
+    g.beginPath(); for (let i = -10; i <= 10; i++) { const c = i * D + 1.1; g.moveTo(px + c - 55, py - 55 + 1.1); g.lineTo(px + c + 55, py + 55 + 1.1); g.moveTo(px + c + 55, py - 55 + 1.1); g.lineTo(px + c - 55, py + 55 + 1.1); } g.stroke();
+    g.beginPath(); g.arc(px, py, PR + 1.2 + WD - 2.2, a0, a1); g.stroke();
+    g.setLineDash([]);
+    g.restore();
+    g.strokeStyle = 'rgba(12,5,1,.9)'; g.lineWidth = 1; g.save(); path(); g.stroke(); g.restore();
+    // friso dourado na borda interna da faixa
+    const gg = g.createLinearGradient(px - PR, py - PR, px + PR, py + PR); gg.addColorStop(0, '#9a6f22'); gg.addColorStop(.45, '#fbe49a'); gg.addColorStop(1, '#b8872a');
+    g.lineCap = 'round'; g.strokeStyle = 'rgba(40,20,4,.9)'; g.lineWidth = 3.6; g.beginPath(); g.arc(px, py, PR + 1.2, a0, a1); g.stroke();
+    g.strokeStyle = gg; g.lineWidth = 2.2; g.beginPath(); g.arc(px, py, PR + 1.2, a0, a1); g.stroke();
+    g.strokeStyle = 'rgba(255,245,200,.7)'; g.lineWidth = .6; g.beginPath(); g.arc(px, py, PR + .6, a0 + .15, a1 - .15); g.stroke();
   }
   return c;
 })();
