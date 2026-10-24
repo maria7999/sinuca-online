@@ -21,7 +21,7 @@ button.alt{background:transparent;color:var(--fg);border:1px solid var(--muted)}
 .row{display:flex;gap:8px}
 #status{min-height:20px;text-align:center;font-size:14px}
 html{overscroll-behavior:none}
-#game{display:none;position:fixed;inset:0;z-index:5;flex-direction:column;background:#0b1f17;color:#ecebe6;padding:env(safe-area-inset-top,0px) 6px env(safe-area-inset-bottom,0px);user-select:none;-webkit-user-select:none;touch-action:none}
+#game{display:none;position:fixed;inset:0;z-index:5;flex-direction:column;background:#0a1226;color:#ecebe6;padding:env(safe-area-inset-top,0px) 6px env(safe-area-inset-bottom,0px);user-select:none;-webkit-user-select:none;touch-action:none}
 .bar{display:flex;gap:6px;flex:none;padding:4px 2px 0}
 .pl{background:rgba(255,255,255,.07);border-radius:10px;padding:5px 10px;font-size:13px;flex:1;min-width:0;border:2px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pl.on{border-color:var(--green)}
@@ -42,6 +42,45 @@ html{overscroll-behavior:none}
 #pfill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(229,57,47,.55);border-right:3px solid #fff;pointer-events:none}
 #pwr.off{opacity:.4;cursor:not-allowed}
 #helpBox{display:none;position:absolute;left:8px;right:8px;bottom:84px;z-index:10;background:rgba(0,0,0,.9);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.4;color:#e6e6e0}
+
+/* ---------- layout do PC (so telas largas com mouse; telefone nao muda) ---------- */
+#topPc,#lcol,#rail{display:none}
+#mid{display:contents}
+body.pc #game{padding:0 10px}
+body.pc .bar,body.pc #ctl{display:none}
+body.pc #msg{height:18px;line-height:18px;font-size:12px}
+body.pc #mid{display:flex;flex:1;min-height:0}
+body.pc #topPc{display:flex;align-items:center;justify-content:center;gap:10px;height:56px;flex:none;position:relative}
+body.pc .slots{display:flex;gap:6px}
+body.pc .sl{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#1a2438,#0b1220);border:2px solid #2b3850;box-shadow:inset 0 2px 4px #0009}
+body.pc .pn{font-size:20px;font-weight:800;color:#aab4c0;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.pc .pn.on{color:#fff}
+body.pc .av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#7ae6a6,#2fb36a);color:#06240f;font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:center;border:2px solid #2f7a58;opacity:.8}
+body.pc .av.on{border-color:#3ddc84;box-shadow:0 0 10px #3ddc84aa;opacity:1}
+body.pc #pcLeave{position:absolute;left:8px;top:12px;width:32px;height:32px;padding:0;border-radius:6px;background:rgba(255,255,255,.07);color:#ecebe6;border:1px solid rgba(255,255,255,.18);font-size:16px}
+body.pc #pcFull{position:absolute;right:8px;top:12px;width:32px;height:32px;padding:0;border-radius:6px;background:rgba(255,255,255,.07);color:#ecebe6;border:1px solid rgba(255,255,255,.18);font-size:16px}
+body.pc #lcol{display:flex;flex-direction:column;align-items:center;gap:14px;width:110px;flex:none;padding:6px 0 14px}
+body.pc .rb{padding:0;width:64px;height:64px;flex:none;border-radius:50%;background:radial-gradient(circle at 50% 35%,#4a5560,#1f262e);color:#ecebe6;border:2px solid rgba(255,255,255,.3);font-size:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px #0007}
+body.pc .rb svg{width:28px;height:28px}
+body.pc .rb:hover{border-color:#fff}
+body.pc #pwSlot{flex:1;min-height:0;width:100%;display:flex;justify-content:center}
+body.pc #pwSlot #pw{flex:none;width:58px;height:100%;max-height:620px;position:relative;gap:0}
+body.pc #pval{order:2;display:block;text-align:center;font-size:11px;font-weight:800;letter-spacing:.06em;color:#e8b83a;padding:6px 0 0;min-height:34px;line-height:1.15;pointer-events:none}
+body.pc #pwr{order:1;height:100%;width:100%;flex:1;background:linear-gradient(90deg,#4a2e14,#6a4421 50%,#4a2e14);border:2px solid #c9974a;border-radius:10px;cursor:ns-resize}
+body.pc #pwr::before{display:none}
+body.pc #pwr::after{z-index:3;background:
+ linear-gradient(#fffd,#fffd) 0 25%/9px 1px no-repeat,linear-gradient(#fffd,#fffd) 100% 25%/9px 1px no-repeat,
+ linear-gradient(#fffd,#fffd) 0 50%/9px 1px no-repeat,linear-gradient(#fffd,#fffd) 100% 50%/9px 1px no-repeat,
+ linear-gradient(#fffd,#fffd) 0 75%/9px 1px no-repeat,linear-gradient(#fffd,#fffd) 100% 75%/9px 1px no-repeat}
+body.pc #pfill{display:none}
+#cue{display:none}
+body.pc #cue{display:block;position:absolute;left:50%;top:6px;width:18px;margin-left:-9px;height:96%;clip-path:polygon(0 0,100% 0,88% 100%,12% 100%);will-change:transform;
+ background:linear-gradient(180deg,#15110d 0 16px,#f4f0e6 16px 24px,transparent 24px),linear-gradient(90deg,#a8691f,#e9b865 35%,#fbe3a6 55%,#b27325)}
+body.pc #pcSpin .bl{display:block;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 38% 30%,#fff,#ddd7c8 55%,#a9a392);position:relative}
+body.pc #pcSpin .bl::after{content:"";position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px;border-radius:50%;background:#fff;border:3.5px solid #e5392f;box-sizing:border-box}
+body.pc #pcSpin{padding:0;width:70px;height:70px;background:none;border:0;box-shadow:0 4px 10px #0009}
+body.pc #rail{display:block;flex:none;width:150px;height:100%;pointer-events:none}
+body.pc #helpBox{left:130px;right:auto;bottom:24px;width:420px}
 
 /* ---------- tela de login ---------- */
 #login{position:fixed;inset:0;z-index:20;overflow:auto;display:flex;flex-direction:column;color:#e8f5ee;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -86,6 +125,54 @@ html{overscroll-behavior:none}
 .lg-back{display:block;margin:18px 0 0;text-align:center;color:#3ddc84;font-size:13px;font-weight:800;text-decoration:none}
 #sgForm{display:none}
 #sgForm .lg-sub{margin-bottom:22px}
+
+/* ---------- tela inicial (lobby) ---------- */
+#lobby{position:fixed;inset:0;z-index:15;overflow:auto;flex-direction:column;color:#e8f5ee;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(120% 80% at 50% 0%,#17382b 0%,#102a20 50%,#0b1a14 100%)}
+#lobby *{box-sizing:border-box}
+#lobby svg{display:block}
+.hm-top{flex:none;background:linear-gradient(#0c1d16,#09150f);border-bottom:1px solid #1f6b4a;padding:0 24px;padding-top:env(safe-area-inset-top,0px)}
+.hm-top-in{max-width:1172px;margin:0 auto;height:64px;display:flex;align-items:center;gap:14px}
+.hm-brand{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:18px;letter-spacing:.12em;text-transform:uppercase;color:#f1f8f4;white-space:nowrap}
+.hm-brand::after{content:"";display:inline-block;width:1px;height:16px;background:#2a5a45;margin-left:12px;vertical-align:middle}
+.hm-home{display:flex;align-items:center;gap:7px;background:#14382b;color:#3ddc84;border:1px solid #2f7a58;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700}
+.hm-home svg{width:16px;height:16px}
+.hm-sp{flex:1}
+.hm-user{display:flex;align-items:center;gap:9px}
+.hm-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#06240f;background:linear-gradient(135deg,#7ae6a6,#2fb36a);border:2px solid #2f7a58}
+.hm-ut{display:flex;flex-direction:column;line-height:1.2}
+.hm-ut b{font-family:Georgia,serif;font-size:14px;color:#f1f8f4;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hm-ut small{display:flex;align-items:center;gap:4px;font-size:11px;color:#9fc0ae}
+.hm-ut small svg{width:10px;height:10px;color:#3ddc84}
+.hm-ut small span+svg{margin-left:6px}
+.hm-dot{width:8px;height:8px;border-radius:50%;background:#3ddc84;box-shadow:0 0 6px #3ddc84}
+.hm-body{flex:1;display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 16px 90px}
+.hm-tabs{width:100%;max-width:480px;padding:4px;border:1px solid #1f4a38;border-radius:12px;background:#0d2119;display:flex;justify-content:center}
+.hm-tab{min-width:92px;padding:7px 14px;border-radius:9px;border:1px solid #2f7a58;background:linear-gradient(#1d4a38,#143629);text-align:center}
+.hm-tab b{display:block;font-family:Georgia,serif;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#d9f6e6;font-weight:600}
+.hm-tab small{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:2px;font-size:10px;font-weight:700;color:#bfe0cd}
+.hm-tab small svg{width:11px;height:11px}
+.hm-how{width:100%;max-width:480px;display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid #1f4a38;border-radius:12px;background:#12291f;color:#3ddc84;font-family:Georgia,serif;font-size:14px;font-weight:700;text-align:left}
+.hm-play{width:28px;height:28px;border-radius:50%;background:#1d4a38;display:flex;align-items:center;justify-content:center;flex:none}
+.hm-play svg{width:13px;height:13px}
+.hm-grid{width:100%;max-width:912px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-top:8px}
+.hm-room{position:relative;width:138px;height:120px;border-radius:14px;border:1px solid #2f7a58;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#f1f8f4;background:linear-gradient(160deg,#256a50,#17402f);box-shadow:0 0 0 1px #3ddc8444,0 8px 24px #0006}
+.hm-room:hover{border-color:#3ddc84}
+.hm-room b{font-family:Georgia,serif;font-size:26px;font-weight:700}
+.hm-cnt{display:flex;align-items:center;gap:5px;background:#0c1d16;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:800}
+.hm-cnt svg{width:13px;height:13px}
+.hm-badge{position:absolute;right:-8px;top:-8px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#06240f;background:linear-gradient(135deg,#7ae6a6,#2fb36a);border:2px solid #d9f6e6}
+#qbar{display:none;position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:30;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:#0c1d16;border:1px solid #2f7a58;box-shadow:0 8px 28px #000a;max-width:calc(100% - 24px);flex-wrap:wrap;justify-content:center}
+#qbar #status{min-height:0;font-size:14px;color:#d9f6e6}
+#qbar button{padding:8px 12px;font-size:13px;background:transparent;color:#e8f5ee;border:1px solid #2f7a58}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:40;display:none;background:#0c1d16;border:1px solid #2f7a58;color:#e8f5ee;padding:10px 16px;border-radius:10px;font-size:14px;max-width:calc(100% - 24px);text-align:center}
+#howBox{display:none;position:fixed;inset:0;z-index:35;background:#000a;align-items:center;justify-content:center;padding:16px}
+.hm-modal{max-width:420px;background:linear-gradient(165deg,#1d4c39,#163a2c);border:1px solid #2b6d4f;border-radius:14px;padding:22px}
+.hm-modal h3{margin:0 0 10px;font-family:Georgia,serif;font-size:20px;color:#d9f6e6}
+.hm-modal p{margin:0 0 16px;font-size:14px;line-height:1.5;color:#d3e6dc}
+.hm-modal button{width:100%}
+#hmChat{position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;background:#1fbf75;color:#fff;box-shadow:0 6px 20px #0008;z-index:12}
+#hmChat svg{width:26px;height:26px}
+@media(max-width:600px){.hm-top{padding:0 12px}.hm-top-in{gap:8px}.hm-brand{font-size:13px;letter-spacing:.08em}.hm-brand::after{display:none}.hm-home{padding:7px 10px}.hm-ut small{display:none}.hm-ut b{max-width:80px}}
 @media(max-width:520px){.lg-top{padding:0 14px}.lg-card{padding:24px 20px 22px}.lg-brand{font-size:16px}}
 </style>
 </head>
@@ -143,29 +230,54 @@ html{overscroll-behavior:none}
   </main>
 </div>
 
-<div id="lobby" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%">
-  <h1>🎱 Sinuquinha VIP</h1>
-  <p class="sub">Bola 8, 1 contra 1, de graça. Sem cadastro.</p>
-  <div class="card">
-    <input id="name" placeholder="Seu apelido" maxlength="16" autocomplete="off">
-    <button id="bQueue">Jogar agora (achar adversário)</button>
-    <button id="bPractice" class="alt">Treinar sozinho</button>
-    <hr style="width:100%;border:0;border-top:1px solid var(--muted);opacity:.3">
-    <button id="bCreate" class="alt">Criar sala para um amigo</button>
-    <div class="row"><input id="code" placeholder="Código da sala" maxlength="6" autocomplete="off"><button id="bJoin" style="white-space:nowrap">Entrar</button></div>
-    <div id="status"></div>
-  </div>
+<div id="lobby" style="display:none">
+  <header class="hm-top"><div class="hm-top-in">
+    <div class="hm-brand">Sinuquinha VIP</div>
+    <button class="hm-home" id="hmHome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Início</button>
+    <div class="hm-sp"></div>
+    <div class="hm-user">
+      <div class="hm-av" id="hmAv">J</div>
+      <div class="hm-ut"><b id="hmName">Jogador</b><small><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 5.6 6 .5-4.6 4 1.4 5.9L12 14.9 6.8 18l1.4-5.9-4.6-4 6-.5z"/></svg><span id="hmLvl">1</span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 21l1.6-7L2 9.2l7.1-.6z"/></svg><span id="hmPts">1500</span></small></div>
+      <i class="hm-dot"></i>
+    </div>
+  </div></header>
+  <main class="hm-body">
+    <div class="hm-tabs"><div class="hm-tab"><b>Sinuca</b><small><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="8" r="3.3"/><path d="M2.5 19c0-3.3 2.9-5.2 6.5-5.2s6.5 1.9 6.5 5.2z"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 13.9c3 0 5 1.5 5 4.2h-4.4c0-1.7-.6-3.1-1.6-4.2z"/></svg><span id="hmOn">0</span> jogando</small></div></div>
+    <button class="hm-how" id="hmHow"><span class="hm-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>Como jogar Sinuca</button>
+    <div class="hm-grid">
+      <button class="hm-room" id="roomFree"><span class="hm-badge" id="hmBadge">J</span><b>Grátis</b><span class="hm-cnt"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="8" r="3.3"/><path d="M2.5 19c0-3.3 2.9-5.2 6.5-5.2s6.5 1.9 6.5 5.2z"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 13.9c3 0 5 1.5 5 4.2h-4.4c0-1.7-.6-3.1-1.6-4.2z"/></svg><span id="hmFree">0</span></span></button>
+    </div>
+  </main>
+  <div id="qbar"><span id="status"></span><button class="alt" id="qPractice">Treinar sozinho</button><button class="alt" id="qCancel">Cancelar</button></div>
+  <div id="toast"></div>
+  <div id="howBox"><div class="hm-modal"><h3>Como jogar Sinuca</h3><p>Na sua vez, o taco aparece. Segure e arraste na mesa (dedo ou mouse) para girar o taco; no computador, as setas ← → fazem o ajuste fino. Depois puxe a barra de força (embaixo) para a direita e solte para tacar. Lisas são 1–7, listradas 9–15.</p><button id="howClose">Entendi</button></div></div>
+  <button id="hmChat" aria-label="Suporte"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg></button>
 </div>
 
 <div id="game">
+  <div id="topPc">
+    <div class="slots" id="sl0"></div><div class="pn" id="pn0"></div><div class="av" id="av0"></div>
+    <div class="av" id="av1"></div><div class="pn" id="pn1"></div><div class="slots" id="sl1"></div>
+    <button id="pcLeave" title="Sair da partida">✕</button>
+    <button id="pcFull" title="Tela cheia">⛶</button>
+  </div>
   <div class="bar">
     <div class="pl on" id="p0"><b id="n0">Jogador 1</b><small id="g0">mesa aberta</small></div>
     <div class="pl" id="p1"><b id="n1">Jogador 2</b><small id="g1">mesa aberta</small></div>
   </div>
   <div id="msg"></div>
+  <div id="mid">
+  <div id="lcol">
+    <button class="rb" id="pcSpin" title="Efeito na bola"><i class="bl"></i></button>
+    <div id="pwSlot"></div>
+    <button class="rb" id="pcChat" title="Suporte"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg></button>
+    <button class="rb" id="pcSet" title="Ajuda">⚙</button>
+  </div>
   <div id="stage">
     <div id="tw"><canvas id="c" width="1600" height="800"></canvas></div>
     <button id="bAgain" style="display:none">Jogar de novo</button>
+  </div>
+  <canvas id="rail"></canvas>
   </div>
   <div id="helpBox">Na sua vez, o taco aparece. Segure e arraste na mesa (dedo ou mouse) para girar o taco; no computador, as setas ← → fazem o ajuste fino. Depois puxe a barra de força (embaixo) para a direita e solte para tacar. Lisas são 1–7, listradas 9–15.</div>
   <div id="ctl">
@@ -176,7 +288,7 @@ html{overscroll-behavior:none}
     </div>
     <div id="pw">
       <div id="pval">PUXE E SOLTE ➜</div>
-      <div id="pwr" title="Arraste para a direita e solte para tacar"><div id="pfill"></div></div>
+      <div id="pwr" title="Arraste para a direita e solte para tacar"><div id="pfill"></div><div id="cue"></div></div>
     </div>
   </div>
 </div>
@@ -187,6 +299,8 @@ const COL = ['#fff', '#f2c200', '#1e5bd8', '#d62828', '#6a2c91', '#f27d0c', '#1f
 const PK = [[24, 24], [400, 20], [776, 24], [24, 376], [400, 380], [776, 376]], PR = 21;
 const $ = id => document.getElementById(id);
 const cv = $('c'), ctx = cv.getContext('2d');
+const SC = window.devicePixelRatio > 1.1 ? 3 : 2; // nitidez do desenho (3x em telas de alta densidade)
+cv.width = W * SC; cv.height = H * SC;
 let ws = null, seat = 0, solo = false, S = null, aim = [1, 0], power = 0;
 
 
@@ -194,7 +308,8 @@ let ws = null, seat = 0, solo = false, S = null, aim = [1, 0], power = 0;
 const SUPPORT_WHATSAPP = ''; // coloque o numero com DDI, ex.: '5531999999999'
 function lgMsg(t, info) { const e = $('lgErr'); e.textContent = t || ''; e.className = 'lg-err' + (info ? ' info' : ''); }
 function lgEnter(email) {
-  if (!$('name').value.trim() && email) $('name').value = email.split('@')[0].slice(0, 16);
+  if (email) userName = email.split('@')[0].slice(0, 16);
+  renderProfile();
   $('login').style.display = 'none'; showLobby();
 }
 $('lgForm').addEventListener('submit', e => {
@@ -242,19 +357,30 @@ function connect(then) {
   if (ws && ws.readyState === 0) { ws.addEventListener('open', then, { once: true }); return; }
   const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
   ws = new WebSocket(proto + location.host);
-  ws.onopen = () => { $('status').textContent = ''; then(); };
+  ws.onopen = () => { then(); };
   ws.onmessage = e => { let m; try { m = JSON.parse(e.data); } catch (x) { return; } onMsg(m); };
   ws.onclose = () => {
     showLobby();
-    $('status').textContent = 'Conexão perdida. Recarregue a página para jogar de novo.';
+    stat(''); toast('Conexão perdida. Recarregue a página para jogar de novo.');
   };
 }
 function send(o) { connect(() => ws.send(JSON.stringify(o))); }
-function nm() { return $('name').value.trim() || 'Jogador'; }
+let userName = 'Jogador';
+function nm() { return userName; }
+// Placeholders: ligar a dados reais do servidor quando existirem
+const PROFILE = { level: 1, points: 1500 }, ONLINE = { sinuca: 0, free: 0 };
+function renderProfile() {
+  $('hmName').textContent = userName; $('hmAv').textContent = $('hmBadge').textContent = userName.charAt(0).toUpperCase() || 'J';
+  $('hmLvl').textContent = PROFILE.level; $('hmPts').textContent = PROFILE.points;
+  $('hmOn').textContent = ONLINE.sinuca; $('hmFree').textContent = ONLINE.free;
+}
+let toastT = 0;
+function toast(t) { const e = $('toast'); e.textContent = t; e.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => { e.style.display = 'none'; }, 3500); }
+function stat(t) { $('status').textContent = t || ''; $('qbar').style.display = t ? 'flex' : 'none'; }
 
 function onMsg(m) {
-  if (m.t === 'wait') { $('status').textContent = m.m; }
-  else if (m.t === 'error') { $('status').textContent = m.m; }
+  if (m.t === 'wait') { stat(m.m); }
+  else if (m.t === 'error') { stat(''); toast(m.m); }
   else if (m.t === 'match') { seat = m.seat; solo = !!m.solo; S = null; showGame(); }
   else if (m.t === 'state') {
     S = m;
@@ -265,7 +391,7 @@ function onMsg(m) {
   else if (m.t === 'lobby') { showLobby(); }
 }
 function showLobby() { $('game').style.display = 'none'; $('lobby').style.display = 'flex'; }
-function showGame() { $('lobby').style.display = 'none'; $('game').style.display = 'flex'; layout(); $('status').textContent = ''; $('bAgain').style.display = 'none'; }
+function showGame() { $('lobby').style.display = 'none'; $('game').style.display = 'flex'; layout(); stat(''); $('bAgain').style.display = 'none'; }
 
 const gname = g => g === 'solid' ? 'lisas (1–7)' : g === 'stripe' ? 'listradas (9–15)' : 'mesa aberta';
 function updateUI() {
@@ -276,17 +402,39 @@ function updateUI() {
   $('p0').className = 'pl' + (S.turn === 0 ? ' on' : ''); $('p1').className = 'pl' + (S.turn === 1 ? ' on' : '');
   $('bAgain').style.display = S.over ? '' : 'none';
   pwr.classList.toggle('off', !canShoot());
+  if (!pdrag && power === 0) $('pval').textContent = pvalIdle();
+  updTop();
+}
+for (const p of [0, 1]) for (let i = 0; i < 7; i++) $('sl' + p).appendChild(document.createElement('div')).className = 'sl';
+function updTop() {
+  for (const p of [0, 1]) {
+    const nmv = S.names[p] || '';
+    $('pn' + p).textContent = nmv; $('av' + p).textContent = nmv.charAt(0).toUpperCase() || 'J';
+    $('pn' + p).classList.toggle('on', S.turn === p); $('av' + p).classList.toggle('on', S.turn === p);
+    const g = S.grp[p], ids = g === 'solid' ? [1, 2, 3, 4, 5, 6, 7] : g === 'stripe' ? [9, 10, 11, 12, 13, 14, 15] : null;
+    [...$('sl' + p).children].forEach((el, i) => {
+      let bg = '', bc = '';
+      if (ids) {
+        const n = ids[i], bb = S.b.find(x => x[0] === n);
+        if (bb && !bb[3]) { bg = n > 8 ? 'linear-gradient(#fff 0 28%,' + COL[n - 8] + ' 28% 72%,#fff 72%)' : COL[n]; bc = '#ffffff66'; }
+      }
+      el.style.background = bg; el.style.borderColor = bc;
+    });
+  }
 }
 
 // ---------- botoes ----------
-$('bQueue').onclick = () => send({ t: 'queue', name: nm() });
-$('bPractice').onclick = () => send({ t: 'practice', name: nm() });
-$('bCreate').onclick = () => send({ t: 'create', name: nm() });
-$('bJoin').onclick = () => { const c = $('code').value.trim(); if (c) send({ t: 'join', name: nm(), code: c }); };
+function go(o) { try { send(o); } catch (e) { stat(''); toast('Não foi possível conectar ao servidor.'); } }
+function leaveQueue() { if (ws) { ws.onclose = null; try { ws.close(); } catch (e) {} ws = null; } stat(''); }
+$('roomFree').onclick = () => { stat('Procurando adversário...'); go({ t: 'queue', name: nm() }); };
+$('qCancel').onclick = leaveQueue;
+$('qPractice').onclick = () => { leaveQueue(); go({ t: 'practice', name: nm() }); };
+$('hmHome').onclick = () => { $('lobby').scrollTop = 0; };
+$('hmHow').onclick = () => { $('howBox').style.display = 'flex'; };
+$('howClose').onclick = () => { $('howBox').style.display = 'none'; };
+$('hmChat').onclick = () => { if (SUPPORT_WHATSAPP) window.open('https://wa.me/' + SUPPORT_WHATSAPP, '_blank'); else toast('Suporte pelo WhatsApp ainda não configurado.'); };
 $('bAgain').onclick = () => send({ t: 'again' });
 $('bLeave').onclick = () => send({ t: 'leave' });
-$('name').value = (() => { try { return localStorage.getItem('sinuca-name') || ''; } catch (e) { return ''; } })();
-$('name').addEventListener('input', () => { try { localStorage.setItem('sinuca-name', $('name').value); } catch (e) {} });
 
 // ---------- mira e forca ----------
 const canShoot = () => S && !S.moving && !S.over && (solo || S.turn === seat);
@@ -297,18 +445,36 @@ function pos(e) {
   return [rx * W / r.width, ry * H / r.height];
 }
 // Layout: no celular em pe a mesa e girada 90 graus e preenche a area disponivel
+const pcMQ = matchMedia('(min-width:900px) and (orientation:landscape) and (hover:hover) and (pointer:fine)');
+let lastPc = null, railGeo = { w: 0 };
 function layout() {
+  const pc = pcMQ.matches;
+  document.body.classList.toggle('pc', pc);
+  const host = $(pc ? 'pwSlot' : 'ctl'), pwEl = $('pw');
+  if (pwEl.parentNode !== host) host.appendChild(pwEl);
+  if (lastPc !== pc) { lastPc = pc; setPower(0); }
   const st = $('stage'), aw = st.clientWidth, ah = st.clientHeight;
   if (!aw || !ah) return;
   rot = window.innerHeight > window.innerWidth;
   let vw, vh;
-  if (rot) { vw = Math.min(aw, ah / 2); vh = vw * 2; } else { vw = Math.min(aw, ah * 2); vh = vw / 2; }
+  if (rot) { vw = Math.min(aw, ah / 2); vh = vw * 2; } else { vw = Math.min(aw, ah * 2); if (pc) vw = Math.min(vw, window.innerWidth * 0.82); vh = vw / 2; }
   $('tw').style.width = vw + 'px'; $('tw').style.height = vh + 'px';
   if (rot) { cv.style.width = vh + 'px'; cv.style.height = vw + 'px'; cv.style.transform = 'translate(-50%,-50%) rotate(90deg)'; }
   else { cv.style.width = vw + 'px'; cv.style.height = vh + 'px'; cv.style.transform = 'translate(-50%,-50%)'; }
+  if (pc) {
+    const slack = Math.max(0, (aw - vw) / 2), rw = Math.round(slack + 150), rc = $('rail');
+    rc.style.width = rw + 'px'; rc.style.height = ah + 'px'; rc.style.marginLeft = -slack + 'px';
+    if (rc.width !== rw * 2) rc.width = rw * 2; if (rc.height !== ah * 2) rc.height = ah * 2;
+    railGeo = { w: rw, h: ah, top: (ah - vh) / 2, vh, slack, k: vw / W };
+  }
 }
 new ResizeObserver(layout).observe($('stage'));
-window.addEventListener('resize', layout);
+window.addEventListener('resize', layout); pcMQ.addEventListener('change', layout);
+$('pcSpin').onclick = () => toast('Efeito na bola: em breve.');
+$('pcSet').onclick = () => $('bSet').click();
+$('pcLeave').onclick = () => $('bLeave').click();
+$('pcChat').onclick = () => $('hmChat').click();
+$('pcFull').onclick = () => $('bFull').click();
 $('bSet').onclick = () => { const h = $('helpBox'); h.style.display = h.style.display === 'block' ? 'none' : 'block'; };
 $('bFull').onclick = () => {
   const d = document.documentElement;
@@ -338,9 +504,16 @@ window.addEventListener('keydown', e => {
 
 const pwr = $('pwr'), pfill = $('pfill');
 let pdrag = false, px0 = 0;
-function setPower(p) { power = p; pfill.style.width = (p * 100) + '%'; $('pval').textContent = p > 0 ? Math.round(p * 100) + '%' : 'PUXE E SOLTE ➜'; }
-function pset(e) { const r = pwr.getBoundingClientRect(); setPower(Math.max(0, Math.min(1, (e.clientX - px0) / (r.width * 0.85)))); }
-pwr.addEventListener('pointerdown', e => { if (!canShoot()) return; pwr.setPointerCapture(e.pointerId); pdrag = true; px0 = e.clientX; setPower(0); });
+const isPc = () => document.body.classList.contains('pc');
+function pvalIdle() { return !isPc() ? 'PUXE E SOLTE ➜' : canShoot() ? 'PUXE E SOLTE' : S && S.over ? 'FIM DE JOGO' : S && S.moving ? 'AGUARDE' : 'VEZ DO ADVERSÁRIO'; }
+function setPower(p) {
+  power = p;
+  if (isPc()) { $('cue').style.transform = 'translateY(' + (p * pwr.clientHeight * 0.8) + 'px)'; pfill.style.width = '100%'; }
+  else { pfill.style.width = (p * 100) + '%'; pfill.style.height = ''; $('cue').style.transform = ''; }
+  $('pval').textContent = p > 0 ? (isPc() ? Math.max(1, Math.round(p * 100)) : Math.round(p * 100) + '%') : pvalIdle();
+}
+function pset(e) { const r = pwr.getBoundingClientRect(), v = isPc() ? (e.clientY - px0) / (r.height * 0.85) : (e.clientX - px0) / (r.width * 0.85); setPower(Math.max(0, Math.min(1, v))); }
+pwr.addEventListener('pointerdown', e => { if (!canShoot()) return; pwr.setPointerCapture(e.pointerId); pdrag = true; px0 = isPc() ? e.clientY : e.clientX; setPower(0); });
 pwr.addEventListener('pointermove', e => { if (pdrag) pset(e); });
 pwr.addEventListener('pointerup', () => {
   if (!pdrag) return;
@@ -350,22 +523,81 @@ pwr.addEventListener('pointerup', () => {
 pwr.addEventListener('pointercancel', () => { pdrag = false; setPower(0); });
 
 // ---------- desenho ----------
-function ball(b) {
-  const n = b[0], x = b[1], y = b[2], str = n > 8;
-  ctx.save(); ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.clip();
-  ctx.fillStyle = n === 0 || str ? '#fff' : COL[n]; ctx.fillRect(x - R, y - R, 2 * R, 2 * R);
-  if (str) { ctx.fillStyle = COL[n - 8]; ctx.fillRect(x - R, y - 5, 2 * R, 10); }
-  ctx.restore();
-  if (n) {
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y, 4.6, 0, 7); ctx.fill();
-    ctx.fillStyle = '#111'; ctx.font = 'bold 7px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(n, x, y + .5);
+// Bolas 3D: cada bola e uma esfera com rotacao propria (gira ao rolar), luz no canto superior esquerdo e brilho
+const COLRGB = COL.map(h => { if (h.length === 4) h = '#' + h[1] + h[1] + h[2] + h[2] + h[3] + h[3]; return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; });
+const BD = 64, BS = [];
+for (let n = 0; n < 16; n++) {
+  const c = document.createElement('canvas'); c.width = c.height = BD;
+  BS.push({ m: [1, 0, 0, 0, 1, 0, 0, 0, 1], px: null, py: 0, dirty: true, c, g: c.getContext('2d') });
+}
+function rollBall(s, dx, dy) {
+  const d = Math.hypot(dx, dy), a = d / R, ax = -dy / d, ay = dx / d, c = Math.cos(a), sn = Math.sin(a), t = 1 - c, m = s.m;
+  const Q = [c + ax * ax * t, ax * ay * t, ay * sn, ax * ay * t, c + ay * ay * t, -ax * sn, -ay * sn, ax * sn, c], o = new Array(9);
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) o[i * 3 + j] = Q[i * 3] * m[j] + Q[i * 3 + 1] * m[3 + j] + Q[i * 3 + 2] * m[6 + j];
+  // mantem a matriz ortonormal (evita deriva numerica)
+  let l = Math.hypot(o[0], o[1], o[2]); o[0] /= l; o[1] /= l; o[2] /= l;
+  const dt = o[3] * o[0] + o[4] * o[1] + o[5] * o[2]; o[3] -= dt * o[0]; o[4] -= dt * o[1]; o[5] -= dt * o[2];
+  l = Math.hypot(o[3], o[4], o[5]); o[3] /= l; o[4] /= l; o[5] /= l;
+  o[6] = o[1] * o[5] - o[2] * o[4]; o[7] = o[2] * o[3] - o[0] * o[5]; o[8] = o[0] * o[4] - o[1] * o[3];
+  s.m = o; s.dirty = true;
+}
+function updateRoll() {
+  for (const b of S.b) {
+    const s = BS[b[0]];
+    if (!b[3]) { s.px = null; continue; }
+    if (s.px !== null) { const dx = b[1] - s.px, dy = b[2] - s.py, d = Math.hypot(dx, dy); if (d > 0.03 && d < 40) rollBall(s, dx, dy); }
+    s.px = b[1]; s.py = b[2];
   }
-  ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.stroke();
+}
+const sstep = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+function renderBall(n) {
+  const s = BS[n], m = s.m, g = s.g, r = BD / 2, img = g.createImageData(BD, BD), px = img.data;
+  const str = n > 8, base = n === 0 ? [248, 246, 238] : COLRGB[str ? n - 8 : n];
+  for (let y = 0; y < BD; y++) for (let x = 0; x < BD; x++) {
+    const u = (x + .5 - r) / r, v = (y + .5 - r) / r, d2 = u * u + v * v;
+    if (d2 > 1.08) continue;
+    const dd = Math.sqrt(d2), al = Math.max(0, Math.min(1, (1 - dd) * r + .5));
+    if (al <= 0) continue;
+    const w = Math.sqrt(Math.max(0, 1 - d2));
+    const by = m[1] * u + m[4] * v + m[7] * w, bz = m[2] * u + m[5] * v + m[8] * w;
+    let cr = base[0], cg = base[1], cb = base[2];
+    if (str) { const t = sstep(.47, .53, Math.abs(by)); cr = cr * (1 - t) + 245 * t; cg = cg * (1 - t) + 245 * t; cb = cb * (1 - t) + 240 * t; }
+    if (n > 0) { const t = sstep(.885, .897, Math.abs(bz)); cr = cr * (1 - t) + 250 * t; cg = cg * (1 - t) + 250 * t; cb = cb * (1 - t) + 246 * t; }
+    else { const t = sstep(.955, .965, bz); cr = cr * (1 - t) + 214 * t; cg = cg * (1 - t) + 40 * t; cb = cb * (1 - t) + 36 * t; }
+    // luz suave + brilho (especular) + escurecimento nas bordas
+    const nl = Math.max(0, -.42 * u - .5 * v + .75 * w), sp = Math.pow(Math.max(0, -.225 * u - .268 * v + .937 * w), 55);
+    const amb = .3 + .8 * nl, rim = .7 + .3 * w, bounce = Math.max(0, .35 * u + .4 * v) * .12;
+    const k = amb * rim + bounce, i = (y * BD + x) * 4;
+    px[i] = Math.min(255, cr * k + sp * 255 * .85); px[i + 1] = Math.min(255, cg * k + sp * 255 * .85); px[i + 2] = Math.min(255, cb * k + sp * 255 * .85);
+    px[i + 3] = al * 255;
+  }
+  g.clearRect(0, 0, BD, BD); g.putImageData(img, 0, 0);
+  if (n > 0) {
+    g.font = 'bold 14px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    for (const sg of [1, -1]) {
+      const cx = sg * m[2] * r, cy = sg * m[5] * r, z = sg * m[8];
+      if (z < .12) continue;
+      g.save(); g.globalAlpha = Math.min(1, (z - .12) / .3); g.translate(r + cx, r + cy);
+      g.rotate(Math.atan2(cy, cx)); g.scale(Math.max(z, .08), 1);
+      g.rotate(Math.atan2(sg * m[3], sg * m[0]) - Math.atan2(cy, cx));
+      g.fillStyle = '#151515'; g.fillText(n, 0, .5); g.restore();
+    }
+  }
+  s.dirty = false;
+}
+function ball(b, g = ctx) {
+  const s = BS[b[0]]; if (s.dirty) renderBall(b[0]);
+  g.drawImage(s.c, b[1] - R, b[2] - R, 2 * R, 2 * R);
+}
+function ballShadow(b) {
+  const x = b[1] + 2.2, y = b[2] + 3, gr = ctx.createRadialGradient(x, y, R * .35, x, y, R * 1.35);
+  gr.addColorStop(0, 'rgba(0,0,20,.5)'); gr.addColorStop(.6, 'rgba(0,0,20,.22)'); gr.addColorStop(1, 'rgba(0,0,20,0)');
+  ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, R * 1.35, 0, 7); ctx.fill();
 }
 // Linha de mira: vai até a primeira bola, quica na tabela (até 2 vezes) e mostra para onde a bola atingida vai
 function guide(c, ux, uy) {
   const minX = M + R, maxX = W - M - R, minY = M + R, maxY = H - M - R;
-  let x = c[1], y = c[2], dx = ux, dy = uy, left = 520, hit = null;
+  let x = c[1], y = c[2], dx = ux, dy = uy, left = 520, hit = null, wall = null;
   const pts = [[x, y]];
   for (let k = 0; k < 3 && left > 0; k++) {
     let tBall = Infinity, hb = null;
@@ -391,18 +623,24 @@ function guide(c, ux, uy) {
     }
     const t = Math.max(0, Math.min(tWall, left));
     x += dx * t; y += dy * t; left -= t; pts.push([x, y]);
-    if (t === tWall) { if (vert) dx = -dx; else dy = -dy; } else break;
+    // bateu na tabela antes de qualquer bola: para aqui e mostra so a bolinha na tabela + uma linha curta do rebote
+    if (t === tWall) wall = { x, y, dx: vert ? -dx : dx, dy: vert ? dy : -dy };
+    break;
   }
   ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.setLineDash([]);
   ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = 2.5;
   // se vai bater numa bola, a linha termina na borda do aro (nao no centro dele)
-  if (hit && pts.length > 1) {
+  if ((hit || wall) && pts.length > 1) {
     const q = pts[pts.length - 2], e = pts[pts.length - 1], sl = Math.hypot(e[0] - q[0], e[1] - q[1]);
     if (sl > R) pts[pts.length - 1] = [e[0] - dx * R, e[1] - dy * R];
   }
   ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
   for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
   ctx.stroke();
+  if (wall) {
+    ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(wall.x, wall.y, R, 0, 7); ctx.stroke();
+    ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(wall.x + wall.dx * R, wall.y + wall.dy * R); ctx.lineTo(wall.x + wall.dx * (R + 65), wall.y + wall.dy * (R + 65)); ctx.stroke();
+  }
   if (hit) {
     const bx = hit.b[1], by = hit.b[2];
     let nx = bx - hit.x, ny = by - hit.y; const nl = Math.sqrt(nx * nx + ny * ny) || 1; nx /= nl; ny /= nl;
@@ -443,18 +681,163 @@ function drawCue(c, ux, uy) {
   ctx.fillStyle = '#f4f1e8'; poly(2.5, 12, w(2.5), w(12));
   ctx.fillStyle = '#2f6fb3'; poly(0, 2.5, 1.6, w(2.5));
 }
+// ---------- mesa (desenhada uma vez, num canvas separado) ----------
+const TBL = (() => {
+  const K = SC, c = document.createElement('canvas'); c.width = W * K; c.height = H * K;
+  const g = c.getContext('2d'); g.scale(K, K);
+  let seed = 5; const rnd = () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const RW = 19; // espessura da moldura laranja
+  // moldura laranja, mais clara no meio da espessura
+  g.fillStyle = '#c4601a'; g.fillRect(0, 0, W, H);
+  const side = (x, y, w, h, x0, y0, x1, y1) => {
+    const l = g.createLinearGradient(x0, y0, x1, y1);
+    l.addColorStop(0, '#8c3c0e'); l.addColorStop(.35, '#e6893a'); l.addColorStop(1, '#b2521a');
+    g.fillStyle = l; g.fillRect(x, y, w, h);
+  };
+  side(0, 0, W, RW, 0, 0, 0, RW); side(0, H - RW, W, RW, 0, H, 0, H - RW);
+  side(0, 0, RW, H, 0, 0, RW, 0); side(W - RW, 0, RW, H, W, 0, W - RW, 0);
+  g.strokeStyle = '#f6c05a'; g.lineWidth = 1.2; g.strokeRect(.8, .8, W - 1.6, H - 1.6);
+  // veios da madeira na moldura
+  g.save(); g.beginPath(); g.rect(0, 0, W, H); g.rect(RW, RW, W - 2 * RW, H - 2 * RW); g.clip('evenodd');
+  for (let i = 0; i < 900; i++) {
+    const hz = i % 2 === 0, len = 30 + rnd() * 120, a0 = rnd() * (hz ? W : H), off = rnd() * RW;
+    const top = rnd() < .5; g.strokeStyle = rnd() < .55 ? 'rgba(80,28,4,' + (.07 + rnd() * .12) + ')' : 'rgba(255,200,130,' + (.05 + rnd() * .1) + ')'; g.lineWidth = .4 + rnd() * .7; g.beginPath();
+    if (hz) { const y = top ? off : H - off; g.moveTo(a0, y); g.bezierCurveTo(a0 + len / 3, y + (rnd() - .5) * 1.4, a0 + 2 * len / 3, y + (rnd() - .5) * 1.4, a0 + len, y + (rnd() - .5) * 1.2); }
+    else { const x = top ? off : W - off; g.moveTo(x, a0); g.bezierCurveTo(x + (rnd() - .5) * 1.4, a0 + len / 3, x + (rnd() - .5) * 1.4, a0 + 2 * len / 3, x + (rnd() - .5) * 1.2, a0 + len); }
+    g.stroke();
+  }
+  g.restore();
+  // pano azul: luz no centro, bordas escuras
+  g.fillStyle = '#062a86'; g.fillRect(RW, RW, W - 2 * RW, H - 2 * RW);
+  const fg = g.createRadialGradient(W / 2, H / 2, 20, W / 2, H / 2, W * .6);
+  fg.addColorStop(0, '#0b5be8'); fg.addColorStop(.5, '#0847c4'); fg.addColorStop(1, '#04207a');
+  g.fillStyle = fg; g.fillRect(M, M, W - 2 * M, H - 2 * M);
+  g.save(); g.beginPath(); g.rect(M, M, W - 2 * M, H - 2 * M); g.clip();
+  for (let i = 0; i < 5000; i++) { g.fillStyle = rnd() < .5 ? 'rgba(255,255,255,.03)' : 'rgba(0,0,30,.07)'; g.fillRect(M + rnd() * (W - 2 * M), M + rnd() * (H - 2 * M), 1, 1); }
+  const sh = (x0, y0, x1, y1, rx, ry, rw, rh) => { const l = g.createLinearGradient(x0, y0, x1, y1); l.addColorStop(0, 'rgba(0,5,40,.4)'); l.addColorStop(1, 'rgba(0,5,40,0)'); g.fillStyle = l; g.fillRect(rx, ry, rw, rh); };
+  sh(0, M, 0, M + 18, M, M, W - 2 * M, 18); sh(0, H - M, 0, H - M - 18, M, H - M - 18, W - 2 * M, 18);
+  sh(M, 0, M + 18, 0, M, M, 18, H - 2 * M); sh(W - M, 0, W - M - 18, 0, W - M - 18, M, 18, H - 2 * M);
+  g.restore();
+  // pano mais realista: trama fina, fibras, luz de cima
+  g.save(); g.beginPath(); g.rect(M, M, W - 2 * M, H - 2 * M); g.clip();
+  g.lineWidth = .5; g.strokeStyle = 'rgba(255,255,255,.022)'; g.beginPath();
+  for (let y = M; y < H - M; y += 1.5) { g.moveTo(M, y); g.lineTo(W - M, y); } g.stroke();
+  g.strokeStyle = 'rgba(0,0,40,.03)'; g.beginPath();
+  for (let x = M; x < W - M; x += 1.5) { g.moveTo(x, M); g.lineTo(x, H - M); } g.stroke();
+  for (let i = 0; i < 3500; i++) { const fx = M + rnd() * (W - 2 * M), fy = M + rnd() * (H - 2 * M); g.strokeStyle = rnd() < .5 ? 'rgba(150,200,255,.05)' : 'rgba(0,0,40,.07)'; g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx + (rnd() - .5) * 4, fy + (rnd() - .5) * 4); g.stroke(); }
+  const sp = g.createRadialGradient(W * .5, H * .42, 10, W * .5, H * .5, W * .55);
+  sp.addColorStop(0, 'rgba(110,180,255,.16)'); sp.addColorStop(.6, 'rgba(60,120,230,.05)'); sp.addColorStop(1, 'rgba(0,0,40,.18)');
+  g.fillStyle = sp; g.fillRect(M, M, W - 2 * M, H - 2 * M);
+  for (const [qx, qy] of PK) { const ps = g.createRadialGradient(qx, qy, PR, qx, qy, PR + 26); ps.addColorStop(0, 'rgba(0,5,40,.55)'); ps.addColorStop(1, 'rgba(0,5,40,0)'); g.fillStyle = ps; g.fillRect(qx - PR - 26, qy - PR - 26, 2 * PR + 52, 2 * PR + 52); }
+  g.restore();
+  // linha de cabeceira
+  g.strokeStyle = 'rgba(255,255,255,.3)'; g.lineWidth = 1; g.beginPath(); g.moveTo(230, M); g.lineTo(230, H - M); g.stroke();
+  // almofadas (trapezios azul-claros)
+  const cush = (pts, x0, y0, x1, y1) => {
+    const l = g.createLinearGradient(x0, y0, x1, y1); l.addColorStop(0, '#1b57bd'); l.addColorStop(1, '#3a8bf0');
+    g.fillStyle = l; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < 4; i++) g.lineTo(pts[i][0], pts[i][1]); g.closePath(); g.fill();
+    g.strokeStyle = 'rgba(0,10,60,.55)'; g.lineWidth = 1; g.stroke();
+    g.strokeStyle = 'rgba(180,215,255,.6)'; g.beginPath(); g.moveTo(pts[3][0], pts[3][1]); g.lineTo(pts[2][0], pts[2][1]); g.stroke();
+  };
+  cush([[48, RW], [376, RW], [368, M], [56, M]], 0, RW, 0, M);
+  cush([[424, RW], [752, RW], [744, M], [432, M]], 0, RW, 0, M);
+  cush([[48, H - RW], [376, H - RW], [368, H - M], [56, H - M]], 0, H - RW, 0, H - M);
+  cush([[424, H - RW], [752, H - RW], [744, H - M], [432, H - M]], 0, H - RW, 0, H - M);
+  cush([[RW, 48], [RW, 352], [M, 344], [M, 56]], RW, 0, M, 0);
+  cush([[W - RW, 48], [W - RW, 352], [W - M, 344], [W - M, 56]], W - RW, 0, W - M, 0);
+  g.strokeStyle = 'rgba(60,15,0,.7)'; g.lineWidth = 1; g.strokeRect(RW - .5, RW - .5, W - 2 * RW + 1, H - 2 * RW + 1);
+  // enfeites da moldura: voltas, paineis de marmore escuro e perolas (desenhado em coordenadas locais da borda)
+  const panel = (x, y, w, h) => {
+    g.save(); g.beginPath(); g.roundRect(x, y, w, h, 2.5); g.clip();
+    const l = g.createLinearGradient(0, y, 0, y + h); l.addColorStop(0, '#15151a'); l.addColorStop(.5, '#2b2b32'); l.addColorStop(1, '#121216');
+    g.fillStyle = l; g.fillRect(x, y, w, h);
+    g.strokeStyle = 'rgba(255,255,255,.6)'; g.lineWidth = .5;
+    for (let i = 0; i < Math.max(5, w / 22); i++) {
+      let px = x + rnd() * w, py = y + rnd() * h; g.beginPath(); g.moveTo(px, py);
+      for (let k = 0; k < 4; k++) { px += (rnd() - .4) * 16; py += (rnd() - .5) * 8; g.lineTo(px, Math.max(y, Math.min(y + h, py))); }
+      g.globalAlpha = .25 + rnd() * .5; g.stroke();
+    }
+    g.restore(); g.globalAlpha = 1;
+    g.strokeStyle = 'rgba(245,185,80,.75)'; g.lineWidth = .8; g.beginPath(); g.roundRect(x, y, w, h, 2.5); g.stroke();
+  };
+  const deco = (len, segs, pearls) => {
+    g.strokeStyle = 'rgba(105,30,6,.65)'; g.lineWidth = .9;
+    for (let x = 4; x < len - 6; x += 11) {
+      g.beginPath(); g.moveTo(x, 17.5); g.bezierCurveTo(x + 2, 13.8, x + 6, 13.8, x + 6, 16); g.bezierCurveTo(x + 6, 17.6, x + 4.4, 17.8, x + 4.2, 16.8); g.stroke();
+    }
+    for (const [a, b] of segs) panel(a, 4.5, b - a, 9.5);
+    for (const x of pearls) {
+      const gl = g.createRadialGradient(x, 9.2, .5, x, 9.2, 5); gl.addColorStop(0, 'rgba(255,170,205,.9)'); gl.addColorStop(1, 'rgba(255,170,205,0)');
+      g.fillStyle = gl; g.beginPath(); g.arc(x, 9.2, 5, 0, 7); g.fill();
+      g.fillStyle = '#fff'; g.beginPath(); g.arc(x, 9.2, 1.8, 0, 7); g.fill();
+    }
+  };
+  const LW = [[0, 328], [384, 712]], LP = [56, 156, 256, 456, 556, 656], SP = [56, 156, 256];
+  g.save(); g.translate(44, 0); deco(W - 88, LW, LP); g.restore();
+  g.save(); g.translate(W - 44, H); g.rotate(Math.PI); deco(W - 88, LW, LP); g.restore();
+  g.save(); g.translate(0, H - 44); g.rotate(-Math.PI / 2); deco(H - 88, [[0, H - 88]], SP); g.restore();
+  g.save(); g.translate(W, 44); g.rotate(Math.PI / 2); deco(H - 88, [[0, H - 88]], SP); g.restore();
+  // cacapas: aro vermelho-escuro e buraco preto
+  for (const [px, py] of PK) {
+    const rg = g.createRadialGradient(px, py, PR - 4, px, py, PR + 4);
+    rg.addColorStop(0, '#2a0a04'); rg.addColorStop(1, '#7a2a0c');
+    g.fillStyle = rg; g.beginPath(); g.arc(px, py, PR + 4, 0, 7); g.fill();
+    g.strokeStyle = 'rgba(250,190,90,.7)'; g.lineWidth = 1; g.stroke();
+    const hg = g.createRadialGradient(px, py, 2, px, py, PR);
+    hg.addColorStop(0, '#000'); hg.addColorStop(.8, '#030201'); hg.addColorStop(1, '#1a0904');
+    g.fillStyle = hg; g.beginPath(); g.arc(px, py, PR, 0, 7); g.fill();
+    // redinha: malha em losangos dentro da cacapa (fundo marrom, nao mais preto)
+    g.save(); g.beginPath(); g.arc(px, py, PR, 0, 7); g.clip();
+    const ng = g.createRadialGradient(px, py, 1, px, py, PR);
+    ng.addColorStop(0, '#1b0e08'); ng.addColorStop(1, '#3a1d0e');
+    g.fillStyle = ng; g.fillRect(px - PR, py - PR, 2 * PR, 2 * PR);
+    const st = 4.6;
+    for (const [col, lw, off] of [['rgba(12,5,2,.9)', 1.7, .7], ['rgba(176,108,62,.95)', .9, 0]]) {
+      g.strokeStyle = col; g.lineWidth = lw; g.beginPath();
+      for (let d = -2 * PR; d <= 2 * PR; d += st) {
+        g.moveTo(px - PR + d + off, py - PR + off); g.lineTo(px + PR + d + off, py + PR + off);
+        g.moveTo(px + PR + d + off, py - PR + off); g.lineTo(px - PR + d + off, py + PR + off);
+      }
+      g.stroke();
+    }
+    const vg = g.createRadialGradient(px, py, 2, px, py, PR);
+    vg.addColorStop(0, 'rgba(0,0,0,.55)'); vg.addColorStop(.6, 'rgba(0,0,0,.18)'); vg.addColorStop(1, 'rgba(0,0,0,.45)');
+    g.fillStyle = vg; g.fillRect(px - PR, py - PR, 2 * PR, 2 * PR);
+    g.restore();
+  }
+  return c;
+})();
+const railC = $('rail'), rg = railC.getContext('2d');
+function drawRail() {
+  if (!isPc() || !railGeo.w) return;
+  const { w, h, top, vh, slack, k } = railGeo;
+  rg.setTransform(2, 0, 0, 2, 0, 0); rg.clearRect(0, 0, w, h);
+  const cx = slack + 70, y0 = top + vh * 0.07, y1 = top + vh * 0.8, r = 40;
+  const path = () => { rg.beginPath(); rg.moveTo(cx, y0); rg.lineTo(cx, y1 - r); rg.arcTo(cx, y1, cx - r, y1, r); rg.lineTo(0, y1); };
+  rg.lineJoin = 'round'; rg.lineCap = 'butt';
+  for (const [lw, col] of [[56, '#6e4a10'], [50, '#d9ae45'], [40, '#24130a']]) { rg.lineWidth = lw; rg.strokeStyle = col; path(); rg.stroke(); }
+  rg.fillStyle = '#e8c15a';
+  for (let y = y0 + 4; y < y1 - r - 10; y += 130) rg.fillRect(cx - 28, y, 56, 6);
+  rg.fillStyle = '#d9ae45'; rg.beginPath(); rg.arc(cx, y0, 28, Math.PI, 0); rg.fill();
+  if (!S) return;
+  const dead = S.b.filter(b => !b[3] && b[0] > 0).sort((a, b) => a[0] - b[0]);
+  const bd = 2 * R * k * 0.88, sc = bd / (2 * R);
+  dead.forEach((b, i) => {
+    const y = Math.max(y0 + bd / 2, y1 - r - bd / 2 - i * (bd + 2));
+    rg.save(); rg.translate(cx, y); rg.scale(sc, sc); ball([b[0], 0, 0, 1], rg); rg.restore();
+  });
+}
 function draw() {
-  ctx.setTransform(2, 0, 0, 2, 0, 0);
-  ctx.fillStyle = '#5b3a1e'; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = '#1b7a46'; ctx.fillRect(M - 6, M - 6, W - 2 * M + 12, H - 2 * M + 12);
-  ctx.fillStyle = '#0b0b0b'; for (const p of PK) { ctx.beginPath(); ctx.arc(p[0], p[1], PR, 0, 7); ctx.fill(); }
-  ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.beginPath(); ctx.moveTo(230, M); ctx.lineTo(230, H - M); ctx.stroke();
-  if (S) for (const b of S.b) if (b[3]) ball(b);
+  ctx.setTransform(SC, 0, 0, SC, 0, 0);
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(TBL, 0, 0, W, H);
+  if (S) { updateRoll(); for (const b of S.b) if (b[3]) ballShadow(b); for (const b of S.b) if (b[3]) ball(b); }
   if (canShoot()) {
     const c = S.b[0], ux = aim[0], uy = aim[1];
     guide(c, ux, uy);
     drawCue(c, ux, uy);
   }
+  drawRail();
   requestAnimationFrame(draw);
 }
 draw();
