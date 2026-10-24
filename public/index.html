@@ -40,15 +40,20 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
 .cb{position:relative;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0,#f1eee3 55%,#bfbaa8 100%)}
 .cb i{position:absolute;left:50%;top:50%;width:15%;height:15%;border-radius:50%;background:#d62828;border:1.5px solid #fff;transform:translate(-50%,-50%);pointer-events:none}
 #spinBtn{width:var(--sp);height:var(--sp);flex:none;padding:0;border:0;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.55)}
-#pw{position:relative;overflow:hidden;border:2px solid #c9a24a;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.5);background:linear-gradient(90deg,#7a4c22,#f0d6a0 38%,#d3a867 62%,#7a4c22)}
-.wide #pw{width:calc(var(--k,1)*22px);height:calc(var(--k,1)*300px)}
-.stack #pw{flex:1;height:26px;background:linear-gradient(180deg,#7a4c22,#f0d6a0 38%,#d3a867 62%,#7a4c22)}
-#pw::before{content:'';position:absolute;z-index:2;left:0;right:0;top:0;height:13%;background:linear-gradient(#f4f1e8 0 24%,#2b160a 24%)}
-.stack #pw::before{right:auto;bottom:0;width:9%;height:auto;background:linear-gradient(90deg,#f4f1e8 0 24%,#2b160a 24%)}
-#pw::after{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.4) 0 1px,transparent 1px 10%)}
-.stack #pw::after{background:repeating-linear-gradient(90deg,rgba(0,0,0,.4) 0 1px,transparent 1px 10%)}
-#pwf{position:absolute;z-index:1;inset:0;opacity:.92;background:linear-gradient(0deg,#3ecf74,#e8c93a 60%,#e0483a);clip-path:inset(calc((1 - var(--p,0))*100%) 0 0 0)}
-.stack #pwf{background:linear-gradient(90deg,#3ecf74,#e8c93a 60%,#e0483a);clip-path:inset(0 calc((1 - var(--p,0))*100%) 0 0)}
+/* barra de forca = taco vertical (0 a 100) */
+#pw{position:relative;flex:none;box-sizing:border-box;border:1.5px solid rgba(196,168,120,.9);border-radius:max(4px,calc(var(--k,1)*8px));background:linear-gradient(180deg,#5a3f1f,#563a1c 55%,#4f3019);box-shadow:0 4px 12px rgba(0,0,0,.5)}
+.wide #pw{width:calc(var(--k,1)*34px);height:calc(var(--k,1)*335px)}
+.stack #pw{width:34px;height:168px}
+.stack #left{justify-content:center;align-items:flex-start;gap:30px;padding:0 0 20px}
+#pw::before{content:'';position:absolute;left:0;right:0;top:0;bottom:25%;pointer-events:none;z-index:3;
+  background:linear-gradient(180deg,transparent calc(100% - 1px),#dcc6a6 0) left top/15% 33.3333% repeat-y,
+             linear-gradient(180deg,transparent calc(100% - 1px),#dcc6a6 0) right top/15% 33.3333% repeat-y}
+#pwc{position:absolute;display:block;left:50%;top:1%;bottom:1%;width:36%;transform:translateX(-50%);overflow:hidden;border-radius:3px 3px 1px 1px;
+  background:linear-gradient(90deg,#61400f 0,#826028 14%,#a1742f 28%,#b88f3f 40%,#cfa154 55%,#f5d193 78%,#fbcd8f 88%,#ecc383 100%);box-shadow:0 0 3px rgba(0,0,0,.45)}
+#pwc::after{content:'';position:absolute;z-index:2;left:0;right:0;top:0;height:7.2%;
+  background:linear-gradient(180deg,#232220 0 45%,#f1ecdd 45%);}
+#pwf{position:absolute;z-index:1;left:0;right:0;top:-1.0204%;bottom:-1.0204%;opacity:.8;background:linear-gradient(0deg,#3ecf74,#e8c93a 60%,#e0483a);clip-path:inset(calc((1 - var(--p,0))*100%) 0 0 0)}
+#pwn{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:4px;font:700 12px/1 system-ui,sans-serif;color:#f1e3c4;text-shadow:0 1px 3px #000;pointer-events:none;white-space:nowrap}
 #right canvas{display:block;width:calc(var(--k,1)*40px);height:calc(var(--k,1)*380px);border-radius:0;box-shadow:none;touch-action:auto}
 .stack #right{width:100%;display:flex;justify-content:center}
 .stack #right canvas{width:min(100%,420px);height:auto}
@@ -82,7 +87,7 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
   <div id="stage" class="wide">
     <div id="left">
       <button id="spinBtn" class="cb" type="button" aria-label="Efeito na bola branca" title="Efeito na bola branca"><i id="spinDot"></i></button>
-      <div id="pw" role="meter" aria-label="Força da tacada"><i id="pwf"></i></div>
+      <div id="pw" role="meter" aria-label="Força da tacada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><b id="pwc"><i id="pwf"></i></b><span id="pwn">0</span></div>
     </div>
     <canvas id="c" width="1648" height="848"></canvas>
     <div id="right"><canvas id="rail" width="80" height="760" aria-label="Bolas encaçapadas"></canvas></div>
@@ -209,8 +214,8 @@ function setAim(p) {
   const c = S.b[0], dx = p[0] - c[1], dy = p[1] - c[2], d = Math.hypot(dx, dy);
   if (d >= 8) aim = [dx / d, dy / d];
 }
-function setPow(v) { aimPow = Math.max(.02, Math.min(1, v)); }
-function shootNow() { if (canShoot()) { drag = null; fire(aim[0], aim[1], aimPow * 160); } }
+function setPow(v) { aimPow = Math.max(0, Math.min(1, v)); }
+function shootNow() { if (canShoot() && aimPow >= .01) { drag = null; fire(aim[0], aim[1], aimPow * 160); } }
 const fire = (ux, uy, d) => {
   const pw = Math.min(d, 160) / 160;
   lastShot = { ux, uy, off: R + 5 + pw * 55, t: performance.now() };
@@ -245,7 +250,7 @@ cv.addEventListener('pointercancel', () => { touching = false; aiming = false; d
 const pwEl = $('pw');
 function powAt(e) {
   const r = pwEl.getBoundingClientRect();
-  setPow($('stage').classList.contains('stack') ? (e.clientX - r.left) / r.width : 1 - (e.clientY - r.top) / r.height);
+  setPow(1 - (e.clientY - r.top) / r.height);
 }
 pwEl.style.cursor = 'pointer'; pwEl.style.touchAction = 'none';
 pwEl.addEventListener('pointerdown', e => { if (!canShoot()) return; powing = true; pwEl.setPointerCapture(e.pointerId); powAt(e); });
@@ -717,7 +722,7 @@ function frame() {
   }
   const key = (D ? potted.join() : '') + (railVert ? 'v' : 'h');
   if (key !== railKey) { railKey = key; drawRail(); }
-  if (pwCur !== lastPw) { lastPw = pwCur; $('pw').style.setProperty('--p', pwCur.toFixed(3)); }
+  if (pwCur !== lastPw) { lastPw = pwCur; const pe = $('pw'), pn = Math.round(pwCur * 100); pe.style.setProperty('--p', pwCur.toFixed(3)); $('pwn').textContent = pn; pe.setAttribute('aria-valuenow', pn); }
   requestAnimationFrame(frame);
 }
 frame();
