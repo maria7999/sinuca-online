@@ -99,6 +99,19 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #stage.rot #pwf{left:1%;top:32.5%;width:97.6%;height:35%;border-radius:3px 5px 5px 3px;transform:translateX(calc(var(--p,0)*90%));
  background:linear-gradient(180deg,#5a3a13,#714c18 8%,#825921 16%,#a17431 28%,#b88f3f 40%,#cfa154 52%,#dfb76f 62%,#f5d193 76%,#fbcd8f 88%,#ecc383 96%,#d7b47c)}
 #stage.rot #pwf::before{left:0;top:0;bottom:0;right:auto;width:7.8%;height:auto;background:linear-gradient(180deg,rgba(0,0,0,.3),rgba(0,0,0,0) 40%,rgba(255,255,255,.12) 80%,rgba(0,0,0,.2)),linear-gradient(90deg,#14120f 0 39%,#eeeadb 39%)}
+
+/* retrato: jogadores numa faixa vertical na lateral esquerda da mesa (nome deitado + bolas que faltam embaixo) */
+#game #stage.rot .bar{position:absolute;left:-35px;top:0;width:32px;height:100%;flex-direction:column;justify-content:space-around;flex-wrap:nowrap;gap:4px}
+#game #stage.rot .pl{flex:1 1 0;min-width:0;min-height:0;width:100%;flex-wrap:nowrap;flex-direction:column;justify-content:center;align-items:center;align-content:center;gap:4px;padding:0;background:none;border:0;border-radius:0;overflow:hidden}
+#game #stage.rot .av{width:26px;height:26px;font-size:13px;box-shadow:0 0 0 2px transparent}
+#game #stage.rot .pl.on .av{box-shadow:0 0 0 2px var(--gold)}
+#game #stage.rot .pl .who{flex:none;min-height:0;min-width:0;writing-mode:vertical-rl;transform:rotate(180deg)}
+#game #stage.rot .pl b{max-height:84px;font-size:13px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#game #stage.rot .pl:not(.on) b{color:var(--muted)}
+#game #stage.rot .pl small{display:none}
+#game #stage.rot .ico{flex:none;flex-direction:column;flex-wrap:nowrap;justify-content:flex-start;align-items:center;margin:0;min-height:0;gap:1px}
+#game #stage.rot .ico i{width:15px;height:15px}
+#game #stage.rot .ico i span{width:8px;height:8px;font-size:6px;line-height:8px}
 </style>
 </head>
 <body>
@@ -218,10 +231,12 @@ const gname = g => g === 'solid' ? 'lisas (1–7)' : g === 'stripe' ? 'listradas
 const BC = ['#fff', '#f2c200', '#1e5bd8', '#d62828', '#6a2c91', '#f27d0c', '#1f8a3d', '#8b1e1e', '#111'];
 function icons(id, g) {
   const el = $(id); el.innerHTML = ''; if (!g || !D) return;
-  for (const n of g === 'solid' ? [1, 2, 3, 4, 5, 6, 7] : [9, 10, 11, 12, 13, 14, 15]) {
-    const b = D.find(d => d.n === n), i = document.createElement('i'), c = BC[n > 8 ? n - 8 : n];
+  for (const n of (g === 'solid' ? [1, 2, 3, 4, 5, 6, 7] : [9, 10, 11, 12, 13, 14, 15]).concat(8)) {
+    const b = D.find(d => d.n === n);
+    if (!b || !b.act) continue;   // bola encaçapada: some de perto do nome
+    const i = document.createElement('i'), c = BC[n > 8 ? n - 8 : n];
     i.style.background = n > 8 ? `linear-gradient(#fff 0 28%,${c} 28% 72%,#fff 72%)` : c;
-    i.innerHTML = '<span>' + n + '</span>'; if (!b || !b.act) i.className = 'off'; el.appendChild(i);
+    i.innerHTML = '<span>' + n + '</span>'; el.appendChild(i);
   }
 }
 function updateUI() {
@@ -287,16 +302,27 @@ cv.addEventListener('pointerdown', e => {
     setAim(pos(e));
     return;
   }
-  // toque: o dedo so mira (a linha segue o dedo). A tacada sai pela barra de forca.
+  // toque: arrastar o dedo gira a linha a partir de onde ela ja esta (ela nao pula para o dedo).
+  // A tacada sai pela barra de forca.
   if (e.isPrimary === false) return;
   aiming = true; try { cv.setPointerCapture(e.pointerId); } catch (x) {}
+  const p = pos(e), c = S.b[0];
+  touchRef = { f: Math.atan2(p[1] - c[2], p[0] - c[1]), a: Math.atan2(aim[1], aim[0]) };
+});
+let touchRef = null;
+cv.addEventListener('pointermove', e => {
+  if (!aiming) return;
+  if (touchRef && e.pointerType !== 'mouse' && S) {
+    const p = pos(e), c = S.b[0], dx = p[0] - c[1], dy = p[1] - c[2];
+    if (Math.hypot(dx, dy) < 12) return;
+    const a = touchRef.a + (Math.atan2(dy, dx) - touchRef.f);
+    aim = [Math.cos(a), Math.sin(a)];
+    return;
+  }
   setAim(pos(e));
 });
-cv.addEventListener('pointermove', e => {
-  if (aiming) setAim(pos(e));
-});
-cv.addEventListener('pointerup', () => { aiming = false; touching = false; });
-cv.addEventListener('pointercancel', () => { touching = false; aiming = false; drag = null; });
+cv.addEventListener('pointerup', () => { aiming = false; touching = false; touchRef = null; });
+cv.addEventListener('pointercancel', () => { touching = false; aiming = false; drag = null; touchRef = null; });
 
 // forca: arraste a barra com o cursor; ao soltar, a tacada sai
 const pwEl = $('pw');
@@ -696,12 +722,15 @@ function layout() {
   gm.classList.toggle('fs', fs); document.body.classList.toggle('fs', fs);
   rotMode = rot;
   st.className = rot ? 'rot' : 'wide';
+  const bar = gm.querySelector('.bar');
+  if (rot) { if (bar.parentNode !== tw) tw.appendChild(bar); }
+  else if (bar.parentNode !== gm) gm.insertBefore(bar, st);
   cv.style.width = cv.style.height = cv.style.transform = '';
   tw.style.width = tw.style.height = ''; left.style.height = left.style.width = '';
   if (rot) {
     const sw = st.clientWidth, sh = st.clientHeight, gap = 8, topH = 46;
     // coluna: [efeito + forca] / mesa em pe / trilho deitado (largura do trilho = largura da mesa)
-    const dw = Math.max(120, Math.min(sw, (sh - topH - 2 * gap) / (CW / CH + 40 / 380))), dh = dw * CW / CH;
+    const dw = Math.max(120, Math.min(sw - 76, (sh - topH - 2 * gap) / (CW / CH + 40 / 380))), dh = dw * CW / CH;   // sw-76: sobra uma faixa de cada lado; a da esquerda tem os jogadores
     tw.style.width = dw + 'px'; tw.style.height = dh + 'px';
     cv.style.width = dh + 'px'; cv.style.height = dw + 'px';
     cv.style.transform = 'translateX(' + dw + 'px) rotate(90deg)';
