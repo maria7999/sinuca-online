@@ -40,6 +40,7 @@ const grpOf = n => (n < 8 ? 'solid' : 'stripe');
 // sy > 0 (parte de baixo da bola): "puxar" -> a branca volta depois de bater
 // sx (esquerda/direita): efeito lateral -> muda o angulo do rebote nas almofadas
 // Os valores sao sempre em relacao a direcao da tacada (como no taco de verdade).
+const FRICTION = 0.9955;   // atrito do pano: mais perto de 1 = as bolas rolam mais (antes 0.9925)
 const SPIN_MAX = 0.72;       // mesmo limite do seletor no site
 const SPIN_VERT = 0.8;       // forca do seguir/puxar no primeiro contato
 const SPIN_CUSHION = 0.35;   // forca do efeito lateral nas almofadas
@@ -89,9 +90,9 @@ class Game {
   step() {
     for (const b of this.B) {
       if (!b.a) continue;
-      b.x += b.vx; b.y += b.vy; b.vx *= 0.9925; b.vy *= 0.9925;
+      b.x += b.vx; b.y += b.vy; b.vx *= FRICTION; b.vy *= FRICTION;
       if (b.n === 0) b.w *= SPIN_DECAY;
-      if (hyp(b.vx, b.vy) < 0.03) { b.vx = 0; b.vy = 0; }
+      if (hyp(b.vx, b.vy) < 0.02) { b.vx = 0; b.vy = 0; }
     }
     for (let i = 0; i < this.B.length; i++) {
       const a = this.B[i]; if (!a.a) continue;
