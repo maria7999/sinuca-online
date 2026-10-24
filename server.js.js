@@ -40,7 +40,9 @@ const grpOf = n => (n < 8 ? 'solid' : 'stripe');
 // sy > 0 (parte de baixo da bola): "puxar" -> a branca volta depois de bater
 // sx (esquerda/direita): efeito lateral -> muda o angulo do rebote nas almofadas
 // Os valores sao sempre em relacao a direcao da tacada (como no taco de verdade).
-const FRICTION = 0.9955;   // atrito do pano: mais perto de 1 = as bolas rolam mais (antes 0.9925)
+const FRICTION = 0.9968;   // atrito do pano: mais perto de 1 = as bolas rolam mais (original: 0.9925)
+const POWER = 1.45;        // multiplica a forca da tacada (1 = original). A tacada mais forte vira 13 em vez de 9
+const BOUNCE = 0.92;       // quanto da velocidade a bola guarda ao bater na almofada (original: 0.9)
 const SPIN_MAX = 0.72;       // mesmo limite do seletor no site
 const SPIN_VERT = 0.8;       // forca do seguir/puxar no primeiro contato
 const SPIN_CUSHION = 0.35;   // forca do efeito lateral nas almofadas
@@ -122,10 +124,10 @@ class Game {
       for (const p of PK) if (hyp(b.x - p[0], b.y - p[1]) < PR) { b.a = 0; b.vx = b.vy = 0; this.info.p.push(b.n); }
       if (!b.a) continue;
       if (PK.some(p => hyp(b.x - p[0], b.y - p[1]) < R * 3.2)) continue;
-      if (b.x < M + R) { const v = b.vx; b.x = M + R; b.vx = -b.vx * 0.9; this.cushionKick(b, -1, 0, v); }
-      if (b.x > W - M - R) { const v = b.vx; b.x = W - M - R; b.vx = -b.vx * 0.9; this.cushionKick(b, 1, 0, v); }
-      if (b.y < M + R) { const v = b.vy; b.y = M + R; b.vy = -b.vy * 0.9; this.cushionKick(b, 0, -1, v); }
-      if (b.y > H - M - R) { const v = b.vy; b.y = H - M - R; b.vy = -b.vy * 0.9; this.cushionKick(b, 0, 1, v); }
+      if (b.x < M + R) { const v = b.vx; b.x = M + R; b.vx = -b.vx * BOUNCE; this.cushionKick(b, -1, 0, v); }
+      if (b.x > W - M - R) { const v = b.vx; b.x = W - M - R; b.vx = -b.vx * BOUNCE; this.cushionKick(b, 1, 0, v); }
+      if (b.y < M + R) { const v = b.vy; b.y = M + R; b.vy = -b.vy * BOUNCE; this.cushionKick(b, 0, -1, v); }
+      if (b.y > H - M - R) { const v = b.vy; b.y = H - M - R; b.vy = -b.vy * BOUNCE; this.cushionKick(b, 0, 1, v); }
     }
   }
   allStopped() { return this.B.every(b => !b.a || (b.vx === 0 && b.vy === 0)); }
@@ -249,7 +251,7 @@ wss.on('connection', ws => {
       if (!isFinite(sy)) sy = 0;
       const sl = hyp(sx, sy);
       if (sl > SPIN_MAX) { sx = sx / sl * SPIN_MAX; sy = sy / sl * SPIN_MAX; }
-      g.shoot(vx, vy, sx, sy);
+      g.shoot(vx * POWER, vy * POWER, sx, sy);
     } else if (m.t === 'again') {
       const g = ws.game;
       if (!g || !g.over) return;
