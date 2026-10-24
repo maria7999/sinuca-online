@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Sinuca Online</title>
+<title>Sinuquinha VIP</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎱%3C/text%3E%3C/svg%3E">
 <style>
 :root{--bg:#f4f1ea;--fg:#1d1d1b;--card:#fff;--muted:#6b6a65;--green:#2e9e5b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -42,11 +42,109 @@ html{overscroll-behavior:none}
 #pfill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(229,57,47,.55);border-right:3px solid #fff;pointer-events:none}
 #pwr.off{opacity:.4;cursor:not-allowed}
 #helpBox{display:none;position:absolute;left:8px;right:8px;bottom:84px;z-index:10;background:rgba(0,0,0,.9);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.4;color:#e6e6e0}
+
+/* ---------- tela de login ---------- */
+#login{position:fixed;inset:0;z-index:20;overflow:auto;display:flex;flex-direction:column;color:#e8f5ee;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+ background:radial-gradient(120% 90% at 50% 0%,#1b3d2e 0%,#12281f 55%,#0c1a14 100%)}
+#login *{box-sizing:border-box}
+.lg-top{flex:none;background:linear-gradient(#0c1d16,#09150f);border-bottom:1px solid #1f6b4a;padding:0 24px;padding-top:env(safe-area-inset-top,0px)}
+.lg-top-in{max-width:1172px;margin:0 auto;height:54px;display:flex;align-items:center;justify-content:space-between}
+.lg-brand{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:18px;letter-spacing:.12em;text-transform:uppercase;color:#f1f8f4}
+.lg-brand::after{content:"";display:inline-block;width:1px;height:16px;background:#2a5a45;margin-left:12px;vertical-align:middle}
+.lg-mini{display:flex;align-items:center;gap:7px;background:#16382b;color:#f1f8f4;border:1px solid #2f7a58;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+.lg-mini svg{width:14px;height:14px}
+.lg-main{flex:1;display:flex;align-items:center;justify-content:center;padding:32px 16px}
+.lg-card{width:100%;max-width:420px;border-radius:14px;border:1px solid #2b6d4f;padding:28px 30px 26px;
+ background:linear-gradient(165deg,#1d4c39 0%,#163a2c 100%);box-shadow:0 18px 50px #0008,inset 0 1px 0 #ffffff12}
+.lg-card h2{text-wrap:balance;margin:0;text-align:center;font-family:Georgia,"Times New Roman",serif;font-size:25px;font-weight:700;color:#d9f6e6}
+.lg-sub{margin:10px 0 18px;text-align:center;font-size:14px;color:#b9d3c6}
+.lg-google{width:100%;height:42px;display:flex;align-items:center;justify-content:center;gap:10px;background:#0f241a;color:#f1f8f4;border:1px solid #2a4a3b;border-radius:8px;font-size:14px;font-weight:700}
+.lg-google svg{width:18px;height:18px}
+.lg-or{display:flex;align-items:center;gap:14px;margin:26px 0 16px;color:#9db8aa;font-size:12px;font-weight:800;letter-spacing:.08em}
+.lg-or::before,.lg-or::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,#2f5a46,transparent)}
+.lg-lbl{display:block;margin:0 0 7px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#c4dccf}
+.lg-field{display:flex;align-items:center;height:40px;margin-bottom:22px;background:#0f241a;border:1px solid #2a4a3b;border-radius:8px;overflow:hidden}
+.lg-field:focus-within{border-color:#3ddc84;box-shadow:0 0 0 2px #3ddc8433}
+.lg-ico{flex:none;width:40px;height:100%;display:flex;align-items:center;justify-content:center;color:#7f9a8c;border-right:1px solid #2a4a3b;margin:8px 0;height:22px;border-right:1px solid #2a4a3b}
+.lg-ico svg{width:15px;height:15px}
+.lg-field input{flex:1;min-width:0;height:100%;border:0;background:transparent;color:#eef7f1;font-size:14px;padding:0 10px;border-radius:0;outline:none}
+.lg-field input::placeholder{color:#7f9a8c}
+.lg-eye{flex:none;width:40px;height:100%;background:transparent;border:0;border-radius:0;padding:0;color:#b9d3c6;display:flex;align-items:center;justify-content:center}
+.lg-eye svg{width:17px;height:17px}
+.lg-links{display:flex;flex-direction:column;align-items:flex-end;gap:9px;margin:-4px 0 18px}
+.lg-links a{color:#a9c5b6;font-size:12px;font-weight:700;text-decoration:none}
+.lg-links a:hover{color:#d9f6e6}
+.lg-go{width:100%;height:42px;border:0;border-radius:8px;color:#fff;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;background:linear-gradient(#25b45f,#179247);box-shadow:0 4px 12px #0006,inset 0 1px 0 #ffffff30}
+.lg-err{min-height:18px;margin:-8px 0 10px;text-align:center;font-size:13px;color:#ffb4a8}
+.lg-err.info{color:#bfe9d0}
+.lg-foot{margin:18px 0 0;text-align:center;font-size:13px;color:#c4dccf}
+.lg-foot a{color:#3ddc84;font-weight:800;text-decoration:none}
+
+.lg-chk{display:flex;align-items:flex-start;gap:8px;margin:0 0 16px;font-size:12px;font-weight:700;text-transform:uppercase;color:#c4dccf;line-height:1.5;cursor:pointer}
+.lg-chk input{flex:none;width:14px;height:14px;margin:2px 0 0;accent-color:#3ddc84;padding:0}
+.lg-chk a{color:#3ddc84;text-decoration:underline}
+.lg-back{display:block;margin:18px 0 0;text-align:center;color:#3ddc84;font-size:13px;font-weight:800;text-decoration:none}
+#sgForm{display:none}
+#sgForm .lg-sub{margin-bottom:22px}
+@media(max-width:520px){.lg-top{padding:0 14px}.lg-card{padding:24px 20px 22px}.lg-brand{font-size:16px}}
 </style>
 </head>
 <body>
-<div id="lobby" style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%">
-  <h1>🎱 Sinuca Online</h1>
+<div id="login">
+  <header class="lg-top"><div class="lg-top-in">
+    <div class="lg-brand">Sinuquinha VIP</div>
+    <a class="lg-mini" id="lgTop" href="#" data-act="signup" style="text-decoration:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1"/><path d="M19 8v6M16 11h6"/></svg><span id="lgTopTxt">Criar conta</span></a>
+  </div></header>
+  <main class="lg-main">
+    <form class="lg-card" id="lgForm" novalidate>
+      <h2>Entrar no Sinuquinha VIP</h2>
+      <p class="lg-sub">Bem-vindo de volta! Faça login para continuar</p>
+      <button type="button" class="lg-google" id="lgGoogle"><svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.5 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7a14.5 14.5 0 0 1 0-9.4l-7.9-6.1a24 24 0 0 0 0 21.6l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Continuar com Google</button>
+      <div class="lg-or">OU</div>
+      <label class="lg-lbl" for="lgEmail">E-mail</label>
+      <div class="lg-field">
+        <span class="lg-ico"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7.5" r="4.2"/><path d="M3.5 21c0-4.6 3.8-7.5 8.5-7.5s8.5 2.9 8.5 7.5z"/></svg></span>
+        <input id="lgEmail" type="email" placeholder="E-mail" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false">
+      </div>
+      <label class="lg-lbl" for="lgPass">Senha</label>
+      <div class="lg-field">
+        <span class="lg-ico"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4.5" y="10.5" width="15" height="11" rx="2"/><path d="M7.5 10.5V8a4.5 4.5 0 0 1 9 0v2.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></span>
+        <input id="lgPass" type="password" placeholder="Senha" autocomplete="current-password">
+        <button type="button" class="lg-eye" id="lgEye" aria-label="Mostrar senha"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5C6.5 5 2.3 8.6 1 12c1.3 3.4 5.5 7 11 7s9.7-3.6 11-7c-1.3-3.4-5.5-7-11-7zm0 11.5A4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 0 1 0 9zm0-7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg></button>
+      </div>
+      <div class="lg-links">
+        <a href="#" data-act="forgot">Esqueceu a senha?</a>
+        <a href="#" data-act="support">Falar com Suporte no WhatsApp</a>
+      </div>
+      <div class="lg-err" id="lgErr"></div>
+      <button type="submit" class="lg-go">Entrar</button>
+      <p class="lg-foot">Não tem uma conta? <a href="#" data-act="signup">Criar conta</a></p>
+    </form>
+    <form class="lg-card" id="sgForm" novalidate>
+      <h2>Criar nova conta no Sinuquinha VIP</h2>
+      <p class="lg-sub">Preencha os dados para criar sua conta</p>
+      <label class="lg-lbl" for="sgEmail">Endereço de e-mail</label>
+      <div class="lg-field">
+        <span class="lg-ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18a1 1 0 0 1 1 1v.4l-10 6.3L2 6.4V6a1 1 0 0 1 1-1zm19 3.7V18a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V8.7l10 6.3z"/></svg></span>
+        <input id="sgEmail" type="email" placeholder="E-mail" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false">
+      </div>
+      <label class="lg-lbl" for="sgPass">Senha</label>
+      <div class="lg-field">
+        <span class="lg-ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 3a6.5 6.5 0 0 0-6.2 8.4L2 17.7V22h4.3v-2.2h2.2v-2.2h2.2l1.6-1.6A6.5 6.5 0 1 0 14.5 3zm2 4.2a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z"/></svg></span>
+        <input id="sgPass" type="password" placeholder="Senha (mínimo 6 caracteres)" autocomplete="new-password">
+        <button type="button" class="lg-eye" id="sgEye" aria-label="Mostrar senha"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5C6.5 5 2.3 8.6 1 12c1.3 3.4 5.5 7 11 7s9.7-3.6 11-7c-1.3-3.4-5.5-7-11-7zm0 11.5A4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 0 1 0 9zm0-7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg></button>
+      </div>
+      <label class="lg-chk"><input type="checkbox" id="sgAge"><span>Tenho mais de 18 anos</span></label>
+      <label class="lg-chk"><input type="checkbox" id="sgTerms"><span>Declaro que li e concordo com os <a href="#" data-act="terms">Termos de uso</a> e <a href="#" data-act="privacy">Política de privacidade</a></span></label>
+      <div class="lg-err" id="sgErr"></div>
+      <button type="submit" class="lg-go">Criar conta</button>
+      <a class="lg-back" href="#" data-act="login">Já tenho conta</a>
+    </form>
+  </main>
+</div>
+
+<div id="lobby" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%">
+  <h1>🎱 Sinuquinha VIP</h1>
   <p class="sub">Bola 8, 1 contra 1, de graça. Sem cadastro.</p>
   <div class="card">
     <input id="name" placeholder="Seu apelido" maxlength="16" autocomplete="off">
@@ -90,6 +188,53 @@ const PK = [[24, 24], [400, 20], [776, 24], [24, 376], [400, 380], [776, 376]], 
 const $ = id => document.getElementById(id);
 const cv = $('c'), ctx = cv.getContext('2d');
 let ws = null, seat = 0, solo = false, S = null, aim = [1, 0], power = 0;
+
+
+// ---------- login (so a tela por enquanto; autenticacao real vem depois, no servidor) ----------
+const SUPPORT_WHATSAPP = ''; // coloque o numero com DDI, ex.: '5531999999999'
+function lgMsg(t, info) { const e = $('lgErr'); e.textContent = t || ''; e.className = 'lg-err' + (info ? ' info' : ''); }
+function lgEnter(email) {
+  if (!$('name').value.trim() && email) $('name').value = email.split('@')[0].slice(0, 16);
+  $('login').style.display = 'none'; showLobby();
+}
+$('lgForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const em = $('lgEmail').value.trim(), pw = $('lgPass').value;
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { lgMsg('Digite um e-mail válido.'); return; }
+  if (!pw) { lgMsg('Digite sua senha.'); return; }
+  lgMsg('');
+  lgEnter(em); // TODO: validar e-mail e senha no servidor antes de entrar
+});
+$('lgGoogle').onclick = () => lgMsg('Login com Google ainda não está ativo.', true);
+$('lgEye').onclick = () => { const p = $('lgPass'); p.type = p.type === 'password' ? 'text' : 'password'; };
+function lgView(v) {
+  const su = v === 'signup';
+  $('lgForm').style.display = su ? 'none' : ''; $('sgForm').style.display = su ? 'block' : 'none';
+  lgMsg(''); sgMsg('');
+  const t = $('lgTop'); t.dataset.act = su ? 'login' : 'signup'; $('lgTopTxt').textContent = su ? 'Entrar' : 'Criar conta';
+  $('login').scrollTop = 0;
+}
+function sgMsg(t, info) { const e = $('sgErr'); e.textContent = t || ''; e.className = 'lg-err' + (info ? ' info' : ''); }
+$('sgEye').onclick = () => { const p = $('sgPass'); p.type = p.type === 'password' ? 'text' : 'password'; };
+$('sgForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const em = $('sgEmail').value.trim(), pw = $('sgPass').value;
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { sgMsg('Digite um e-mail válido.'); return; }
+  if (pw.length < 6) { sgMsg('A senha precisa ter no mínimo 6 caracteres.'); return; }
+  if (!$('sgAge').checked) { sgMsg('Confirme que você tem mais de 18 anos.'); return; }
+  if (!$('sgTerms').checked) { sgMsg('Aceite os Termos de uso e a Política de privacidade.'); return; }
+  sgMsg('');
+  lgEnter(em); // TODO: criar a conta no servidor antes de entrar
+});
+document.querySelectorAll('#login [data-act]').forEach(a => a.addEventListener('click', e => {
+  e.preventDefault();
+  const k = a.dataset.act;
+  if (k === 'signup' || k === 'login') lgView(k);
+  else if (k === 'support' && SUPPORT_WHATSAPP) window.open('https://wa.me/' + SUPPORT_WHATSAPP, '_blank');
+  else if (k === 'support') lgMsg('Suporte pelo WhatsApp ainda não configurado.', true);
+  else if (k === 'forgot') lgMsg('Recuperação de senha em breve.', true);
+  else sgMsg('Esta página ainda não foi criada.', true);
+}));
 
 // ---------- conexao ----------
 function connect(then) {
