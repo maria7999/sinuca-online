@@ -141,7 +141,7 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
     <button id="bMute" class="alt" aria-label="Som">🔊</button>
     <button id="bLeave" class="alt">Sair da partida</button>
   </div>
-  <p class="help">Mirar: clique e arraste na mesa (a linha só gira enquanto você segura o botão). Força: arraste o taco para baixo (0 a 100) e solte para tacar. Setas do teclado fazem o ajuste fino (baixo = mais força). No celular: arraste para trás e solte.</p>
+  <p class="help">Mirar: clique e arraste na mesa (a linha só gira enquanto você segura o botão). Força: arraste o taco para baixo (0 a 100) e solte para tacar. Setas do teclado fazem o ajuste fino (baixo = mais força). No celular: arraste o dedo na mesa para mirar e puxe a barra de força para tacar.</p>
 </div>
 
 <script>
@@ -287,31 +287,28 @@ cv.addEventListener('pointerdown', e => {
     setAim(pos(e));
     return;
   }
-  touching = true; cv.setPointerCapture(e.pointerId); drag = pos(e);
+  // toque: o dedo so mira (a linha segue o dedo). A tacada sai pela barra de forca.
+  if (e.isPrimary === false) return;
+  aiming = true; try { cv.setPointerCapture(e.pointerId); } catch (x) {}
+  setAim(pos(e));
 });
 cv.addEventListener('pointermove', e => {
-  if (e.pointerType === 'mouse') { if (aiming) setAim(pos(e)); }
-  else if (drag) drag = pos(e);
+  if (aiming) setAim(pos(e));
 });
-cv.addEventListener('pointerup', e => {
-  if (e.pointerType === 'mouse') { aiming = false; return; }
-  touching = false;
-  if (!drag || !S) { drag = null; return; }
-  const c = S.b[0], dx = c[1] - drag[0], dy = c[2] - drag[1], d = Math.sqrt(dx * dx + dy * dy);
-  drag = null;
-  if (d < 8 || !canShoot()) return;
-  fire(dx / d, dy / d, d);
-});
+cv.addEventListener('pointerup', () => { aiming = false; touching = false; });
 cv.addEventListener('pointercancel', () => { touching = false; aiming = false; drag = null; });
 
 // forca: arraste a barra com o cursor; ao soltar, a tacada sai
 const pwEl = $('pw');
+let powX0 = 0;
 function powAt(e) {
   const r = pwEl.getBoundingClientRect();
+  // celular: a forca vem da distancia que o dedo puxa a partir de onde encostou (encostar sozinho nao taca)
+  if (rotMode) { setPow(.02 + (e.clientX - powX0) / (r.width * .8)); return; }
   setPow(rotMode ? (e.clientX - r.left) / r.width : (e.clientY - r.top) / r.height);   // taco: 0 numa ponta, 100 puxado ate a outra
 }
 pwEl.style.cursor = 'pointer'; pwEl.style.touchAction = 'none';
-pwEl.addEventListener('pointerdown', e => { if (!canShoot()) return; powing = true; pwEl.setPointerCapture(e.pointerId); powAt(e); });
+pwEl.addEventListener('pointerdown', e => { if (!canShoot()) return; powX0 = e.clientX; aimPow = .02; powing = true; pwEl.setPointerCapture(e.pointerId); powAt(e); });
 pwEl.addEventListener('pointermove', e => { if (powing) powAt(e); });
 pwEl.addEventListener('pointerup', e => { if (!powing) return; powing = false; powAt(e); shootNow(); });
 pwEl.addEventListener('pointercancel', () => { powing = false; });
