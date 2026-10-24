@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d1511">
 <title>Sinuca Online</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎱%3C/text%3E%3C/svg%3E">
 <style>
@@ -59,6 +62,35 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
 #spinBig{width:150px;height:150px;touch-action:none;cursor:crosshair}
 @media(max-width:520px){.pl{flex-basis:100%}.ico i{width:18px;height:18px}.ico i span{width:9px;height:9px;font-size:7px;line-height:9px}.av{width:32px;height:32px;font-size:15px}}
 .help{color:var(--muted);font-size:13px;margin:0;text-align:center;max-width:620px}
+
+/* ---- tela cheia / celular ---- */
+html,body{overscroll-behavior:none}
+#tw{display:contents}
+body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
+#game.fs{position:fixed;left:0;top:0;width:100%;height:100vh;height:100dvh;max-width:none;z-index:10;gap:6px;overflow:hidden;
+ padding:calc(6px + env(safe-area-inset-top,0px)) calc(8px + env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) calc(8px + env(safe-area-inset-left,0px));
+ background:radial-gradient(120% 90% at 50% 0%,#21432f 0%,var(--bg) 62%);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#game.fs .bar{flex:none;gap:6px;flex-wrap:nowrap}
+#game.fs .pl{flex:1 1 0;min-width:0;flex-wrap:wrap;align-content:center;gap:2px 8px;padding:5px 10px 5px 5px;border-radius:18px;font-size:13px}
+#game.fs .pl .who{flex:1;min-width:0}
+#game.fs .pl small{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#game.fs .av{width:30px;height:30px;font-size:14px}
+#game.fs .ico{flex:0 0 100%;margin-left:0;justify-content:flex-start;min-height:16px;gap:2px}
+#game.fs .ico i{width:16px;height:16px}
+#game.fs .ico i span{width:8px;height:8px;font-size:6px;line-height:8px}
+#game.fs #stage{flex:1 1 0;min-height:0;width:100%;align-content:center}
+#game.fs #msg{flex:none;font-size:14px;min-height:20px;line-height:20px}
+#game.fs .help{display:none}
+#game.fs .row{flex:none;gap:6px}
+#game.fs .row button{padding:8px 12px;font-size:14px}
+/* retrato: mesa girada em pe, nomes em cima, efeito/forca de um lado e trilho do outro */
+#stage.rot{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:8px;--sp:46px;--k:.8}
+#stage.rot #tw{display:block;position:relative;flex:none;order:1}
+#stage.rot #tw canvas#c{position:absolute;left:0;top:0;transform-origin:0 0;border-radius:12px}
+#stage.rot #right{order:0;flex:none}
+#stage.rot #left{order:2;flex:none;width:48px;gap:10px;padding:0}
+#stage.rot #pwbox{flex:1 1 0;min-height:0;width:100%;gap:4px}
+#stage.rot #pw{width:44px;flex:1 1 0;min-height:0;height:auto;border-radius:10px}
 </style>
 </head>
 <body>
@@ -86,7 +118,7 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
       <button id="spinBtn" class="cb" type="button" aria-label="Efeito na bola branca" title="Efeito na bola branca"><i id="spinDot"></i></button>
       <div id="pwbox"><div id="pw" role="meter" aria-label="Força da tacada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="pwf"></i></div><span id="pwn">0</span></div>
     </div>
-    <canvas id="c" width="1648" height="848"></canvas>
+    <div id="tw"><canvas id="c" width="1648" height="848"></canvas></div>
     <div id="right"><canvas id="rail" width="80" height="760" aria-label="Bolas encaçapadas"></canvas></div>
     <div id="spinPop" role="dialog" aria-label="Efeito na bola branca">
       <div class="cb" id="spinBig"><i id="spinDotBig"></i></div>
@@ -97,6 +129,7 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
   <div id="msg"></div>
   <div class="row">
     <button id="bAgain" style="display:none">Jogar de novo</button>
+    <button id="bFull" class="alt" aria-label="Tela cheia" hidden>⛶</button>
     <button id="bMute" class="alt" aria-label="Som">🔊</button>
     <button id="bLeave" class="alt">Sair da partida</button>
   </div>
@@ -170,7 +203,7 @@ function onMsg(m) {
   else if (m.t === 'info') { $('msg').textContent = m.m; }
   else if (m.t === 'lobby') { showLobby(); }
 }
-function showLobby() { $('spinPop').classList.remove('open'); $('game').style.display = 'none'; $('lobby').style.display = 'flex'; }
+function showLobby() { $('spinPop').classList.remove('open'); $('game').style.display = 'none'; $('game').classList.remove('fs'); document.body.classList.remove('fs'); $('lobby').style.display = 'flex'; }
 function showGame() { $('lobby').style.display = 'none'; $('game').style.display = 'flex'; $('status').textContent = ''; $('bAgain').style.display = 'none'; layout(); }
 
 const gname = g => g === 'solid' ? 'lisas (1–7)' : g === 'stripe' ? 'listradas (9–15)' : 'mesa aberta';
@@ -195,10 +228,16 @@ function updateUI() {
 }
 
 // ---------- botoes ----------
-$('bQueue').onclick = () => send({ t: 'queue', name: nm() });
-$('bPractice').onclick = () => send({ t: 'practice', name: nm() });
-$('bCreate').onclick = () => send({ t: 'create', name: nm() });
-$('bJoin').onclick = () => { const c = $('code').value.trim(); if (c) send({ t: 'join', name: nm(), code: c }); };
+// tela cheia do navegador (precisa de um toque do usuario; no celular tenta ao entrar em uma partida)
+const fsOK = !!(document.fullscreenEnabled && document.documentElement.requestFullscreen);
+if (fsOK) $('bFull').hidden = false;
+const goFull = () => { if (fsOK && !document.fullscreenElement) { try { document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); } catch (e) {} } };
+const phoneLike = () => matchMedia('(pointer:coarse)').matches && Math.min(screen.width, screen.height) < 700;
+$('bFull').onclick = () => { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); else goFull(); };
+$('bQueue').onclick = () => { if (phoneLike()) goFull(); send({ t: 'queue', name: nm() }); };
+$('bPractice').onclick = () => { if (phoneLike()) goFull(); send({ t: 'practice', name: nm() }); };
+$('bCreate').onclick = () => { if (phoneLike()) goFull(); send({ t: 'create', name: nm() }); };
+$('bJoin').onclick = () => { const c = $('code').value.trim(); if (c) { if (phoneLike()) goFull(); send({ t: 'join', name: nm(), code: c }); } };
 $('bAgain').onclick = () => send({ t: 'again' });
 $('bLeave').onclick = () => send({ t: 'leave' });
 $('name').value = (() => { try { return localStorage.getItem('sinuca-name') || ''; } catch (e) { return ''; } })();
@@ -206,7 +245,13 @@ $('name').addEventListener('input', () => { try { localStorage.setItem('sinuca-n
 
 // ---------- mira ----------
 const canShoot = () => S && D && !S.moving && !S.over && (solo || S.turn === seat);
-function pos(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * CW / r.width - F, (e.clientY - r.top) * CH / r.height - F]; }
+let rotMode = false;
+function pos(e) {
+  const r = cv.getBoundingClientRect();
+  // mesa girada 90 graus (horario): o eixo x da mesa vai para baixo e o y para a esquerda
+  if (rotMode) return [(e.clientY - r.top) * CW / r.height - F, (r.right - e.clientX) * CH / r.width - F];
+  return [(e.clientX - r.left) * CW / r.width - F, (e.clientY - r.top) * CH / r.height - F];
+}
 // mouse: o cursor fica livre. A mira so gira enquanto voce segura o botao na mesa e arrasta.
 // A forca e ajustada arrastando a barra de forca. A tacada sai no botao "Tacar".
 // toque/celular: arrastar para tras e soltar
@@ -634,12 +679,33 @@ let eff = [0, 0], railVert = true, railKey = '', lastPw = -1;
 const rail = $('rail'), rx = rail.getContext('2d');
 function layout() {
   const gm = $('game'); if (gm.style.display === 'none') return;
-  const A = gm.clientWidth, wide = A >= 760, st = $('stage');
-  st.className = wide ? 'wide' : 'stack';
-  st.style.setProperty('--k', (A / 932).toFixed(4));
-  if (railVert !== wide) { railVert = wide; railKey = ''; rail.width = (wide ? 40 : 380) * SC; rail.height = (wide ? 380 : 40) * SC; }
+  const st = $('stage'), tw = $('tw'), left = $('left');
+  const iw = window.innerWidth, ih = window.innerHeight;
+  const rot = iw < 760 && ih > iw;       // celular em pe: mesa girada
+  const fs = rot || ih <= 520;           // celular (em pe ou deitado): ocupa a tela toda
+  gm.classList.toggle('fs', fs); document.body.classList.toggle('fs', fs);
+  rotMode = rot;
+  st.className = rot ? 'rot' : 'wide';
+  cv.style.width = cv.style.height = cv.style.transform = '';
+  tw.style.width = tw.style.height = ''; left.style.height = '';
+  if (rot) {
+    const sw = st.clientWidth, sh = st.clientHeight, rk = .8, fixed = 40 * rk + 48 + 16;
+    const dw = Math.max(120, Math.min(sw - fixed, sh * CH / CW)), dh = dw * CW / CH;   // dw = largura na tela, dh = altura (mesa em pe)
+    tw.style.width = dw + 'px'; tw.style.height = dh + 'px';
+    cv.style.width = dh + 'px'; cv.style.height = dw + 'px';
+    cv.style.transform = 'translateX(' + dw + 'px) rotate(90deg)';
+    left.style.height = dh + 'px';
+    st.style.setProperty('--k', Math.min(rk, dh / 380).toFixed(4));
+  } else {
+    let k = gm.clientWidth / 932;
+    if (fs) k = Math.min(st.clientWidth / 932, st.clientHeight / 430);
+    st.style.setProperty('--k', k.toFixed(4));
+  }
+  if (!railVert) { railVert = true; railKey = ''; rail.width = 40 * SC; rail.height = 380 * SC; }
 }
 window.addEventListener('resize', layout);
+window.addEventListener('orientationchange', () => setTimeout(layout, 200));
+document.addEventListener('fullscreenchange', layout);
 // ---------- bolas rolando no trilho ----------
 // Cada bola encacapada entra pela ponta de baixo (ponto vermelho), rola de verdade (o giro acompanha a
 // distancia andada) e para na sua vaga: a primeira la em cima (ponto verde), as outras logo abaixo.
