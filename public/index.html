@@ -99,7 +99,7 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
     <button id="bMute" class="alt" aria-label="Som">🔊</button>
     <button id="bLeave" class="alt">Sair da partida</button>
   </div>
-  <p class="help">Mirar: clique e arraste na mesa (a linha só gira enquanto você segura o botão). Força: arraste a barra de força. Depois clique em Tacar. Setas do teclado fazem o ajuste fino e Enter taca. No celular: arraste para trás e solte.</p>
+  <p class="help">Mirar: clique e arraste na mesa (a linha só gira enquanto você segura o botão). Força: arraste a barra de força e solte para tacar. Setas do teclado fazem o ajuste fino e Enter taca. No celular: arraste para trás e solte.</p>
 </div>
 
 <script>
@@ -242,7 +242,7 @@ cv.addEventListener('pointerup', e => {
 });
 cv.addEventListener('pointercancel', () => { touching = false; aiming = false; drag = null; });
 
-// forca: arraste a barra com o cursor (fica onde voce soltar)
+// forca: arraste a barra com o cursor; ao soltar, a tacada sai
 const pwEl = $('pw');
 function powAt(e) {
   const r = pwEl.getBoundingClientRect();
@@ -251,7 +251,7 @@ function powAt(e) {
 pwEl.style.cursor = 'pointer'; pwEl.style.touchAction = 'none';
 pwEl.addEventListener('pointerdown', e => { if (!canShoot()) return; powing = true; pwEl.setPointerCapture(e.pointerId); powAt(e); });
 pwEl.addEventListener('pointermove', e => { if (powing) powAt(e); });
-pwEl.addEventListener('pointerup', () => { powing = false; });
+pwEl.addEventListener('pointerup', e => { if (!powing) return; powing = false; powAt(e); shootNow(); });
 pwEl.addEventListener('pointercancel', () => { powing = false; });
 $('bShoot').onclick = shootNow;
 // ajuste fino pelo teclado: setas giram a mira (esq/dir) e mudam a forca (cima/baixo); Enter taca
