@@ -98,7 +98,7 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
     <button id="bMute" class="alt" aria-label="Som">🔊</button>
     <button id="bLeave" class="alt">Sair da partida</button>
   </div>
-  <p class="help">Na sua vez, mexa o mouse para mirar e clique para travar a mira. Depois afaste o mouse da bola para dar força (quanto mais longe, mais forte) e clique de novo para tacar. Botão direito ou Esc cancela. No celular: arraste para trás e solte. Lisas são 1–7, listradas 9–15.</p>
+  <p class="help">Na sua vez a mira já aparece: mexa o mouse para girar o taco (quanto mais longe da bola, mais forte) e clique para tacar. No celular: arraste para trás e solte.</p>
 </div>
 
 <script>
@@ -199,44 +199,39 @@ $('name').addEventListener('input', () => { try { localStorage.setItem('sinuca-n
 // ---------- mira ----------
 const canShoot = () => S && D && !S.moving && !S.over && (solo || S.turn === seat);
 function pos(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * CW / r.width - F, (e.clientY - r.top) * CH / r.height - F]; }
-// mouse: mexa para mirar, clique para travar a mira, mexa para a forca, clique para tacar (sem segurar o botao)
-// toque/celular: continua arrastar e soltar
-let aimLock = null;
+// mouse: a mira ja aparece na sua vez; mexa o mouse para girar e mudar a forca (distancia da bola), clique para tacar
+// toque/celular: arrastar para tras e soltar
+let mousePt = null, touching = false;
 const fire = (ux, uy, d) => {
   const pw = Math.min(d, 160) / 160;
   lastShot = { ux, uy, off: R + 5 + pw * 55, t: performance.now() };
   send({ t: 'shot', vx: ux * pw * 9, vy: uy * pw * 9, sx: eff[0], sy: eff[1] });
 };
-const cancelAim = () => { aimLock = null; drag = null; };
 cv.addEventListener('pointerdown', e => {
   if (!canShoot()) return;
   if (e.pointerType === 'mouse') {
-    if (e.button !== 0) { cancelAim(); return; }
-    const c = S.b[0], p = pos(e), dx = p[0] - c[1], dy = p[1] - c[2], d = Math.hypot(dx, dy);
-    if (!aimLock) { if (d > 8) { aimLock = { ux: dx / d, uy: dy / d }; drag = [c[1] - aimLock.ux * 10, c[2] - aimLock.uy * 10]; } }
-    else if (d >= 8) { const u = aimLock; cancelAim(); fire(u.ux, u.uy, d); }
+    if (e.button !== 0) return;
+    mousePt = pos(e);
+    const c = S.b[0], dx = mousePt[0] - c[1], dy = mousePt[1] - c[2], d = Math.hypot(dx, dy);
+    if (d >= 8) { drag = null; fire(dx / d, dy / d, d); }
     return;
   }
-  cv.setPointerCapture(e.pointerId); drag = pos(e);
+  touching = true; cv.setPointerCapture(e.pointerId); drag = pos(e);
 });
 cv.addEventListener('pointermove', e => {
-  if (e.pointerType !== 'mouse') { if (drag) drag = pos(e); return; }
-  if (!canShoot()) { aimLock = null; drag = null; return; }
-  const c = S.b[0], p = pos(e), dx = p[0] - c[1], dy = p[1] - c[2], d = Math.hypot(dx, dy) || 1;
-  if (!aimLock) drag = [c[1] - dx / d * 10, c[2] - dy / d * 10];            // so mira (forca minima)
-  else { const k = Math.min(d, 160); drag = [c[1] - aimLock.ux * k, c[2] - aimLock.uy * k]; }  // mira travada: a distancia vira forca
+  if (e.pointerType === 'mouse') mousePt = pos(e);
+  else if (drag) drag = pos(e);
 });
-cv.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !aimLock) drag = null; });
-cv.addEventListener('contextmenu', e => { if (aimLock) { e.preventDefault(); cancelAim(); } });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') cancelAim(); });
 cv.addEventListener('pointerup', e => {
   if (e.pointerType === 'mouse') return;
+  touching = false;
   if (!drag || !S) { drag = null; return; }
   const c = S.b[0], dx = c[1] - drag[0], dy = c[2] - drag[1], d = Math.sqrt(dx * dx + dy * dy);
   drag = null;
   if (d < 8 || !canShoot()) return;
   fire(dx / d, dy / d, d);
 });
+cv.addEventListener('pointercancel', () => { touching = false; drag = null; });
 
 // ---------- mesa (desenhada uma vez) ----------
 const TB = document.createElement('canvas'); TB.width = CW * SC; TB.height = CH * SC;
@@ -589,7 +584,12 @@ function frame() {
     }
     const c = D[0];
     pwCur = 0;
-    if (aimLock && !canShoot()) aimLock = null;
+    if (!touching) {   // mouse: a mira fica sempre visivel na sua vez
+      if (canShoot() && c.act) {
+        const t = mousePt || [560, 200], dx = t[0] - c.x, dy = t[1] - c.y, d = Math.hypot(dx, dy) || 1, k = mousePt ? Math.min(d, 160) : 90;
+        drag = [c.x - dx / d * k, c.y - dy / d * k];
+      } else drag = null;
+    }
     if (drag && canShoot() && c.act) {
       const dx = c.x - drag[0], dy = c.y - drag[1], d = Math.hypot(dx, dy) || 1, pw = Math.min(d, 160) / 160, ux = dx / d, uy = dy / d;
       pwCur = pw;
