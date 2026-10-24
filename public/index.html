@@ -57,6 +57,7 @@ body.pc .pn{font-size:20px;font-weight:800;color:#aab4c0;max-width:220px;overflo
 body.pc .pn.on{color:#fff}
 body.pc .av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#7ae6a6,#2fb36a);color:#06240f;font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:center;border:2px solid #2f7a58;opacity:.8}
 body.pc .av.on{border-color:#3ddc84;box-shadow:0 0 10px #3ddc84aa;opacity:1}
+body.pc #pcLeave{position:absolute;left:8px;top:12px;width:32px;height:32px;padding:0;border-radius:6px;background:rgba(255,255,255,.07);color:#ecebe6;border:1px solid rgba(255,255,255,.18);font-size:16px}
 body.pc #pcFull{position:absolute;right:8px;top:12px;width:32px;height:32px;padding:0;border-radius:6px;background:rgba(255,255,255,.07);color:#ecebe6;border:1px solid rgba(255,255,255,.18);font-size:16px}
 body.pc #lcol{display:flex;flex-direction:column;align-items:center;gap:14px;width:110px;flex:none;padding:6px 0 14px}
 body.pc .rb{padding:0;width:64px;height:64px;flex:none;border-radius:50%;background:radial-gradient(circle at 50% 35%,#4a5560,#1f262e);color:#ecebe6;border:2px solid rgba(255,255,255,.3);font-size:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px #0007}
@@ -64,11 +65,20 @@ body.pc .rb svg{width:28px;height:28px}
 body.pc .rb:hover{border-color:#fff}
 body.pc #pwSlot{flex:1;min-height:0;width:100%;display:flex;justify-content:center}
 body.pc #pwSlot #pw{flex:none;width:58px;height:100%;max-height:620px;position:relative;gap:0}
-body.pc #pval{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;pointer-events:none;font-size:12px;letter-spacing:.3em;color:#9aa6b2;padding:0}
-body.pc #pwr{height:100%;width:100%;flex:1;background:linear-gradient(#141c2a,#0d1320);border:2px solid #3a4658;cursor:ns-resize}
+body.pc #pval{order:2;display:block;text-align:center;font-size:11px;font-weight:800;letter-spacing:.06em;color:#e8b83a;padding:6px 0 0;min-height:34px;line-height:1.15;pointer-events:none}
+body.pc #pwr{order:1;height:100%;width:100%;flex:1;background:linear-gradient(90deg,#4a2e14,#6a4421 50%,#4a2e14);border:2px solid #c9974a;border-radius:10px;cursor:ns-resize}
 body.pc #pwr::before{display:none}
-body.pc #pwr::after{background:linear-gradient(#ffffff22,#ffffff22) 0 25%/100% 2px no-repeat,linear-gradient(#ffffff22,#ffffff22) 0 50%/100% 2px no-repeat,linear-gradient(#ffffff22,#ffffff22) 0 75%/100% 2px no-repeat}
-body.pc #pfill{left:0;right:0;top:0;bottom:auto;width:100%;height:0;border-right:0;border-bottom:3px solid #fff;background:rgba(232,184,58,.65)}
+body.pc #pwr::after{z-index:3;background:
+ linear-gradient(#fffd,#fffd) 0 25%/9px 1px no-repeat,linear-gradient(#fffd,#fffd) 100% 25%/9px 1px no-repeat,
+ linear-gradient(#fffd,#fffd) 0 50%/9px 1px no-repeat,linear-gradient(#fffd,#fffd) 100% 50%/9px 1px no-repeat,
+ linear-gradient(#fffd,#fffd) 0 75%/9px 1px no-repeat,linear-gradient(#fffd,#fffd) 100% 75%/9px 1px no-repeat}
+body.pc #pfill{display:none}
+#cue{display:none}
+body.pc #cue{display:block;position:absolute;left:50%;top:6px;width:18px;margin-left:-9px;height:96%;clip-path:polygon(0 0,100% 0,88% 100%,12% 100%);will-change:transform;
+ background:linear-gradient(180deg,#15110d 0 16px,#f4f0e6 16px 24px,transparent 24px),linear-gradient(90deg,#a8691f,#e9b865 35%,#fbe3a6 55%,#b27325)}
+body.pc #pcSpin .bl{display:block;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 38% 30%,#fff,#ddd7c8 55%,#a9a392);position:relative}
+body.pc #pcSpin .bl::after{content:"";position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px;border-radius:50%;background:#fff;border:3.5px solid #e5392f;box-sizing:border-box}
+body.pc #pcSpin{padding:0;width:70px;height:70px;background:none;border:0;box-shadow:0 4px 10px #0009}
 body.pc #rail{display:block;flex:none;width:150px;height:100%;pointer-events:none}
 body.pc #helpBox{left:130px;right:auto;bottom:24px;width:420px}
 
@@ -248,6 +258,7 @@ body.pc #helpBox{left:130px;right:auto;bottom:24px;width:420px}
   <div id="topPc">
     <div class="slots" id="sl0"></div><div class="pn" id="pn0"></div><div class="av" id="av0"></div>
     <div class="av" id="av1"></div><div class="pn" id="pn1"></div><div class="slots" id="sl1"></div>
+    <button id="pcLeave" title="Sair da partida">✕</button>
     <button id="pcFull" title="Tela cheia">⛶</button>
   </div>
   <div class="bar">
@@ -257,7 +268,7 @@ body.pc #helpBox{left:130px;right:auto;bottom:24px;width:420px}
   <div id="msg"></div>
   <div id="mid">
   <div id="lcol">
-    <button class="rb" id="pcLeave" title="Sair da partida"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5"/><path d="M15 8l4 4-4 4"/><path d="M19 12H9"/></svg></button>
+    <button class="rb" id="pcSpin" title="Efeito na bola"><i class="bl"></i></button>
     <div id="pwSlot"></div>
     <button class="rb" id="pcChat" title="Suporte"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg></button>
     <button class="rb" id="pcSet" title="Ajuda">⚙</button>
@@ -277,7 +288,7 @@ body.pc #helpBox{left:130px;right:auto;bottom:24px;width:420px}
     </div>
     <div id="pw">
       <div id="pval">PUXE E SOLTE ➜</div>
-      <div id="pwr" title="Arraste para a direita e solte para tacar"><div id="pfill"></div></div>
+      <div id="pwr" title="Arraste para a direita e solte para tacar"><div id="pfill"></div><div id="cue"></div></div>
     </div>
   </div>
 </div>
@@ -457,6 +468,7 @@ function layout() {
 }
 new ResizeObserver(layout).observe($('stage'));
 window.addEventListener('resize', layout); pcMQ.addEventListener('change', layout);
+$('pcSpin').onclick = () => toast('Efeito na bola: em breve.');
 $('pcSet').onclick = () => $('bSet').click();
 $('pcLeave').onclick = () => $('bLeave').click();
 $('pcChat').onclick = () => $('hmChat').click();
@@ -494,8 +506,9 @@ const isPc = () => document.body.classList.contains('pc');
 function pvalIdle() { return !isPc() ? 'PUXE E SOLTE ➜' : canShoot() ? 'PUXE E SOLTE' : S && S.over ? 'FIM DE JOGO' : S && S.moving ? 'AGUARDE' : 'VEZ DO ADVERSÁRIO'; }
 function setPower(p) {
   power = p;
-  if (isPc()) { pfill.style.height = (p * 100) + '%'; pfill.style.width = '100%'; } else { pfill.style.width = (p * 100) + '%'; pfill.style.height = ''; }
-  $('pval').textContent = p > 0 ? Math.round(p * 100) + '%' : pvalIdle();
+  if (isPc()) { $('cue').style.transform = 'translateY(' + (p * pwr.clientHeight * 0.8) + 'px)'; pfill.style.width = '100%'; }
+  else { pfill.style.width = (p * 100) + '%'; pfill.style.height = ''; $('cue').style.transform = ''; }
+  $('pval').textContent = p > 0 ? (isPc() ? Math.max(1, Math.round(p * 100)) : Math.round(p * 100) + '%') : pvalIdle();
 }
 function pset(e) { const r = pwr.getBoundingClientRect(), v = isPc() ? (e.clientY - px0) / (r.height * 0.85) : (e.clientX - px0) / (r.width * 0.85); setPower(Math.max(0, Math.min(1, v))); }
 pwr.addEventListener('pointerdown', e => { if (!canShoot()) return; pwr.setPointerCapture(e.pointerId); pdrag = true; px0 = isPc() ? e.clientY : e.clientX; setPower(0); });
@@ -690,6 +703,24 @@ const TBL = (() => {
     const hg = g.createRadialGradient(px, py, 2, px, py, PR);
     hg.addColorStop(0, '#000'); hg.addColorStop(.8, '#030201'); hg.addColorStop(1, '#1a0904');
     g.fillStyle = hg; g.beginPath(); g.arc(px, py, PR, 0, 7); g.fill();
+    // redinha: malha em losangos dentro da cacapa (fundo marrom, nao mais preto)
+    g.save(); g.beginPath(); g.arc(px, py, PR, 0, 7); g.clip();
+    const ng = g.createRadialGradient(px, py, 1, px, py, PR);
+    ng.addColorStop(0, '#1b0e08'); ng.addColorStop(1, '#3a1d0e');
+    g.fillStyle = ng; g.fillRect(px - PR, py - PR, 2 * PR, 2 * PR);
+    const st = 4.6;
+    for (const [col, lw, off] of [['rgba(12,5,2,.9)', 1.7, .7], ['rgba(176,108,62,.95)', .9, 0]]) {
+      g.strokeStyle = col; g.lineWidth = lw; g.beginPath();
+      for (let d = -2 * PR; d <= 2 * PR; d += st) {
+        g.moveTo(px - PR + d + off, py - PR + off); g.lineTo(px + PR + d + off, py + PR + off);
+        g.moveTo(px + PR + d + off, py - PR + off); g.lineTo(px - PR + d + off, py + PR + off);
+      }
+      g.stroke();
+    }
+    const vg = g.createRadialGradient(px, py, 2, px, py, PR);
+    vg.addColorStop(0, 'rgba(0,0,0,.55)'); vg.addColorStop(.6, 'rgba(0,0,0,.18)'); vg.addColorStop(1, 'rgba(0,0,0,.45)');
+    g.fillStyle = vg; g.fillRect(px - PR, py - PR, 2 * PR, 2 * PR);
+    g.restore();
   }
   return c;
 })();
