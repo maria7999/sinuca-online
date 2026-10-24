@@ -94,11 +94,12 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
   </div>
   <div id="msg"></div>
   <div class="row">
+    <button id="bShoot" disabled>Tacar</button>
     <button id="bAgain" style="display:none">Jogar de novo</button>
     <button id="bMute" class="alt" aria-label="Som">🔊</button>
     <button id="bLeave" class="alt">Sair da partida</button>
   </div>
-  <p class="help">Na sua vez a mira já aparece: mexa o mouse para girar o taco (quanto mais longe da bola, mais forte) e clique para tacar. No celular: arraste para trás e solte.</p>
+  <p class="help">Mirar: clique e arraste na mesa (a linha só gira enquanto você segura o botão). Força: arraste a barra de força. Depois clique em Tacar. Setas do teclado fazem o ajuste fino e Enter taca. No celular: arraste para trás e solte.</p>
 </div>
 
 <script>
@@ -199,9 +200,18 @@ $('name').addEventListener('input', () => { try { localStorage.setItem('sinuca-n
 // ---------- mira ----------
 const canShoot = () => S && D && !S.moving && !S.over && (solo || S.turn === seat);
 function pos(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * CW / r.width - F, (e.clientY - r.top) * CH / r.height - F]; }
-// mouse: a mira ja aparece na sua vez; mexa o mouse para girar e mudar a forca (distancia da bola), clique para tacar
+// mouse: o cursor fica livre. A mira so gira enquanto voce segura o botao na mesa e arrasta.
+// A forca e ajustada arrastando a barra de forca. A tacada sai no botao "Tacar".
 // toque/celular: arrastar para tras e soltar
 let mousePt = null, touching = false;
+let aim = [1, 0], aimPow = .5, aiming = false, powing = false;
+function setAim(p) {
+  if (!S) return;
+  const c = S.b[0], dx = p[0] - c[1], dy = p[1] - c[2], d = Math.hypot(dx, dy);
+  if (d >= 8) aim = [dx / d, dy / d];
+}
+function setPow(v) { aimPow = Math.max(.02, Math.min(1, v)); }
+function shootNow() { if (canShoot()) { drag = null; fire(aim[0], aim[1], aimPow * 160); } }
 const fire = (ux, uy, d) => {
   const pw = Math.min(d, 160) / 160;
   lastShot = { ux, uy, off: R + 5 + pw * 55, t: performance.now() };
@@ -211,19 +221,18 @@ cv.addEventListener('pointerdown', e => {
   if (!canShoot()) return;
   if (e.pointerType === 'mouse') {
     if (e.button !== 0) return;
-    mousePt = pos(e);
-    const c = S.b[0], dx = mousePt[0] - c[1], dy = mousePt[1] - c[2], d = Math.hypot(dx, dy);
-    if (d >= 8) { drag = null; fire(dx / d, dy / d, d); }
+    aiming = true; try { cv.setPointerCapture(e.pointerId); } catch (x) {}
+    setAim(pos(e));
     return;
   }
   touching = true; cv.setPointerCapture(e.pointerId); drag = pos(e);
 });
 cv.addEventListener('pointermove', e => {
-  if (e.pointerType === 'mouse') mousePt = pos(e);
+  if (e.pointerType === 'mouse') { if (aiming) setAim(pos(e)); }
   else if (drag) drag = pos(e);
 });
 cv.addEventListener('pointerup', e => {
-  if (e.pointerType === 'mouse') return;
+  if (e.pointerType === 'mouse') { aiming = false; return; }
   touching = false;
   if (!drag || !S) { drag = null; return; }
   const c = S.b[0], dx = c[1] - drag[0], dy = c[2] - drag[1], d = Math.sqrt(dx * dx + dy * dy);
@@ -231,7 +240,29 @@ cv.addEventListener('pointerup', e => {
   if (d < 8 || !canShoot()) return;
   fire(dx / d, dy / d, d);
 });
-cv.addEventListener('pointercancel', () => { touching = false; drag = null; });
+cv.addEventListener('pointercancel', () => { touching = false; aiming = false; drag = null; });
+
+// forca: arraste a barra com o cursor (fica onde voce soltar)
+const pwEl = $('pw');
+function powAt(e) {
+  const r = pwEl.getBoundingClientRect();
+  setPow($('stage').classList.contains('stack') ? (e.clientX - r.left) / r.width : 1 - (e.clientY - r.top) / r.height);
+}
+pwEl.style.cursor = 'pointer'; pwEl.style.touchAction = 'none';
+pwEl.addEventListener('pointerdown', e => { if (!canShoot()) return; powing = true; pwEl.setPointerCapture(e.pointerId); powAt(e); });
+pwEl.addEventListener('pointermove', e => { if (powing) powAt(e); });
+pwEl.addEventListener('pointerup', () => { powing = false; });
+pwEl.addEventListener('pointercancel', () => { powing = false; });
+$('bShoot').onclick = shootNow;
+// ajuste fino pelo teclado: setas giram a mira (esq/dir) e mudam a forca (cima/baixo); Enter taca
+document.addEventListener('keydown', e => {
+  if (!canShoot() || $('game').style.display === 'none' || /INPUT|TEXTAREA/.test((document.activeElement || {}).tagName || '')) return;
+  const k = e.key, st = e.shiftKey ? .05 : .006;
+  if (k === 'ArrowLeft' || k === 'ArrowRight') {
+    const a = Math.atan2(aim[1], aim[0]) + (k === 'ArrowLeft' ? -st : st); aim = [Math.cos(a), Math.sin(a)]; e.preventDefault();
+  } else if (k === 'ArrowUp' || k === 'ArrowDown') { setPow(aimPow + (k === 'ArrowUp' ? .02 : -.02)); e.preventDefault(); }
+  else if (k === 'Enter' && document.activeElement && document.activeElement.tagName !== 'BUTTON') { shootNow(); e.preventDefault(); }
+});
 
 // ---------- mesa (desenhada uma vez) ----------
 const TB = document.createElement('canvas'); TB.width = CW * SC; TB.height = CH * SC;
@@ -529,7 +560,7 @@ function ray(c, ux, uy) {
 }
 
 // ---------- painel: efeito, forca e trilho das bolas ----------
-let eff = [0, 0], railVert = true, railKey = '', lastPw = -1;
+let eff = [0, 0], railVert = true, railKey = '', lastPw = -1, lastCan = null;
 const rail = $('rail'), rx = rail.getContext('2d');
 function layout() {
   const gm = $('game'); if (gm.style.display === 'none') return;
@@ -586,10 +617,12 @@ function frame() {
     pwCur = 0;
     if (!touching) {   // mouse: a mira fica sempre visivel na sua vez
       if (canShoot() && c.act) {
-        const t = mousePt || [560, 200], dx = t[0] - c.x, dy = t[1] - c.y, d = Math.hypot(dx, dy) || 1, k = mousePt ? Math.min(d, 160) : 90;
-        drag = [c.x - dx / d * k, c.y - dy / d * k];
+        const k = aimPow * 160;
+        drag = [c.x - aim[0] * k, c.y - aim[1] * k];
       } else drag = null;
     }
+    const can = !!(canShoot() && c.act);
+    if (can !== lastCan) { lastCan = can; $('bShoot').disabled = !can; }
     if (drag && canShoot() && c.act) {
       const dx = c.x - drag[0], dy = c.y - drag[1], d = Math.hypot(dx, dy) || 1, pw = Math.min(d, 160) / 160, ux = dx / d, uy = dy / d;
       pwCur = pw;
