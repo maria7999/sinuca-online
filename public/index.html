@@ -21,7 +21,7 @@ button.alt{background:transparent;color:var(--fg);border:1px solid var(--muted)}
 .row{display:flex;gap:8px}
 #status{min-height:20px;text-align:center;font-size:14px}
 html{overscroll-behavior:none}
-#game{display:none;position:fixed;inset:0;z-index:5;flex-direction:column;background:#0b1f17;color:#ecebe6;padding:env(safe-area-inset-top,0px) 6px env(safe-area-inset-bottom,0px);user-select:none;-webkit-user-select:none;touch-action:none}
+#game{display:none;position:fixed;inset:0;z-index:5;flex-direction:column;background:#0a1226;color:#ecebe6;padding:env(safe-area-inset-top,0px) 6px env(safe-area-inset-bottom,0px);user-select:none;-webkit-user-select:none;touch-action:none}
 .bar{display:flex;gap:6px;flex:none;padding:4px 2px 0}
 .pl{background:rgba(255,255,255,.07);border-radius:10px;padding:5px 10px;font-size:13px;flex:1;min-width:0;border:2px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pl.on{border-color:var(--green)}
@@ -447,71 +447,86 @@ function drawCue(c, ux, uy) {
 const TBL = (() => {
   const K = 2, c = document.createElement('canvas'); c.width = W * K; c.height = H * K;
   const g = c.getContext('2d'); g.scale(K, K);
-  let seed = 11; const rnd = () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-  const RW = 22; // espessura da madeira da borda
-  // madeira avermelhada
-  let gr = g.createLinearGradient(0, 0, 0, H);
-  gr.addColorStop(0, '#74321f'); gr.addColorStop(.5, '#5c2717'); gr.addColorStop(1, '#74321f');
-  g.fillStyle = gr; g.fillRect(0, 0, W, H);
-  const grain = (x, y, w, h, hor) => {
-    g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
-    for (let i = 0; i < (hor ? 150 : 90); i++) {
-      const dark = rnd() < .55, len = 40 + rnd() * 220;
-      const px = x + rnd() * w, py = y + rnd() * h;
-      g.strokeStyle = dark ? 'rgba(25,6,0,' + (.1 + rnd() * .2) + ')' : 'rgba(190,105,60,' + (.08 + rnd() * .16) + ')';
-      g.lineWidth = .4 + rnd() * 1.1; g.beginPath(); g.moveTo(px, py);
-      if (hor) g.lineTo(px + len, py + (rnd() - .5) * 2); else g.lineTo(px + (rnd() - .5) * 2, py + len);
-      g.stroke();
-    }
-    g.restore();
+  let seed = 5; const rnd = () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const RW = 19; // espessura da moldura laranja
+  // moldura laranja, mais clara no meio da espessura
+  g.fillStyle = '#c4601a'; g.fillRect(0, 0, W, H);
+  const side = (x, y, w, h, x0, y0, x1, y1) => {
+    const l = g.createLinearGradient(x0, y0, x1, y1);
+    l.addColorStop(0, '#8c3c0e'); l.addColorStop(.35, '#e6893a'); l.addColorStop(1, '#b2521a');
+    g.fillStyle = l; g.fillRect(x, y, w, h);
   };
-  grain(0, 0, W, RW, true); grain(0, H - RW, W, RW, true); grain(0, 0, RW, H, false); grain(W - RW, 0, RW, H, false);
-  // brilho e sombra da moldura
-  g.strokeStyle = 'rgba(255,205,160,.28)'; g.lineWidth = 1; g.strokeRect(.5, .5, W - 1, H - 1);
-  g.strokeStyle = 'rgba(0,0,0,.6)'; g.strokeRect(RW - .5, RW - .5, W - 2 * RW + 1, H - 2 * RW + 1);
-  // almofada (faixa de pano junto da madeira)
-  g.fillStyle = '#0e6a22'; g.fillRect(RW, RW, W - 2 * RW, H - 2 * RW);
-  g.fillStyle = 'rgba(140,235,160,.16)'; g.fillRect(RW, RW, W - 2 * RW, 1);
-  // pano com luz no centro e bordas escuras
-  const fg = g.createRadialGradient(W / 2, H / 2, 30, W / 2, H / 2, W * .62);
-  fg.addColorStop(0, '#23a53a'); fg.addColorStop(.55, '#178b2e'); fg.addColorStop(1, '#0c5a1b');
+  side(0, 0, W, RW, 0, 0, 0, RW); side(0, H - RW, W, RW, 0, H, 0, H - RW);
+  side(0, 0, RW, H, 0, 0, RW, 0); side(W - RW, 0, RW, H, W, 0, W - RW, 0);
+  g.strokeStyle = '#f6c05a'; g.lineWidth = 1.2; g.strokeRect(.8, .8, W - 1.6, H - 1.6);
+  // pano azul: luz no centro, bordas escuras
+  g.fillStyle = '#062a86'; g.fillRect(RW, RW, W - 2 * RW, H - 2 * RW);
+  const fg = g.createRadialGradient(W / 2, H / 2, 20, W / 2, H / 2, W * .6);
+  fg.addColorStop(0, '#0b5be8'); fg.addColorStop(.5, '#0847c4'); fg.addColorStop(1, '#04207a');
   g.fillStyle = fg; g.fillRect(M, M, W - 2 * M, H - 2 * M);
   g.save(); g.beginPath(); g.rect(M, M, W - 2 * M, H - 2 * M); g.clip();
-  for (let i = 0; i < 7000; i++) { g.fillStyle = rnd() < .5 ? 'rgba(255,255,255,.045)' : 'rgba(0,0,0,.06)'; g.fillRect(M + rnd() * (W - 2 * M), M + rnd() * (H - 2 * M), 1, 1); }
-  const sh = (x0, y0, x1, y1, rx, ry, rw, rh) => { const l = g.createLinearGradient(x0, y0, x1, y1); l.addColorStop(0, 'rgba(0,0,0,.32)'); l.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = l; g.fillRect(rx, ry, rw, rh); };
-  sh(0, M, 0, M + 16, M, M, W - 2 * M, 16); sh(0, H - M, 0, H - M - 16, M, H - M - 16, W - 2 * M, 16);
-  sh(M, 0, M + 16, 0, M, M, 16, H - 2 * M); sh(W - M, 0, W - M - 16, 0, W - M - 16, M, 16, H - 2 * M);
+  for (let i = 0; i < 5000; i++) { g.fillStyle = rnd() < .5 ? 'rgba(255,255,255,.03)' : 'rgba(0,0,30,.07)'; g.fillRect(M + rnd() * (W - 2 * M), M + rnd() * (H - 2 * M), 1, 1); }
+  const sh = (x0, y0, x1, y1, rx, ry, rw, rh) => { const l = g.createLinearGradient(x0, y0, x1, y1); l.addColorStop(0, 'rgba(0,5,40,.4)'); l.addColorStop(1, 'rgba(0,5,40,0)'); g.fillStyle = l; g.fillRect(rx, ry, rw, rh); };
+  sh(0, M, 0, M + 18, M, M, W - 2 * M, 18); sh(0, H - M, 0, H - M - 18, M, H - M - 18, W - 2 * M, 18);
+  sh(M, 0, M + 18, 0, M, M, 18, H - 2 * M); sh(W - M, 0, W - M - 18, 0, W - M - 18, M, 18, H - 2 * M);
   g.restore();
-  g.strokeStyle = 'rgba(0,0,0,.4)'; g.lineWidth = 1; g.strokeRect(M - .5, M - .5, W - 2 * M + 1, H - 2 * M + 1);
   // linha de cabeceira
-  g.strokeStyle = 'rgba(255,255,255,.2)'; g.beginPath(); g.moveTo(230, M); g.lineTo(230, H - M); g.stroke();
-  // cacapas
-  for (const [px, py] of PK) {
-    const mid = px === 400, top = py < H / 2;
-    if (mid) {
-      const y0 = top ? 0 : H - 24, pg = g.createLinearGradient(0, y0, 0, y0 + 24);
-      pg.addColorStop(0, top ? '#e0c18c' : '#a8844e'); pg.addColorStop(1, top ? '#a8844e' : '#e0c18c');
-      g.fillStyle = pg; g.beginPath(); g.roundRect(370, y0, 60, 24, 4); g.fill();
-      g.strokeStyle = 'rgba(60,35,10,.7)'; g.lineWidth = 1; g.stroke();
-    } else {
-      const bg = g.createRadialGradient(px, py, 6, px, py, 34);
-      bg.addColorStop(0, '#4a2a14'); bg.addColorStop(.7, '#7a4a28'); bg.addColorStop(1, '#3a1f0e');
-      g.fillStyle = bg; g.beginPath(); g.arc(px, py, 33, 0, 7); g.fill();
-      g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 1; g.stroke();
-    }
-    const hg = g.createRadialGradient(px, py, 2, px, py, PR);
-    hg.addColorStop(0, '#000'); hg.addColorStop(.75, '#050403'); hg.addColorStop(1, '#1d140a');
-    g.fillStyle = hg; g.beginPath(); g.arc(px, py, PR, 0, 7); g.fill();
-    g.strokeStyle = mid ? '#8a6a34' : '#c99a3a'; g.lineWidth = 2; g.beginPath(); g.arc(px, py, PR + 1, 0, 7); g.stroke();
-  }
-  // parafusos dourados na madeira
-  const rivet = (x, y) => {
-    const rg = g.createRadialGradient(x - .6, y - .6, .3, x, y, 2.4);
-    rg.addColorStop(0, '#fff1c0'); rg.addColorStop(.6, '#c9a24a'); rg.addColorStop(1, '#5a4018');
-    g.fillStyle = rg; g.beginPath(); g.arc(x, y, 2.1, 0, 7); g.fill();
+  g.strokeStyle = 'rgba(255,255,255,.3)'; g.lineWidth = 1; g.beginPath(); g.moveTo(230, M); g.lineTo(230, H - M); g.stroke();
+  // almofadas (trapezios azul-claros)
+  const cush = (pts, x0, y0, x1, y1) => {
+    const l = g.createLinearGradient(x0, y0, x1, y1); l.addColorStop(0, '#1b57bd'); l.addColorStop(1, '#3a8bf0');
+    g.fillStyle = l; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < 4; i++) g.lineTo(pts[i][0], pts[i][1]); g.closePath(); g.fill();
+    g.strokeStyle = 'rgba(0,10,60,.55)'; g.lineWidth = 1; g.stroke();
+    g.strokeStyle = 'rgba(180,215,255,.6)'; g.beginPath(); g.moveTo(pts[3][0], pts[3][1]); g.lineTo(pts[2][0], pts[2][1]); g.stroke();
   };
-  for (const x of [120, 215, 300, 500, 585, 680]) { rivet(x, 11); rivet(x, H - 11); }
-  for (const y of [105, 200, 295]) { rivet(11, y); rivet(W - 11, y); }
+  cush([[48, RW], [376, RW], [368, M], [56, M]], 0, RW, 0, M);
+  cush([[424, RW], [752, RW], [744, M], [432, M]], 0, RW, 0, M);
+  cush([[48, H - RW], [376, H - RW], [368, H - M], [56, H - M]], 0, H - RW, 0, H - M);
+  cush([[424, H - RW], [752, H - RW], [744, H - M], [432, H - M]], 0, H - RW, 0, H - M);
+  cush([[RW, 48], [RW, 352], [M, 344], [M, 56]], RW, 0, M, 0);
+  cush([[W - RW, 48], [W - RW, 352], [W - M, 344], [W - M, 56]], W - RW, 0, W - M, 0);
+  g.strokeStyle = 'rgba(60,15,0,.7)'; g.lineWidth = 1; g.strokeRect(RW - .5, RW - .5, W - 2 * RW + 1, H - 2 * RW + 1);
+  // enfeites da moldura: voltas, paineis de marmore escuro e perolas (desenhado em coordenadas locais da borda)
+  const panel = (x, y, w, h) => {
+    g.save(); g.beginPath(); g.roundRect(x, y, w, h, 2.5); g.clip();
+    const l = g.createLinearGradient(0, y, 0, y + h); l.addColorStop(0, '#15151a'); l.addColorStop(.5, '#2b2b32'); l.addColorStop(1, '#121216');
+    g.fillStyle = l; g.fillRect(x, y, w, h);
+    g.strokeStyle = 'rgba(255,255,255,.6)'; g.lineWidth = .5;
+    for (let i = 0; i < Math.max(5, w / 22); i++) {
+      let px = x + rnd() * w, py = y + rnd() * h; g.beginPath(); g.moveTo(px, py);
+      for (let k = 0; k < 4; k++) { px += (rnd() - .4) * 16; py += (rnd() - .5) * 8; g.lineTo(px, Math.max(y, Math.min(y + h, py))); }
+      g.globalAlpha = .25 + rnd() * .5; g.stroke();
+    }
+    g.restore(); g.globalAlpha = 1;
+    g.strokeStyle = 'rgba(245,185,80,.75)'; g.lineWidth = .8; g.beginPath(); g.roundRect(x, y, w, h, 2.5); g.stroke();
+  };
+  const deco = (len, segs, pearls) => {
+    g.strokeStyle = 'rgba(105,30,6,.65)'; g.lineWidth = .9;
+    for (let x = 4; x < len - 6; x += 11) {
+      g.beginPath(); g.moveTo(x, 17.5); g.bezierCurveTo(x + 2, 13.8, x + 6, 13.8, x + 6, 16); g.bezierCurveTo(x + 6, 17.6, x + 4.4, 17.8, x + 4.2, 16.8); g.stroke();
+    }
+    for (const [a, b] of segs) panel(a, 4.5, b - a, 9.5);
+    for (const x of pearls) {
+      const gl = g.createRadialGradient(x, 9.2, .5, x, 9.2, 5); gl.addColorStop(0, 'rgba(255,170,205,.9)'); gl.addColorStop(1, 'rgba(255,170,205,0)');
+      g.fillStyle = gl; g.beginPath(); g.arc(x, 9.2, 5, 0, 7); g.fill();
+      g.fillStyle = '#fff'; g.beginPath(); g.arc(x, 9.2, 1.8, 0, 7); g.fill();
+    }
+  };
+  const LW = [[0, 328], [384, 712]], LP = [56, 156, 256, 456, 556, 656], SP = [56, 156, 256];
+  g.save(); g.translate(44, 0); deco(W - 88, LW, LP); g.restore();
+  g.save(); g.translate(W - 44, H); g.rotate(Math.PI); deco(W - 88, LW, LP); g.restore();
+  g.save(); g.translate(0, H - 44); g.rotate(-Math.PI / 2); deco(H - 88, [[0, H - 88]], SP); g.restore();
+  g.save(); g.translate(W, 44); g.rotate(Math.PI / 2); deco(H - 88, [[0, H - 88]], SP); g.restore();
+  // cacapas: aro vermelho-escuro e buraco preto
+  for (const [px, py] of PK) {
+    const rg = g.createRadialGradient(px, py, PR - 4, px, py, PR + 4);
+    rg.addColorStop(0, '#2a0a04'); rg.addColorStop(1, '#7a2a0c');
+    g.fillStyle = rg; g.beginPath(); g.arc(px, py, PR + 4, 0, 7); g.fill();
+    g.strokeStyle = 'rgba(250,190,90,.7)'; g.lineWidth = 1; g.stroke();
+    const hg = g.createRadialGradient(px, py, 2, px, py, PR);
+    hg.addColorStop(0, '#000'); hg.addColorStop(.8, '#030201'); hg.addColorStop(1, '#1a0904');
+    g.fillStyle = hg; g.beginPath(); g.arc(px, py, PR, 0, 7); g.fill();
+  }
   return c;
 })();
 function draw() {
