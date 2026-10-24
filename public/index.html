@@ -24,6 +24,7 @@ button.alt{background:transparent;color:var(--fg);border:1px solid #4b5b51}
 .pl{background:var(--card);border-radius:10px;padding:8px 12px;font-size:14px;flex:1;min-width:130px;border:2px solid transparent}
 .pl.on{border-color:var(--gold)}
 .pl small{color:var(--muted);display:block}
+.ico{display:flex;gap:3px;margin-top:5px;min-height:14px}.ico i{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.5);display:block}.ico i.off{opacity:.2}
 canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block;box-shadow:0 18px 44px rgba(0,0,0,.6)}
 #msg{font-size:15px;min-height:22px;text-align:center}
 .help{color:var(--muted);font-size:13px;margin:0;text-align:center;max-width:620px}
@@ -46,8 +47,8 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
 
 <div id="game">
   <div class="bar">
-    <div class="pl on" id="p0"><b id="n0">Jogador 1</b><small id="g0">mesa aberta</small></div>
-    <div class="pl" id="p1"><b id="n1">Jogador 2</b><small id="g1">mesa aberta</small></div>
+    <div class="pl on" id="p0"><b id="n0">Jogador 1</b><small id="g0">mesa aberta</small><div class="ico" id="i0"></div></div>
+    <div class="pl" id="p1"><b id="n1">Jogador 2</b><small id="g1">mesa aberta</small><div class="ico" id="i1"></div></div>
   </div>
   <canvas id="c" width="1648" height="936"></canvas>
   <div id="msg"></div>
@@ -124,8 +125,18 @@ function showLobby() { $('game').style.display = 'none'; $('lobby').style.displa
 function showGame() { $('lobby').style.display = 'none'; $('game').style.display = 'flex'; $('status').textContent = ''; $('bAgain').style.display = 'none'; }
 
 const gname = g => g === 'solid' ? 'lisas (1–7)' : g === 'stripe' ? 'listradas (9–15)' : 'mesa aberta';
+const BC = ['#fff', '#f2c200', '#1e5bd8', '#d62828', '#6a2c91', '#f27d0c', '#1f8a3d', '#8b1e1e', '#111'];
+function icons(id, g) {
+  const el = $(id); el.innerHTML = ''; if (!g || !D) return;
+  for (const n of g === 'solid' ? [1, 2, 3, 4, 5, 6, 7] : [9, 10, 11, 12, 13, 14, 15]) {
+    const b = D.find(d => d.n === n), i = document.createElement('i'), c = BC[n > 8 ? n - 8 : n];
+    i.style.background = n > 8 ? `linear-gradient(#fff 0 28%,${c} 28% 72%,#fff 72%)` : c;
+    if (!b || !b.act) i.className = 'off'; el.appendChild(i);
+  }
+}
 function updateUI() {
   if (!S) return;
+  icons('i0', S.grp[0]); icons('i1', S.grp[1]);
   $('n0').textContent = S.names[0] + (!solo && seat === 0 ? ' (você)' : '');
   $('n1').textContent = S.names[1] + (!solo && seat === 1 ? ' (você)' : '');
   $('g0').textContent = gname(S.grp[0]); $('g1').textContent = gname(S.grp[1]);
@@ -177,16 +188,24 @@ const TB = document.createElement('canvas'); TB.width = CW * SC; TB.height = CH 
   // arabescos na borda externa
   const orn = (x, y, r, f) => { g.save(); g.translate(x, y); g.rotate(r); g.scale(f, 1); g.beginPath(); g.arc(0, 0, 1.9, .4, 4.6); g.moveTo(1.9, 0); g.quadraticCurveTo(5, 2.2, 8, 0); g.stroke(); g.restore(); };
   g.strokeStyle = 'rgba(95,36,6,.65)'; g.lineWidth = .8;
-  for (let x = 12, i = 0; x < W - 12; x += 9, i++) { const f = i % 2 ? -1 : 1; orn(x, -7.5, 0, f); orn(x, H + 7.5, 0, f); }
-  for (let y = 12, i = 0; y < H - 12; y += 9, i++) { const f = i % 2 ? -1 : 1; orn(-7.5, y, Math.PI / 2, f); orn(W + 7.5, y, Math.PI / 2, f); }
+  const ring = () => {
+    for (let x = 12, i = 0; x < W - 12; x += 9, i++) { const f = i % 2 ? -1 : 1; orn(x, -7.5, 0, f); orn(x, H + 7.5, 0, f); }
+    for (let y = 12, i = 0; y < H - 12; y += 9, i++) { const f = i % 2 ? -1 : 1; orn(-7.5, y, Math.PI / 2, f); orn(W + 7.5, y, Math.PI / 2, f); }
+  };
+  g.save(); g.translate(.5, .5); g.strokeStyle = 'rgba(255,215,150,.55)'; ring(); g.restore();
+  ring();
   // feltro
   g.save(); g.beginPath(); g.rect(18, 18, W - 36, H - 36); g.clip();
   const f = g.createRadialGradient(400, 185, 30, 400, 200, 470);
   f.addColorStop(0, '#3aae66'); f.addColorStop(.6, '#238a4f'); f.addColorStop(1, '#145f35');
   g.fillStyle = f; g.fillRect(18, 18, W - 36, H - 36);
   for (let i = 0; i < 9000; i++) { g.fillStyle = Math.random() < .5 ? 'rgba(0,0,0,.05)' : 'rgba(255,255,255,.05)'; g.fillRect(rnd(18, W - 18), rnd(18, H - 18), .8, .8); }
+  g.globalAlpha = .028; g.lineWidth = .5;
+  for (let x = 18; x < W - 18; x += 2) { g.strokeStyle = x % 4 ? '#000' : '#fff'; g.beginPath(); g.moveTo(x, 18); g.lineTo(x, H - 18); g.stroke(); }
+  for (let y = 18; y < H - 18; y += 2) { g.strokeStyle = y % 4 ? '#000' : '#fff'; g.beginPath(); g.moveTo(18, y); g.lineTo(W - 18, y); g.stroke(); }
+  g.globalAlpha = 1;
   const lg = g.createRadialGradient(400, 170, 40, 400, 200, 430);
-  lg.addColorStop(0, 'rgba(255,255,255,.11)'); lg.addColorStop(1, 'rgba(0,0,0,.3)');
+  lg.addColorStop(0, 'rgba(255,255,255,.16)'); lg.addColorStop(1, 'rgba(0,0,0,.38)');
   g.fillStyle = lg; g.fillRect(18, 18, W - 36, H - 36);
   g.restore();
   // almofadas com bisel claro e pontas em angulo
@@ -203,8 +222,8 @@ const TB = document.createElement('canvas'); TB.width = CW * SC; TB.height = CH 
   cush([[420, 382], [760, 382], [748, 370], [432, 370]], 0, 382, 0, 370);
   cush([[18, 40], [18, 360], [30, 348], [30, 52]], 18, 0, 30, 0);
   cush([[782, 40], [782, 360], [770, 348], [770, 52]], 782, 0, 770, 0);
-  for (const [x0, y0, x1, y1] of [[0, M, 0, M + 12], [0, H - M, 0, H - M - 12], [M, 0, M + 12, 0], [W - M, 0, W - M - 12, 0]]) {
-    const sd = g.createLinearGradient(x0, y0, x1, y1); sd.addColorStop(0, 'rgba(0,0,0,.4)'); sd.addColorStop(1, 'rgba(0,0,0,0)');
+  for (const [x0, y0, x1, y1] of [[0, M, 0, M + 16], [0, H - M, 0, H - M - 16], [M, 0, M + 16, 0], [W - M, 0, W - M - 16, 0]]) {
+    const sd = g.createLinearGradient(x0, y0, x1, y1); sd.addColorStop(0, 'rgba(0,0,0,.55)'); sd.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = sd; g.fillRect(52, 52, W - 104, H - 104);
   }
   g.strokeStyle = 'rgba(255,255,255,.2)'; g.lineWidth = 1; g.beginPath(); g.moveTo(230, M); g.lineTo(230, H - M); g.stroke();
@@ -223,23 +242,32 @@ const TB = document.createElement('canvas'); TB.width = CW * SC; TB.height = CH 
       for (let k = 0; k < 5; k++) { a += rnd(6, 26); b += rnd(-5, 5); g.lineTo(...pt(a, b)); }
       g.stroke();
     }
+    g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = 3; g.strokeRect(x, y, w, h);
     g.restore();
     g.strokeStyle = 'rgba(30,10,0,.9)'; g.lineWidth = 1; g.beginPath(); g.roundRect(x, y, w, h, 3); g.stroke();
     g.strokeStyle = 'rgba(255,190,110,.6)'; g.lineWidth = .6; g.beginPath(); g.roundRect(x - .6, y - .6, w + 1.2, h + 1.2, 3.6); g.stroke();
     for (const k of [.22, .52, .82]) {
       const [cx, cy] = pt(len * k, th / 2), pr = g.createRadialGradient(cx - .6, cy - .6, .3, cx, cy, 2.8);
       pr.addColorStop(0, '#fff'); pr.addColorStop(.7, '#f6d9de'); pr.addColorStop(1, '#e58aa0');
-      g.fillStyle = pr; g.beginPath(); g.arc(cx, cy, 2.7, 0, 7); g.fill(); g.strokeStyle = 'rgba(90,10,30,.7)'; g.lineWidth = .6; g.stroke();
+      g.fillStyle = pr; g.beginPath(); g.arc(cx, cy, 2.7, 0, 7); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(cx - .8, cy - .9, .7, 0, 7); g.fill(); g.strokeStyle = 'rgba(90,10,30,.7)'; g.lineWidth = .6; g.stroke();
     }
   };
   panel(50, -3, 322, 12); panel(428, -3, 322, 12); panel(50, H - 9, 322, 12); panel(428, H - 9, 322, 12);
   panel(-3, 50, 12, 300, 1); panel(W - 9, 50, 12, 300, 1);
   // cacapas: buracos escuros e lisos
   PV.forEach(([px, py], i) => {
-    const ho = i % 3 === 1 ? 19 : 22, h = g.createRadialGradient(px, py, ho * .2, px, py, ho);
-    h.addColorStop(0, '#030102'); h.addColorStop(.75, '#0a0304'); h.addColorStop(1, '#2a0e0a');
+    const ho = i % 3 === 1 ? 19 : 22;
+    const so = g.createRadialGradient(px, py, ho * .9, px, py, ho + 7); so.addColorStop(0, 'rgba(0,0,0,.55)'); so.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = so; g.beginPath(); g.arc(px, py, ho + 7, 0, 7); g.fill();
+    const h = g.createRadialGradient(px, py - 2, ho * .15, px, py, ho); h.addColorStop(0, '#000'); h.addColorStop(.7, '#07090a'); h.addColorStop(1, '#241512');
     g.fillStyle = h; g.beginPath(); g.arc(px, py, ho, 0, 7); g.fill();
-    g.strokeStyle = 'rgba(20,5,0,.85)'; g.lineWidth = 1.2; g.stroke();
+    g.save(); g.beginPath(); g.arc(px, py, ho - 1, 0, 7); g.clip();
+    g.strokeStyle = 'rgba(150,120,90,.16)'; g.lineWidth = .6;
+    for (let k = -ho * 2; k < ho * 2; k += 4) { g.beginPath(); g.moveTo(px + k, py - ho); g.lineTo(px + k + ho, py + ho); g.moveTo(px + k, py + ho); g.lineTo(px + k + ho, py - ho); g.stroke(); }
+    const vg = g.createRadialGradient(px, py, ho * .3, px, py, ho); vg.addColorStop(0, 'rgba(0,0,0,.75)'); vg.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = vg; g.fillRect(px - ho, py - ho, 2 * ho, 2 * ho); g.restore();
+    g.strokeStyle = 'rgba(15,5,0,.9)'; g.lineWidth = 1.4; g.beginPath(); g.arc(px, py, ho, 0, 7); g.stroke();
+    g.strokeStyle = 'rgba(255,170,90,.35)'; g.lineWidth = .9; g.beginPath(); g.arc(px, py, ho + .9, .2, 1.2); g.stroke();
   });
   g.restore();
   // faixa de baixo: forca e bolas encacapadas
@@ -269,11 +297,12 @@ function shade(n, m) {
     else if (n === 8) col = RGB[8];
     else if (Math.abs(qy) < .52) col = RGB[n - 8];
     const df = Math.max(0, u * LX + v * LY + w * LZ);
-    let sp = Math.max(0, u * HX + v * HY + w * HZ); sp *= sp; sp *= sp; sp *= sp; sp *= sp; sp *= sp;
-    const sh = (.3 + .78 * df) * (.78 + .22 * w);
-    d[k] = Math.min(255, col[0] * sh + sp * 255 * .85);
-    d[k + 1] = Math.min(255, col[1] * sh + sp * 255 * .85);
-    d[k + 2] = Math.min(255, col[2] * sh + sp * 255 * .85);
+    let sp = Math.max(0, u * HX + v * HY + w * HZ); sp *= sp; sp *= sp; sp *= sp; sp *= sp; sp *= sp; sp *= sp;
+    const iw = 1 - w, fr = iw * iw * iw, gl = Math.max(0, 1 - Math.hypot(u + .32, v + .42) / .26), bn = Math.max(0, v) * .12;
+    const sh = (.26 + .82 * df) * (.8 + .2 * w) * (1 - .2 * Math.max(0, v) * q2), sv = sp * 200 + gl * gl * 150 + fr * 28;
+    d[k] = Math.min(255, col[0] * sh + sv + bn * 30);
+    d[k + 1] = Math.min(255, col[1] * sh + sv + bn * 120);
+    d[k + 2] = Math.min(255, col[2] * sh + sv + bn * 40);
     d[k + 3] = rr < 1 ? 255 : 255 * (1.04 - rr) / .04;
   }
   bx.putImageData(img, 0, 0);
@@ -292,7 +321,7 @@ function drawBallAt(n, m, x, y, s, sh) {
       const wx = sg * m[2], wy = sg * m[5], wz = sg * m[8]; if (wz < .25) continue;
       const a = Math.atan2(wy, wx), th = Math.atan2(m[4], m[1]) - Math.PI / 2;
       ctx.save(); ctx.translate(x + wx * R * .98, y + wy * R * .98); ctx.rotate(a); ctx.scale(wz, 1); ctx.rotate(th - a);
-      ctx.fillStyle = '#111'; ctx.font = 'bold 5.4px system-ui,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#111'; ctx.font = 'bold 5.9px system-ui,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(n, 0, .3); ctx.restore();
     }
   }
