@@ -86,6 +86,54 @@ html{overscroll-behavior:none}
 .lg-back{display:block;margin:18px 0 0;text-align:center;color:#3ddc84;font-size:13px;font-weight:800;text-decoration:none}
 #sgForm{display:none}
 #sgForm .lg-sub{margin-bottom:22px}
+
+/* ---------- tela inicial (lobby) ---------- */
+#lobby{position:fixed;inset:0;z-index:15;overflow:auto;flex-direction:column;color:#e8f5ee;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(120% 80% at 50% 0%,#17382b 0%,#102a20 50%,#0b1a14 100%)}
+#lobby *{box-sizing:border-box}
+#lobby svg{display:block}
+.hm-top{flex:none;background:linear-gradient(#0c1d16,#09150f);border-bottom:1px solid #1f6b4a;padding:0 24px;padding-top:env(safe-area-inset-top,0px)}
+.hm-top-in{max-width:1172px;margin:0 auto;height:64px;display:flex;align-items:center;gap:14px}
+.hm-brand{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:18px;letter-spacing:.12em;text-transform:uppercase;color:#f1f8f4;white-space:nowrap}
+.hm-brand::after{content:"";display:inline-block;width:1px;height:16px;background:#2a5a45;margin-left:12px;vertical-align:middle}
+.hm-home{display:flex;align-items:center;gap:7px;background:#14382b;color:#3ddc84;border:1px solid #2f7a58;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700}
+.hm-home svg{width:16px;height:16px}
+.hm-sp{flex:1}
+.hm-user{display:flex;align-items:center;gap:9px}
+.hm-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#06240f;background:linear-gradient(135deg,#7ae6a6,#2fb36a);border:2px solid #2f7a58}
+.hm-ut{display:flex;flex-direction:column;line-height:1.2}
+.hm-ut b{font-family:Georgia,serif;font-size:14px;color:#f1f8f4;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hm-ut small{display:flex;align-items:center;gap:4px;font-size:11px;color:#9fc0ae}
+.hm-ut small svg{width:10px;height:10px;color:#3ddc84}
+.hm-ut small span+svg{margin-left:6px}
+.hm-dot{width:8px;height:8px;border-radius:50%;background:#3ddc84;box-shadow:0 0 6px #3ddc84}
+.hm-body{flex:1;display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 16px 90px}
+.hm-tabs{width:100%;max-width:480px;padding:4px;border:1px solid #1f4a38;border-radius:12px;background:#0d2119;display:flex;justify-content:center}
+.hm-tab{min-width:92px;padding:7px 14px;border-radius:9px;border:1px solid #2f7a58;background:linear-gradient(#1d4a38,#143629);text-align:center}
+.hm-tab b{display:block;font-family:Georgia,serif;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#d9f6e6;font-weight:600}
+.hm-tab small{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:2px;font-size:10px;font-weight:700;color:#bfe0cd}
+.hm-tab small svg{width:11px;height:11px}
+.hm-how{width:100%;max-width:480px;display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid #1f4a38;border-radius:12px;background:#12291f;color:#3ddc84;font-family:Georgia,serif;font-size:14px;font-weight:700;text-align:left}
+.hm-play{width:28px;height:28px;border-radius:50%;background:#1d4a38;display:flex;align-items:center;justify-content:center;flex:none}
+.hm-play svg{width:13px;height:13px}
+.hm-grid{width:100%;max-width:912px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-top:8px}
+.hm-room{position:relative;width:138px;height:120px;border-radius:14px;border:1px solid #2f7a58;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#f1f8f4;background:linear-gradient(160deg,#256a50,#17402f);box-shadow:0 0 0 1px #3ddc8444,0 8px 24px #0006}
+.hm-room:hover{border-color:#3ddc84}
+.hm-room b{font-family:Georgia,serif;font-size:26px;font-weight:700}
+.hm-cnt{display:flex;align-items:center;gap:5px;background:#0c1d16;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:800}
+.hm-cnt svg{width:13px;height:13px}
+.hm-badge{position:absolute;right:-8px;top:-8px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#06240f;background:linear-gradient(135deg,#7ae6a6,#2fb36a);border:2px solid #d9f6e6}
+#qbar{display:none;position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:30;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:#0c1d16;border:1px solid #2f7a58;box-shadow:0 8px 28px #000a;max-width:calc(100% - 24px);flex-wrap:wrap;justify-content:center}
+#qbar #status{min-height:0;font-size:14px;color:#d9f6e6}
+#qbar button{padding:8px 12px;font-size:13px;background:transparent;color:#e8f5ee;border:1px solid #2f7a58}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:40;display:none;background:#0c1d16;border:1px solid #2f7a58;color:#e8f5ee;padding:10px 16px;border-radius:10px;font-size:14px;max-width:calc(100% - 24px);text-align:center}
+#howBox{display:none;position:fixed;inset:0;z-index:35;background:#000a;align-items:center;justify-content:center;padding:16px}
+.hm-modal{max-width:420px;background:linear-gradient(165deg,#1d4c39,#163a2c);border:1px solid #2b6d4f;border-radius:14px;padding:22px}
+.hm-modal h3{margin:0 0 10px;font-family:Georgia,serif;font-size:20px;color:#d9f6e6}
+.hm-modal p{margin:0 0 16px;font-size:14px;line-height:1.5;color:#d3e6dc}
+.hm-modal button{width:100%}
+#hmChat{position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;background:#1fbf75;color:#fff;box-shadow:0 6px 20px #0008;z-index:12}
+#hmChat svg{width:26px;height:26px}
+@media(max-width:600px){.hm-top{padding:0 12px}.hm-top-in{gap:8px}.hm-brand{font-size:13px;letter-spacing:.08em}.hm-brand::after{display:none}.hm-home{padding:7px 10px}.hm-ut small{display:none}.hm-ut b{max-width:80px}}
 @media(max-width:520px){.lg-top{padding:0 14px}.lg-card{padding:24px 20px 22px}.lg-brand{font-size:16px}}
 </style>
 </head>
@@ -143,18 +191,28 @@ html{overscroll-behavior:none}
   </main>
 </div>
 
-<div id="lobby" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%">
-  <h1>🎱 Sinuquinha VIP</h1>
-  <p class="sub">Bola 8, 1 contra 1, de graça. Sem cadastro.</p>
-  <div class="card">
-    <input id="name" placeholder="Seu apelido" maxlength="16" autocomplete="off">
-    <button id="bQueue">Jogar agora (achar adversário)</button>
-    <button id="bPractice" class="alt">Treinar sozinho</button>
-    <hr style="width:100%;border:0;border-top:1px solid var(--muted);opacity:.3">
-    <button id="bCreate" class="alt">Criar sala para um amigo</button>
-    <div class="row"><input id="code" placeholder="Código da sala" maxlength="6" autocomplete="off"><button id="bJoin" style="white-space:nowrap">Entrar</button></div>
-    <div id="status"></div>
-  </div>
+<div id="lobby" style="display:none">
+  <header class="hm-top"><div class="hm-top-in">
+    <div class="hm-brand">Sinuquinha VIP</div>
+    <button class="hm-home" id="hmHome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Início</button>
+    <div class="hm-sp"></div>
+    <div class="hm-user">
+      <div class="hm-av" id="hmAv">J</div>
+      <div class="hm-ut"><b id="hmName">Jogador</b><small><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 5.6 6 .5-4.6 4 1.4 5.9L12 14.9 6.8 18l1.4-5.9-4.6-4 6-.5z"/></svg><span id="hmLvl">1</span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 21l1.6-7L2 9.2l7.1-.6z"/></svg><span id="hmPts">1500</span></small></div>
+      <i class="hm-dot"></i>
+    </div>
+  </div></header>
+  <main class="hm-body">
+    <div class="hm-tabs"><div class="hm-tab"><b>Sinuca</b><small><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="8" r="3.3"/><path d="M2.5 19c0-3.3 2.9-5.2 6.5-5.2s6.5 1.9 6.5 5.2z"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 13.9c3 0 5 1.5 5 4.2h-4.4c0-1.7-.6-3.1-1.6-4.2z"/></svg><span id="hmOn">0</span> jogando</small></div></div>
+    <button class="hm-how" id="hmHow"><span class="hm-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>Como jogar Sinuca</button>
+    <div class="hm-grid">
+      <button class="hm-room" id="roomFree"><span class="hm-badge" id="hmBadge">J</span><b>Grátis</b><span class="hm-cnt"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="8" r="3.3"/><path d="M2.5 19c0-3.3 2.9-5.2 6.5-5.2s6.5 1.9 6.5 5.2z"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 13.9c3 0 5 1.5 5 4.2h-4.4c0-1.7-.6-3.1-1.6-4.2z"/></svg><span id="hmFree">0</span></span></button>
+    </div>
+  </main>
+  <div id="qbar"><span id="status"></span><button class="alt" id="qPractice">Treinar sozinho</button><button class="alt" id="qCancel">Cancelar</button></div>
+  <div id="toast"></div>
+  <div id="howBox"><div class="hm-modal"><h3>Como jogar Sinuca</h3><p>Na sua vez, o taco aparece. Segure e arraste na mesa (dedo ou mouse) para girar o taco; no computador, as setas ← → fazem o ajuste fino. Depois puxe a barra de força (embaixo) para a direita e solte para tacar. Lisas são 1–7, listradas 9–15.</p><button id="howClose">Entendi</button></div></div>
+  <button id="hmChat" aria-label="Suporte"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg></button>
 </div>
 
 <div id="game">
@@ -194,7 +252,8 @@ let ws = null, seat = 0, solo = false, S = null, aim = [1, 0], power = 0;
 const SUPPORT_WHATSAPP = ''; // coloque o numero com DDI, ex.: '5531999999999'
 function lgMsg(t, info) { const e = $('lgErr'); e.textContent = t || ''; e.className = 'lg-err' + (info ? ' info' : ''); }
 function lgEnter(email) {
-  if (!$('name').value.trim() && email) $('name').value = email.split('@')[0].slice(0, 16);
+  if (email) userName = email.split('@')[0].slice(0, 16);
+  renderProfile();
   $('login').style.display = 'none'; showLobby();
 }
 $('lgForm').addEventListener('submit', e => {
@@ -242,19 +301,30 @@ function connect(then) {
   if (ws && ws.readyState === 0) { ws.addEventListener('open', then, { once: true }); return; }
   const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
   ws = new WebSocket(proto + location.host);
-  ws.onopen = () => { $('status').textContent = ''; then(); };
+  ws.onopen = () => { then(); };
   ws.onmessage = e => { let m; try { m = JSON.parse(e.data); } catch (x) { return; } onMsg(m); };
   ws.onclose = () => {
     showLobby();
-    $('status').textContent = 'Conexão perdida. Recarregue a página para jogar de novo.';
+    stat(''); toast('Conexão perdida. Recarregue a página para jogar de novo.');
   };
 }
 function send(o) { connect(() => ws.send(JSON.stringify(o))); }
-function nm() { return $('name').value.trim() || 'Jogador'; }
+let userName = 'Jogador';
+function nm() { return userName; }
+// Placeholders: ligar a dados reais do servidor quando existirem
+const PROFILE = { level: 1, points: 1500 }, ONLINE = { sinuca: 0, free: 0 };
+function renderProfile() {
+  $('hmName').textContent = userName; $('hmAv').textContent = $('hmBadge').textContent = userName.charAt(0).toUpperCase() || 'J';
+  $('hmLvl').textContent = PROFILE.level; $('hmPts').textContent = PROFILE.points;
+  $('hmOn').textContent = ONLINE.sinuca; $('hmFree').textContent = ONLINE.free;
+}
+let toastT = 0;
+function toast(t) { const e = $('toast'); e.textContent = t; e.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => { e.style.display = 'none'; }, 3500); }
+function stat(t) { $('status').textContent = t || ''; $('qbar').style.display = t ? 'flex' : 'none'; }
 
 function onMsg(m) {
-  if (m.t === 'wait') { $('status').textContent = m.m; }
-  else if (m.t === 'error') { $('status').textContent = m.m; }
+  if (m.t === 'wait') { stat(m.m); }
+  else if (m.t === 'error') { stat(''); toast(m.m); }
   else if (m.t === 'match') { seat = m.seat; solo = !!m.solo; S = null; showGame(); }
   else if (m.t === 'state') {
     S = m;
@@ -265,7 +335,7 @@ function onMsg(m) {
   else if (m.t === 'lobby') { showLobby(); }
 }
 function showLobby() { $('game').style.display = 'none'; $('lobby').style.display = 'flex'; }
-function showGame() { $('lobby').style.display = 'none'; $('game').style.display = 'flex'; layout(); $('status').textContent = ''; $('bAgain').style.display = 'none'; }
+function showGame() { $('lobby').style.display = 'none'; $('game').style.display = 'flex'; layout(); stat(''); $('bAgain').style.display = 'none'; }
 
 const gname = g => g === 'solid' ? 'lisas (1–7)' : g === 'stripe' ? 'listradas (9–15)' : 'mesa aberta';
 function updateUI() {
@@ -279,14 +349,17 @@ function updateUI() {
 }
 
 // ---------- botoes ----------
-$('bQueue').onclick = () => send({ t: 'queue', name: nm() });
-$('bPractice').onclick = () => send({ t: 'practice', name: nm() });
-$('bCreate').onclick = () => send({ t: 'create', name: nm() });
-$('bJoin').onclick = () => { const c = $('code').value.trim(); if (c) send({ t: 'join', name: nm(), code: c }); };
+function go(o) { try { send(o); } catch (e) { stat(''); toast('Não foi possível conectar ao servidor.'); } }
+function leaveQueue() { if (ws) { ws.onclose = null; try { ws.close(); } catch (e) {} ws = null; } stat(''); }
+$('roomFree').onclick = () => { stat('Procurando adversário...'); go({ t: 'queue', name: nm() }); };
+$('qCancel').onclick = leaveQueue;
+$('qPractice').onclick = () => { leaveQueue(); go({ t: 'practice', name: nm() }); };
+$('hmHome').onclick = () => { $('lobby').scrollTop = 0; };
+$('hmHow').onclick = () => { $('howBox').style.display = 'flex'; };
+$('howClose').onclick = () => { $('howBox').style.display = 'none'; };
+$('hmChat').onclick = () => { if (SUPPORT_WHATSAPP) window.open('https://wa.me/' + SUPPORT_WHATSAPP, '_blank'); else toast('Suporte pelo WhatsApp ainda não configurado.'); };
 $('bAgain').onclick = () => send({ t: 'again' });
 $('bLeave').onclick = () => send({ t: 'leave' });
-$('name').value = (() => { try { return localStorage.getItem('sinuca-name') || ''; } catch (e) { return ''; } })();
-$('name').addEventListener('input', () => { try { localStorage.setItem('sinuca-name', $('name').value); } catch (e) {} });
 
 // ---------- mira e forca ----------
 const canShoot = () => S && !S.moving && !S.over && (solo || S.turn === seat);
