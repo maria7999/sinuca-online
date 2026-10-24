@@ -634,6 +634,35 @@ function layout() {
   if (railVert !== wide) { railVert = wide; railKey = ''; rail.width = (wide ? 40 : 380) * SC; rail.height = (wide ? 380 : 40) * SC; }
 }
 window.addEventListener('resize', layout);
+// ---------- bolas rolando no trilho ----------
+// Cada bola encacapada entra pela ponta de baixo (ponto vermelho), rola de verdade (o giro acompanha a
+// distancia andada) e para na sua vaga: a primeira la em cima (ponto verde), as outras logo abaixo.
+const railSt = {}, RAIL_GAP = 23.5, RAIL_FIRST = 24, RAIL_ENTRY = 356, RAIL_V0 = 380, RAIL_DELAY = 300;   // V0 = unidades por segundo
+function railStep(now) {
+  let moving = false;
+  for (const k in railSt) if (!potted.includes(+k)) delete railSt[k];
+  potted.forEach((bi, j) => {
+    const tgt = RAIL_FIRST + j * RAIL_GAP, dist = RAIL_ENTRY - tgt;
+    let st = railSt[bi];
+    if (!st) {
+      const ah = j ? railSt[potted[j - 1]] : null;
+      if (j && (!ah || ah.a > RAIL_ENTRY - RAIL_GAP)) return;   // espera a bola da frente sair da entrada
+      st = railSt[bi] = { t0: now + RAIL_DELAY, a: RAIL_ENTRY, M: ID.slice(), done: dist < 1 };
+      if (railVert) spin(st, 0, dist); else spin(st, dist, 0);   // ja comeca girada: ao chegar o numero fica em pe
+    }
+    if (st.done) return;
+    moving = true;
+    if (now < st.t0) return;
+    const T = 2 * dist / RAIL_V0 * 1000, tau = Math.min(1, (now - st.t0) / T);
+    let a = RAIL_ENTRY - dist * (1 - (1 - tau) * (1 - tau));       // sai rapido e vai freando ate parar na vaga
+    const ah = j ? railSt[potted[j - 1]] : null;
+    if (ah) a = Math.max(a, ah.a + RAIL_GAP);                      // nunca encosta na bola da frente
+    const dA = a - st.a;
+    if (Math.abs(dA) > 1e-4) { if (railVert) spin(st, 0, dA); else spin(st, dA, 0); st.a = a; }
+    if (tau >= 1 && a <= tgt + 1e-3) { st.a = tgt; st.M = ID.slice(); st.done = true; }
+  });
+  return moving;
+}
 function drawRail() {
   const v = railVert, L = 380, T = 40;
   rx.setTransform(SC, 0, 0, SC, 0, 0); rx.clearRect(0, 0, v ? T : L, v ? L : T);
@@ -645,7 +674,7 @@ function drawRail() {
   rx.strokeStyle = gd; rx.lineWidth = 3; rx.beginPath(); rx.roundRect(tx + 1.5, ty + 1.5, tw - 3, th - 3, 14.5); rx.stroke();
   rx.lineWidth = 2.5;
   for (let p = 62; p < 360; p += 62) { rx.beginPath(); if (v) { rx.moveTo(tx, p); rx.lineTo(tx + tw, p); } else { rx.moveTo(p, ty); rx.lineTo(p, ty + th); } rx.stroke(); }
-  if (D) potted.forEach((bi, j) => { const q = 24 + j * 23.5; drawBallAt(D[bi].n, ID, v ? 20 : q, v ? q : 20, 1, 0, rx); });
+  if (D) { const now = performance.now(); potted.forEach(bi => { const st = railSt[bi]; if (!st || now < st.t0) return; drawBallAt(D[bi].n, st.M, v ? 20 : st.a, v ? st.a : 20, 1, 0, rx); }); }
 }
 function setSpin(x, y) {
   const l = Math.hypot(x, y), mx = .72; if (l > mx) { x *= mx / l; y *= mx / l; }
@@ -729,7 +758,8 @@ function frame() {
     }
   }
   const key = (D ? potted.join() : '') + (railVert ? 'v' : 'h');
-  if (key !== railKey) { railKey = key; drawRail(); }
+  const railMoving = railStep(performance.now());
+  if (key !== railKey || railMoving) { railKey = key; drawRail(); }
   if (pwCur !== lastPw) {
     lastPw = pwCur;
     const v = Math.max(0, (pwCur - .02) / .98), n = Math.round(v * 100);   // 0 a 100
