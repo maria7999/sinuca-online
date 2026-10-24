@@ -43,6 +43,35 @@ html{overscroll-behavior:none}
 #pwr.off{opacity:.4;cursor:not-allowed}
 #helpBox{display:none;position:absolute;left:8px;right:8px;bottom:84px;z-index:10;background:rgba(0,0,0,.9);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.4;color:#e6e6e0}
 
+/* ---------- layout do PC (so telas largas com mouse; telefone nao muda) ---------- */
+#topPc,#lcol,#rail{display:none}
+#mid{display:contents}
+body.pc #game{padding:0 10px}
+body.pc .bar,body.pc #ctl{display:none}
+body.pc #msg{height:18px;line-height:18px;font-size:12px}
+body.pc #mid{display:flex;flex:1;min-height:0}
+body.pc #topPc{display:flex;align-items:center;justify-content:center;gap:10px;height:56px;flex:none;position:relative}
+body.pc .slots{display:flex;gap:6px}
+body.pc .sl{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#1a2438,#0b1220);border:2px solid #2b3850;box-shadow:inset 0 2px 4px #0009}
+body.pc .pn{font-size:20px;font-weight:800;color:#aab4c0;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.pc .pn.on{color:#fff}
+body.pc .av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#7ae6a6,#2fb36a);color:#06240f;font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:center;border:2px solid #2f7a58;opacity:.8}
+body.pc .av.on{border-color:#3ddc84;box-shadow:0 0 10px #3ddc84aa;opacity:1}
+body.pc #pcFull{position:absolute;right:8px;top:12px;width:32px;height:32px;padding:0;border-radius:6px;background:rgba(255,255,255,.07);color:#ecebe6;border:1px solid rgba(255,255,255,.18);font-size:16px}
+body.pc #lcol{display:flex;flex-direction:column;align-items:center;gap:14px;width:110px;flex:none;padding:6px 0 14px}
+body.pc .rb{padding:0;width:64px;height:64px;flex:none;border-radius:50%;background:radial-gradient(circle at 50% 35%,#4a5560,#1f262e);color:#ecebe6;border:2px solid rgba(255,255,255,.3);font-size:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px #0007}
+body.pc .rb svg{width:28px;height:28px}
+body.pc .rb:hover{border-color:#fff}
+body.pc #pwSlot{flex:1;min-height:0;width:100%;display:flex;justify-content:center}
+body.pc #pwSlot #pw{flex:none;width:58px;height:100%;max-height:620px;position:relative;gap:0}
+body.pc #pval{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;pointer-events:none;font-size:12px;letter-spacing:.3em;color:#9aa6b2;padding:0}
+body.pc #pwr{height:100%;width:100%;flex:1;background:linear-gradient(#141c2a,#0d1320);border:2px solid #3a4658;cursor:ns-resize}
+body.pc #pwr::before{display:none}
+body.pc #pwr::after{background:linear-gradient(#ffffff22,#ffffff22) 0 25%/100% 2px no-repeat,linear-gradient(#ffffff22,#ffffff22) 0 50%/100% 2px no-repeat,linear-gradient(#ffffff22,#ffffff22) 0 75%/100% 2px no-repeat}
+body.pc #pfill{left:0;right:0;top:0;bottom:auto;width:100%;height:0;border-right:0;border-bottom:3px solid #fff;background:rgba(232,184,58,.65)}
+body.pc #rail{display:block;flex:none;width:150px;height:100%;pointer-events:none}
+body.pc #helpBox{left:130px;right:auto;bottom:24px;width:420px}
+
 /* ---------- tela de login ---------- */
 #login{position:fixed;inset:0;z-index:20;overflow:auto;display:flex;flex-direction:column;color:#e8f5ee;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
  background:radial-gradient(120% 90% at 50% 0%,#1b3d2e 0%,#12281f 55%,#0c1a14 100%)}
@@ -216,14 +245,28 @@ html{overscroll-behavior:none}
 </div>
 
 <div id="game">
+  <div id="topPc">
+    <div class="slots" id="sl0"></div><div class="pn" id="pn0"></div><div class="av" id="av0"></div>
+    <div class="av" id="av1"></div><div class="pn" id="pn1"></div><div class="slots" id="sl1"></div>
+    <button id="pcFull" title="Tela cheia">⛶</button>
+  </div>
   <div class="bar">
     <div class="pl on" id="p0"><b id="n0">Jogador 1</b><small id="g0">mesa aberta</small></div>
     <div class="pl" id="p1"><b id="n1">Jogador 2</b><small id="g1">mesa aberta</small></div>
   </div>
   <div id="msg"></div>
+  <div id="mid">
+  <div id="lcol">
+    <button class="rb" id="pcLeave" title="Sair da partida"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5"/><path d="M15 8l4 4-4 4"/><path d="M19 12H9"/></svg></button>
+    <div id="pwSlot"></div>
+    <button class="rb" id="pcChat" title="Suporte"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg></button>
+    <button class="rb" id="pcSet" title="Ajuda">⚙</button>
+  </div>
   <div id="stage">
     <div id="tw"><canvas id="c" width="1600" height="800"></canvas></div>
     <button id="bAgain" style="display:none">Jogar de novo</button>
+  </div>
+  <canvas id="rail"></canvas>
   </div>
   <div id="helpBox">Na sua vez, o taco aparece. Segure e arraste na mesa (dedo ou mouse) para girar o taco; no computador, as setas ← → fazem o ajuste fino. Depois puxe a barra de força (embaixo) para a direita e solte para tacar. Lisas são 1–7, listradas 9–15.</div>
   <div id="ctl">
@@ -346,6 +389,25 @@ function updateUI() {
   $('p0').className = 'pl' + (S.turn === 0 ? ' on' : ''); $('p1').className = 'pl' + (S.turn === 1 ? ' on' : '');
   $('bAgain').style.display = S.over ? '' : 'none';
   pwr.classList.toggle('off', !canShoot());
+  if (!pdrag && power === 0) $('pval').textContent = pvalIdle();
+  updTop();
+}
+for (const p of [0, 1]) for (let i = 0; i < 7; i++) $('sl' + p).appendChild(document.createElement('div')).className = 'sl';
+function updTop() {
+  for (const p of [0, 1]) {
+    const nmv = S.names[p] || '';
+    $('pn' + p).textContent = nmv; $('av' + p).textContent = nmv.charAt(0).toUpperCase() || 'J';
+    $('pn' + p).classList.toggle('on', S.turn === p); $('av' + p).classList.toggle('on', S.turn === p);
+    const g = S.grp[p], ids = g === 'solid' ? [1, 2, 3, 4, 5, 6, 7] : g === 'stripe' ? [9, 10, 11, 12, 13, 14, 15] : null;
+    [...$('sl' + p).children].forEach((el, i) => {
+      let bg = '', bc = '';
+      if (ids) {
+        const n = ids[i], bb = S.b.find(x => x[0] === n);
+        if (bb && !bb[3]) { bg = n > 8 ? 'linear-gradient(#fff 0 28%,' + COL[n - 8] + ' 28% 72%,#fff 72%)' : COL[n]; bc = '#ffffff66'; }
+      }
+      el.style.background = bg; el.style.borderColor = bc;
+    });
+  }
 }
 
 // ---------- botoes ----------
@@ -370,18 +432,35 @@ function pos(e) {
   return [rx * W / r.width, ry * H / r.height];
 }
 // Layout: no celular em pe a mesa e girada 90 graus e preenche a area disponivel
+const pcMQ = matchMedia('(min-width:900px) and (orientation:landscape) and (hover:hover) and (pointer:fine)');
+let lastPc = null, railGeo = { w: 0 };
 function layout() {
+  const pc = pcMQ.matches;
+  document.body.classList.toggle('pc', pc);
+  const host = $(pc ? 'pwSlot' : 'ctl'), pwEl = $('pw');
+  if (pwEl.parentNode !== host) host.appendChild(pwEl);
+  if (lastPc !== pc) { lastPc = pc; setPower(0); }
   const st = $('stage'), aw = st.clientWidth, ah = st.clientHeight;
   if (!aw || !ah) return;
   rot = window.innerHeight > window.innerWidth;
   let vw, vh;
-  if (rot) { vw = Math.min(aw, ah / 2); vh = vw * 2; } else { vw = Math.min(aw, ah * 2); vh = vw / 2; }
+  if (rot) { vw = Math.min(aw, ah / 2); vh = vw * 2; } else { vw = Math.min(aw, ah * 2); if (pc) vw = Math.min(vw, window.innerWidth * 0.82); vh = vw / 2; }
   $('tw').style.width = vw + 'px'; $('tw').style.height = vh + 'px';
   if (rot) { cv.style.width = vh + 'px'; cv.style.height = vw + 'px'; cv.style.transform = 'translate(-50%,-50%) rotate(90deg)'; }
   else { cv.style.width = vw + 'px'; cv.style.height = vh + 'px'; cv.style.transform = 'translate(-50%,-50%)'; }
+  if (pc) {
+    const slack = Math.max(0, (aw - vw) / 2), rw = Math.round(slack + 150), rc = $('rail');
+    rc.style.width = rw + 'px'; rc.style.height = ah + 'px'; rc.style.marginLeft = -slack + 'px';
+    if (rc.width !== rw * 2) rc.width = rw * 2; if (rc.height !== ah * 2) rc.height = ah * 2;
+    railGeo = { w: rw, h: ah, top: (ah - vh) / 2, vh, slack, k: vw / W };
+  }
 }
 new ResizeObserver(layout).observe($('stage'));
-window.addEventListener('resize', layout);
+window.addEventListener('resize', layout); pcMQ.addEventListener('change', layout);
+$('pcSet').onclick = () => $('bSet').click();
+$('pcLeave').onclick = () => $('bLeave').click();
+$('pcChat').onclick = () => $('hmChat').click();
+$('pcFull').onclick = () => $('bFull').click();
 $('bSet').onclick = () => { const h = $('helpBox'); h.style.display = h.style.display === 'block' ? 'none' : 'block'; };
 $('bFull').onclick = () => {
   const d = document.documentElement;
@@ -411,9 +490,15 @@ window.addEventListener('keydown', e => {
 
 const pwr = $('pwr'), pfill = $('pfill');
 let pdrag = false, px0 = 0;
-function setPower(p) { power = p; pfill.style.width = (p * 100) + '%'; $('pval').textContent = p > 0 ? Math.round(p * 100) + '%' : 'PUXE E SOLTE ➜'; }
-function pset(e) { const r = pwr.getBoundingClientRect(); setPower(Math.max(0, Math.min(1, (e.clientX - px0) / (r.width * 0.85)))); }
-pwr.addEventListener('pointerdown', e => { if (!canShoot()) return; pwr.setPointerCapture(e.pointerId); pdrag = true; px0 = e.clientX; setPower(0); });
+const isPc = () => document.body.classList.contains('pc');
+function pvalIdle() { return !isPc() ? 'PUXE E SOLTE ➜' : canShoot() ? 'PUXE E SOLTE' : S && S.over ? 'FIM DE JOGO' : S && S.moving ? 'AGUARDE' : 'VEZ DO ADVERSÁRIO'; }
+function setPower(p) {
+  power = p;
+  if (isPc()) { pfill.style.height = (p * 100) + '%'; pfill.style.width = '100%'; } else { pfill.style.width = (p * 100) + '%'; pfill.style.height = ''; }
+  $('pval').textContent = p > 0 ? Math.round(p * 100) + '%' : pvalIdle();
+}
+function pset(e) { const r = pwr.getBoundingClientRect(), v = isPc() ? (e.clientY - px0) / (r.height * 0.85) : (e.clientX - px0) / (r.width * 0.85); setPower(Math.max(0, Math.min(1, v))); }
+pwr.addEventListener('pointerdown', e => { if (!canShoot()) return; pwr.setPointerCapture(e.pointerId); pdrag = true; px0 = isPc() ? e.clientY : e.clientX; setPower(0); });
 pwr.addEventListener('pointermove', e => { if (pdrag) pset(e); });
 pwr.addEventListener('pointerup', () => {
   if (!pdrag) return;
@@ -423,17 +508,17 @@ pwr.addEventListener('pointerup', () => {
 pwr.addEventListener('pointercancel', () => { pdrag = false; setPower(0); });
 
 // ---------- desenho ----------
-function ball(b) {
+function ball(b, g = ctx) {
   const n = b[0], x = b[1], y = b[2], str = n > 8;
-  ctx.save(); ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.clip();
-  ctx.fillStyle = n === 0 || str ? '#fff' : COL[n]; ctx.fillRect(x - R, y - R, 2 * R, 2 * R);
-  if (str) { ctx.fillStyle = COL[n - 8]; ctx.fillRect(x - R, y - 5, 2 * R, 10); }
-  ctx.restore();
+  g.save(); g.beginPath(); g.arc(x, y, R, 0, 7); g.clip();
+  g.fillStyle = n === 0 || str ? '#fff' : COL[n]; g.fillRect(x - R, y - R, 2 * R, 2 * R);
+  if (str) { g.fillStyle = COL[n - 8]; g.fillRect(x - R, y - 5, 2 * R, 10); }
+  g.restore();
   if (n) {
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y, 4.6, 0, 7); ctx.fill();
-    ctx.fillStyle = '#111'; ctx.font = 'bold 7px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(n, x, y + .5);
+    g.fillStyle = '#fff'; g.beginPath(); g.arc(x, y, 4.6, 0, 7); g.fill();
+    g.fillStyle = '#111'; g.font = 'bold 7px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(n, x, y + .5);
   }
-  ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.stroke();
+  g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, R, 0, 7); g.stroke();
 }
 // Linha de mira: vai até a primeira bola, quica na tabela (até 2 vezes) e mostra para onde a bola atingida vai
 function guide(c, ux, uy) {
@@ -608,6 +693,26 @@ const TBL = (() => {
   }
   return c;
 })();
+const railC = $('rail'), rg = railC.getContext('2d');
+function drawRail() {
+  if (!isPc() || !railGeo.w) return;
+  const { w, h, top, vh, slack, k } = railGeo;
+  rg.setTransform(2, 0, 0, 2, 0, 0); rg.clearRect(0, 0, w, h);
+  const cx = slack + 70, y0 = top + vh * 0.07, y1 = top + vh * 0.8, r = 40;
+  const path = () => { rg.beginPath(); rg.moveTo(cx, y0); rg.lineTo(cx, y1 - r); rg.arcTo(cx, y1, cx - r, y1, r); rg.lineTo(0, y1); };
+  rg.lineJoin = 'round'; rg.lineCap = 'butt';
+  for (const [lw, col] of [[56, '#6e4a10'], [50, '#d9ae45'], [40, '#24130a']]) { rg.lineWidth = lw; rg.strokeStyle = col; path(); rg.stroke(); }
+  rg.fillStyle = '#e8c15a';
+  for (let y = y0 + 4; y < y1 - r - 10; y += 130) rg.fillRect(cx - 28, y, 56, 6);
+  rg.fillStyle = '#d9ae45'; rg.beginPath(); rg.arc(cx, y0, 28, Math.PI, 0); rg.fill();
+  if (!S) return;
+  const dead = S.b.filter(b => !b[3] && b[0] > 0).sort((a, b) => a[0] - b[0]);
+  const bd = 2 * R * k * 0.88, sc = bd / (2 * R);
+  dead.forEach((b, i) => {
+    const y = Math.max(y0 + bd / 2, y1 - r - bd / 2 - i * (bd + 2));
+    rg.save(); rg.translate(cx, y); rg.scale(sc, sc); ball([b[0], 0, 0, 1], rg); rg.restore();
+  });
+}
 function draw() {
   ctx.setTransform(2, 0, 0, 2, 0, 0);
   ctx.drawImage(TBL, 0, 0, W, H);
@@ -617,6 +722,7 @@ function draw() {
     guide(c, ux, uy);
     drawCue(c, ux, uy);
   }
+  drawRail();
   requestAnimationFrame(draw);
 }
 draw();
