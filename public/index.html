@@ -48,15 +48,15 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
 #pw::before{content:'';position:absolute;left:0;right:0;top:0;bottom:25%;pointer-events:none;z-index:3;
   background:linear-gradient(180deg,transparent calc(100% - 1px),#dcc6a6 0) left top/15% 33.3333% repeat-y,
              linear-gradient(180deg,transparent calc(100% - 1px),#dcc6a6 0) right top/15% 33.3333% repeat-y}
-#pwc{position:absolute;display:block;left:50%;top:1%;bottom:1%;width:36%;transform:translateX(-50%);overflow:hidden;border-radius:3px 3px 1px 1px;
+#pwk{position:absolute;display:block;inset:0;overflow:hidden;border-radius:inherit}
+#pwc{position:absolute;display:block;left:32%;top:1%;bottom:1%;width:36%;transform:translateY(calc(var(--p,0)*90%));will-change:transform;border-radius:3px 3px 1px 1px;
   background:linear-gradient(90deg,#61400f 0,#826028 14%,#a1742f 28%,#b88f3f 40%,#cfa154 55%,#f5d193 78%,#fbcd8f 88%,#ecc383 100%);box-shadow:0 0 3px rgba(0,0,0,.45)}
 #pwc::after{content:'';position:absolute;z-index:2;left:0;right:0;top:0;height:7.2%;
   background:linear-gradient(180deg,#232220 0 45%,#f1ecdd 45%);}
-#pwf{position:absolute;z-index:1;left:0;right:0;top:-1.0204%;bottom:-1.0204%;opacity:.8;background:linear-gradient(0deg,#3ecf74,#e8c93a 60%,#e0483a);clip-path:inset(calc((1 - var(--p,0))*100%) 0 0 0)}
 #pwn{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:4px;font:700 12px/1 system-ui,sans-serif;color:#f1e3c4;text-shadow:0 1px 3px #000;pointer-events:none;white-space:nowrap}
-#right canvas{display:block;width:calc(var(--k,1)*40px);height:calc(var(--k,1)*380px);border-radius:0;box-shadow:none;touch-action:auto}
+#right canvas{display:block;width:calc(var(--k,1)*56px);height:calc(var(--k,1)*424px);margin-left:calc(var(--k,1)*-16px);border-radius:0;box-shadow:none;touch-action:auto;pointer-events:none}
 .stack #right{width:100%;display:flex;justify-content:center}
-.stack #right canvas{width:min(100%,420px);height:auto}
+.stack #right canvas{width:min(100%,420px);height:auto;margin-left:0}
 #spinPop{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5;display:none;flex-direction:column;align-items:center;gap:10px;width:210px;padding:14px;background:rgba(15,23,19,.97);border:1px solid rgba(217,178,95,.4);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.7)}
 #spinPop.open{display:flex}#spinPop small{color:var(--muted);text-align:center}
 #spinBig{width:150px;height:150px;touch-action:none;cursor:crosshair}
@@ -87,10 +87,10 @@ canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block
   <div id="stage" class="wide">
     <div id="left">
       <button id="spinBtn" class="cb" type="button" aria-label="Efeito na bola branca" title="Efeito na bola branca"><i id="spinDot"></i></button>
-      <div id="pw" role="meter" aria-label="Força da tacada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><b id="pwc"><i id="pwf"></i></b><span id="pwn">0</span></div>
+      <div id="pw" role="meter" aria-label="Força da tacada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><b id="pwk"><b id="pwc"></b></b><span id="pwn">0</span></div>
     </div>
     <canvas id="c" width="1648" height="848"></canvas>
-    <div id="right"><canvas id="rail" width="80" height="760" aria-label="Bolas encaçapadas"></canvas></div>
+    <div id="right"><canvas id="rail" width="112" height="848" aria-label="Bolas encaçapadas"></canvas></div>
     <div id="spinPop" role="dialog" aria-label="Efeito na bola branca">
       <div class="cb" id="spinBig"><i id="spinDotBig"></i></div>
       <small>Toque na bola branca para escolher onde bater</small>
@@ -250,7 +250,7 @@ cv.addEventListener('pointercancel', () => { touching = false; aiming = false; d
 const pwEl = $('pw');
 function powAt(e) {
   const r = pwEl.getBoundingClientRect();
-  setPow(1 - (e.clientY - r.top) / r.height);
+  setPow((e.clientY - r.top - .01 * r.height) / (.882 * r.height));
 }
 pwEl.style.cursor = 'pointer'; pwEl.style.touchAction = 'none';
 pwEl.addEventListener('pointerdown', e => { if (!canShoot()) return; powing = true; pwEl.setPointerCapture(e.pointerId); powAt(e); });
@@ -263,7 +263,7 @@ document.addEventListener('keydown', e => {
   const k = e.key, st = e.shiftKey ? .05 : .006;
   if (k === 'ArrowLeft' || k === 'ArrowRight') {
     const a = Math.atan2(aim[1], aim[0]) + (k === 'ArrowLeft' ? -st : st); aim = [Math.cos(a), Math.sin(a)]; e.preventDefault();
-  } else if (k === 'ArrowUp' || k === 'ArrowDown') { setPow(aimPow + (k === 'ArrowUp' ? .02 : -.02)); e.preventDefault(); }
+  } else if (k === 'ArrowUp' || k === 'ArrowDown') { setPow(aimPow + (k === 'ArrowDown' ? .02 : -.02)); e.preventDefault(); }
 });
 
 // ---------- mesa (desenhada uma vez) ----------
@@ -623,21 +623,55 @@ function layout() {
   const A = gm.clientWidth, wide = A >= 760, st = $('stage');
   st.className = wide ? 'wide' : 'stack';
   st.style.setProperty('--k', (A / 932).toFixed(4));
-  if (railVert !== wide) { railVert = wide; railKey = ''; rail.width = (wide ? 40 : 380) * SC; rail.height = (wide ? 380 : 40) * SC; }
+  if (railVert !== wide) { railVert = wide; railKey = ''; rail.width = (wide ? 56 : 380) * SC; rail.height = (wide ? 424 : 40) * SC; }
 }
 window.addEventListener('resize', layout);
 function drawRail() {
-  const v = railVert, L = 380, T = 40;
-  rx.setTransform(SC, 0, 0, SC, 0, 0); rx.clearRect(0, 0, v ? T : L, v ? L : T);
-  const tx = v ? 4 : 2, ty = v ? 2 : 4, tw = v ? 32 : 376, th = v ? 376 : 32;
-  const across = (a, b) => v ? rx.createLinearGradient(tx, 0, tx + tw, 0) : rx.createLinearGradient(0, ty, 0, ty + th);
-  const dk = across(); dk.addColorStop(0, '#0a0604'); dk.addColorStop(.5, '#2a1a10'); dk.addColorStop(1, '#0a0604');
-  rx.fillStyle = dk; rx.beginPath(); rx.roundRect(tx, ty, tw, th, 16); rx.fill();
-  const gd = across(); gd.addColorStop(0, '#8a6420'); gd.addColorStop(.35, '#f6dc8e'); gd.addColorStop(1, '#a8781f');
-  rx.strokeStyle = gd; rx.lineWidth = 3; rx.beginPath(); rx.roundRect(tx + 1.5, ty + 1.5, tw - 3, th - 3, 14.5); rx.stroke();
-  rx.lineWidth = 2.5;
-  for (let p = 62; p < 360; p += 62) { rx.beginPath(); if (v) { rx.moveTo(tx, p); rx.lineTo(tx + tw, p); } else { rx.moveTo(p, ty); rx.lineTo(p, ty + th); } rx.stroke(); }
-  if (D) potted.forEach((bi, j) => { const q = 24 + j * 23.5; drawBallAt(D[bi].n, ID, v ? 20 : q, v ? q : 20, 1, 0, rx); });
+  // trilho das bolas: tubos dourados + couro com costura. No modo largo a curva final encaixa na mesa (cacapa de baixo, lado direito).
+  const v = railVert, E = v, PI = Math.PI;
+  rx.setTransform(1, 0, 0, 1, 0, 0); rx.clearRect(0, 0, rail.width, rail.height);
+  if (v) rx.setTransform(SC, 0, 0, SC, 0, 0); else rx.setTransform(0, SC, SC, 0, 0, -16 * SC);
+  const closed = i => {
+    const p = new Path2D(), xl = 20 + i, xr = 52 - i, rt = 16 - i;
+    p.moveTo(xl, 18); p.arc(36, 18, rt, PI, 0);
+    if (E) { p.lineTo(xr, 372); p.arc(28, 372, 24 - i, 0, PI / 2); p.lineTo(0, 396 - i); p.lineTo(0, 364 + i); p.lineTo(12, 364 + i); p.arc(12, 356, 8 + i, PI / 2, 0, true); }
+    else { p.lineTo(xr, 362); p.arc(36, 362, rt, 0, PI); }
+    p.closePath(); return p;
+  };
+  const tube = i => {
+    if (!E) return closed(i);
+    const p = new Path2D(); p.moveTo(0, 364 + i); p.lineTo(12, 364 + i); p.arc(12, 356, 8 + i, PI / 2, 0, true);
+    p.lineTo(20 + i, 18); p.arc(36, 18, 16 - i, PI, 0); p.lineTo(52 - i, 372); p.arc(28, 372, 24 - i, 0, PI / 2); p.lineTo(0, 396 - i); return p;
+  };
+  rx.save();
+  // couro
+  rx.shadowColor = 'rgba(0,0,0,.55)'; rx.shadowBlur = 5; rx.shadowOffsetY = 1.5;
+  rx.fillStyle = '#3b2415'; rx.fill(closed(4));
+  rx.shadowColor = 'transparent';
+  rx.lineJoin = 'round'; rx.strokeStyle = 'rgba(0,0,0,.45)'; rx.lineWidth = 3; rx.stroke(tube(9));
+  // pesponto
+  const st = new Path2D(); st.moveTo(36, 28); st.lineTo(36, E ? 372 : 340); if (E) { st.arc(28, 372, 8, 0, PI / 2); st.lineTo(2, 380); }
+  rx.setLineDash([3, 3]); rx.strokeStyle = 'rgba(224,180,106,.8)'; rx.lineWidth = .9; rx.stroke(st); rx.setLineDash([]);
+  // tubos dourados (cilindro falso: tracos de largura decrescente)
+  rx.lineCap = 'butt';
+  for (const [w, c, o] of [[8.8, 'rgba(36,20,4,.9)', 0], [8, '#7d5a1b', 0], [6.4, '#c29230', 0], [4.4, '#ebc765', 0], [1.7, '#fff4c4', -.9]]) {
+    rx.save(); rx.translate(o, o); rx.strokeStyle = c; rx.lineWidth = w; rx.stroke(tube(4)); rx.restore();
+  }
+  // abracadeiras
+  for (let q = 62; q < 360; q += 62) {
+    const g = rx.createLinearGradient(0, q - 3.5, 0, q + 3.5);
+    g.addColorStop(0, '#6b4a14'); g.addColorStop(.4, '#f8e29a'); g.addColorStop(.7, '#b3822a'); g.addColorStop(1, '#4e330a');
+    rx.fillStyle = g; rx.fillRect(18, q - 3.5, 36, 7);
+    rx.strokeStyle = 'rgba(30,16,2,.75)'; rx.lineWidth = .7; rx.strokeRect(18, q - 3.5, 36, 7);
+  }
+  // colar dourado na entrada da mesa
+  if (E) {
+    const g = rx.createLinearGradient(0, 0, 7, 0); g.addColorStop(0, '#5a3b0e'); g.addColorStop(.45, '#f6dc8e'); g.addColorStop(1, '#8a6420');
+    rx.fillStyle = g; rx.fillRect(0, 363, 7, 34); rx.strokeStyle = 'rgba(30,16,2,.8)'; rx.lineWidth = .7; rx.strokeRect(0, 363, 7, 34);
+  }
+  rx.restore();
+  rx.setTransform(SC, 0, 0, SC, 0, 0);
+  if (D) potted.forEach((bi, j) => { const q = 24 + j * 23.5; drawBallAt(D[bi].n, ID, v ? 36 : q, v ? q : 20, 1, 0, rx); });
 }
 function setSpin(x, y) {
   const l = Math.hypot(x, y), mx = .72; if (l > mx) { x *= mx / l; y *= mx / l; }
