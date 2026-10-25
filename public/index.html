@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d1511">
 <title>Sinuquinha Gold</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎱%3C/text%3E%3C/svg%3E">
 <style>
 :root{--bg:#0d1511;--card:#17211b;--fg:#f1efe8;--muted:#98a39b;--green:#2e9e5b;--gold:#d9b25f}
@@ -1545,7 +1546,31 @@ const TEXSRC = {
   $('lgTop').onclick = () => mode(!reg);
   $('lgAlt').onclick = () => mode(!reg);
   $('lgEye').onclick = () => { const p = $('lgPass'); p.type = p.type === 'password' ? 'text' : 'password'; $('lgEye').setAttribute('aria-label', p.type === 'password' ? 'Mostrar senha' : 'Ocultar senha'); };
+  // ---- Login com Google (Google Identity Services) ----
+  // PASSO 1: cole aqui o "ID do cliente" criado no Google Cloud Console
+  const GOOGLE_CLIENT_ID = '376912142963-tolqn18eb0oo2261e4tgqgsvl6uvaugb.apps.googleusercontent.com';
+  const googleOk = !GOOGLE_CLIENT_ID.startsWith('COLE_AQUI');
   $('lgGoogle').onclick = () => err('Login com Google ainda não foi configurado.');
+  if (googleOk) {
+    let tries = 0;
+    const t = setInterval(() => {
+      if (window.google && google.accounts && google.accounts.id) {
+        clearInterval(t);
+        google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: async resp => {            // o Google devolve um token assinado (credential)
+            err('');
+            try { session(await api('google', { credential: resp.credential })); }
+            catch (x) { err(x.message); }
+          }
+        });
+        const box = document.createElement('div');   // botão oficial do Google no lugar do botão antigo
+        box.style.cssText = 'display:flex;justify-content:center;min-height:44px';
+        $('lgGoogle').replaceWith(box);
+        google.accounts.id.renderButton(box, { theme: 'filled_black', size: 'large', text: 'continue_with', shape: 'rectangular', locale: 'pt-BR', width: 320 });
+      } else if (++tries > 100) { clearInterval(t); err('Não foi possível carregar o login do Google.'); }
+    }, 100);
+  }
   $('lgForgot').onclick = () => err('Recuperação de senha ainda não está disponível.');
   $('bLogout').onclick = logout;
   $('nkOut').onclick = logout;
