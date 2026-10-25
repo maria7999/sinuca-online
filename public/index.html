@@ -241,12 +241,10 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #prof .pf-mail small{display:block;margin-bottom:2px;font:700 10px system-ui,sans-serif;letter-spacing:.8px;color:#a39677}
 #prof .pf-sec{margin:14px 0 8px;font:700 11px system-ui,sans-serif;letter-spacing:.6px;color:#d8cdb3}
 #prof .pf-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-#prof .pf-grid button{aspect-ratio:1;padding:0;border-radius:10px;background:#17110b;border:1px solid rgba(217,178,95,.22);font-size:24px;line-height:1}
+#prof .pf-grid button{aspect-ratio:1;padding:0;overflow:hidden;cursor:pointer;border-radius:10px;background:#17110b;border:1px solid rgba(217,178,95,.22);line-height:0}
+#prof .pf-grid img{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-drag:none}
 #prof .pf-grid button:hover{border-color:rgba(217,178,95,.6)}
-#prof .pf-grid button.on{border-color:var(--gold);background:rgba(217,178,95,.16);box-shadow:0 0 0 2px rgba(217,178,95,.3)}
-#prof .pf-cols{display:flex;flex-wrap:wrap;gap:10px}
-#prof .pf-cols button{width:34px;height:34px;padding:0;border-radius:50%;border:2px solid transparent}
-#prof .pf-cols button.on{border-color:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.5)}
+#prof .pf-grid button.on{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
 #prof .pf-msg{min-height:18px;margin-top:12px;text-align:center;font:600 13px system-ui,sans-serif;color:#ff9b8a}
 #prof .pf-msg.ok{color:#7fe0a8}
 #prof .pf-save{width:100%;margin-top:6px;padding:13px;border-radius:8px;background:linear-gradient(180deg,#22b25f,#168a47);font:800 14px system-ui,sans-serif;letter-spacing:1.5px}
@@ -317,9 +315,7 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
     <div class="pf-nick" id="pfNick"></div>
     <p class="pf-mail"><small>E-MAIL DA CONTA</small><span id="pfEmail"></span></p>
     <div class="pf-sec">ESCOLHA SEU AVATAR</div>
-    <div class="pf-grid" id="pfEmo"></div>
-    <div class="pf-sec">COR DO FUNDO</div>
-    <div class="pf-cols" id="pfCol"></div>
+    <div class="pf-grid" id="pfGrid"></div>
     <div class="pf-msg" id="pfMsg" role="status"></div>
     <button type="button" class="pf-save" id="pfSave" disabled>SALVAR AVATAR</button>
     <button type="button" class="pf-out" id="bLogout">Sair da conta</button>
@@ -531,12 +527,22 @@ function icons(id, g, left) {
   const slots = Array.from({ length: list.length - on.length }, () => mk(0)), balls = on.map(mk);
   for (const e of left ? slots.concat(balls) : balls.concat(slots)) el.appendChild(e);
 }
+// avatar: imagem (/avatars/aNN.webp) ou, sem avatar, a inicial do apelido; {e,c} so e usado pelo robo
+function paintAv(el, av, nick) {
+  const img = av && /^a\d\d$/.test(av.id || '') ? av.id : null;
+  const key = img ? 'i' + img : av && av.e ? 'e' + av.e + av.c : 't' + (nick || '?').trim().charAt(0).toUpperCase();
+  if (el.dataset.av === key) return;           // nada mudou (o estado chega 60x por segundo)
+  el.dataset.av = key;
+  if (img) { el.textContent = ''; el.style.background = 'url(/avatars/' + img + '.webp) center/cover no-repeat #d9b25f'; }
+  else if (av && av.e) { el.textContent = av.e; el.style.background = av.c || ''; }
+  else { el.textContent = (nick || '?').trim().charAt(0).toUpperCase(); el.style.background = ''; }
+}
 function updateUI() {
   if (!S) return;
   icons('i0', S.grp[0], true); icons('i1', S.grp[1], false);
   $('n0').textContent = S.names[0]; $('n1').textContent = S.names[1];
   $('g0').textContent = (!solo && seat === 0 ? 'você · ' : '') + gname(S.grp[0]); $('g1').textContent = (!solo && seat === 1 ? 'você · ' : '') + gname(S.grp[1]);
-  for (const k of [0, 1]) { const av = S.av && S.av[k], el = $('a' + k); if (av) { el.textContent = av.e; el.style.background = av.c; } else { el.textContent = (S.names[k] || '?').trim().charAt(0).toUpperCase(); el.style.background = ''; } }
+  for (const k of [0, 1]) paintAv($('a' + k), S.av && S.av[k], S.names[k]);
   $('p0').className = 'pl' + (S.turn === 0 ? ' on' : ''); $('p1').className = 'pl' + (S.turn === 1 ? ' on' : '');
   $('bAgain').style.display = S.over ? '' : 'none';
 }
@@ -1391,28 +1397,22 @@ const TEXSRC = {
     showLogin();
   }
   // ---- perfil: avatar + e-mail ----
-  const EMO = ["🎱", "🎯", "🏆", "👑", "🔥", "⭐", "🦁", "🐯", "🦊", "🐺", "🦅", "🐉", "🚀", "⚡", "💎", "🎩", "🃏", "🍀", "🌵", "😎"];
-  const COL = ["#d9b25f", "#6aa7e8", "#4cd48a", "#e86a6a", "#a98bf0", "#f09a4a", "#ee7fb6", "#4fc3c9"];
+  const AVS = Array.from({ length: 19 }, (_, i) => 'a' + String(i + 1).padStart(2, '0'));   // imagens /avatars/a01.webp ... a19.webp (o servidor tem a mesma lista)
   let acct = null, pick = null, lastFocus = null;
-  const drawAv = (el, av, nick) => {
-    if (av) { el.textContent = av.e; el.style.background = av.c; }
-    else { el.textContent = (nick || '?').trim().charAt(0).toUpperCase(); el.style.background = ''; }
-  };
+  const drawAv = (el, av, nick) => paintAv(el, av, nick);
   const renderChip = () => { drawAv($('chipAv'), acct.avatar, acct.nick); $('chipNick').textContent = acct.nick; };
   function paintPicker() {
-    $('pfEmo').querySelectorAll('button').forEach(b => { const on = !!pick && pick.e === b.dataset.v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
-    $('pfCol').querySelectorAll('button').forEach(b => { const on = !!pick && pick.c === b.dataset.v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
-    drawAv($('pfAv'), pick && pick.e && pick.c ? { e: pick.e, c: pick.c } : acct.avatar, acct.nick);
+    $('pfGrid').querySelectorAll('button').forEach(b => { const on = pick === b.dataset.v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+    drawAv($('pfAv'), pick ? { id: pick } : acct.avatar, acct.nick);
     const cur = acct.avatar;
-    $('pfSave').disabled = !(pick && pick.e && pick.c) || (!!cur && cur.e === pick.e && cur.c === pick.c);
+    $('pfSave').disabled = !pick || (!!cur && cur.id === pick);
   }
-  EMO.forEach(e => { const b = document.createElement('button'); b.type = 'button'; b.textContent = e; b.dataset.v = e; b.setAttribute('aria-label', 'Avatar ' + e);
-    b.onclick = () => { pick = Object.assign({ c: COL[0] }, pick, { e }); $('pfMsg').textContent = ''; paintPicker(); }; $('pfEmo').appendChild(b); });
-  COL.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.style.background = c; b.dataset.v = c; b.setAttribute('aria-label', 'Cor ' + c);
-    b.onclick = () => { pick = Object.assign({ e: EMO[0] }, pick, { c }); $('pfMsg').textContent = ''; paintPicker(); }; $('pfCol').appendChild(b); });
+  AVS.forEach((id, i) => { const b = document.createElement('button'); b.type = 'button'; b.dataset.v = id; b.setAttribute('aria-label', 'Avatar ' + (i + 1));
+    const im = new Image(); im.src = '/avatars/' + id + '.webp'; im.alt = ''; im.width = im.height = 320; im.loading = 'lazy'; im.decoding = 'async'; b.appendChild(im);
+    b.onclick = () => { pick = id; $('pfMsg').textContent = ''; paintPicker(); }; $('pfGrid').appendChild(b); });
   function openProf() {
     lastFocus = document.activeElement;
-    pick = acct.avatar ? { e: acct.avatar.e, c: acct.avatar.c } : null;
+    pick = acct.avatar && acct.avatar.id ? acct.avatar.id : null;
     $('pfNick').textContent = acct.nick; $('pfEmail').textContent = acct.email; $('pfMsg').textContent = ''; $('pfMsg').classList.remove('ok');
     paintPicker(); $('prof').classList.add('open'); $('pfClose').focus();
   }
@@ -1424,7 +1424,7 @@ const TEXSRC = {
   $('pfSave').onclick = async () => {
     $('pfSave').disabled = true; $('pfMsg').classList.remove('ok'); $('pfMsg').textContent = '';
     try {
-      const r = await api('avatar', { emoji: pick.e, color: pick.c });
+      const r = await api('avatar', { id: pick });
       acct.avatar = r.avatar; renderChip(); paintPicker();
       $('pfMsg').classList.add('ok'); $('pfMsg').textContent = 'Avatar salvo!';
     } catch (x) {
