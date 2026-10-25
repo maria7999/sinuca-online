@@ -251,6 +251,41 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #prof .pf-save:disabled{opacity:.5;cursor:default}
 #prof .pf-out{width:100%;margin-top:10px;padding:11px;border-radius:8px;background:transparent;border:1px solid rgba(217,178,95,.3);color:#d8cdb3;font:700 13px system-ui,sans-serif}
 #prof .pf-out:hover{color:var(--gold);border-color:rgba(217,178,95,.7)}
+
+/* ---------- tela de fim de partida (vitoria / derrota) ---------- */
+#end{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px;overflow:auto;color:#f1e6cf;font-family:Georgia,"Times New Roman",serif;
+ background:radial-gradient(90% 70% at 50% 35%,rgba(48,36,12,.86),rgba(0,0,0,.94))}
+#end.on{display:flex;animation:endIn .45s .5s both}
+@keyframes endIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+#end .end-card{width:100%;max-width:1040px;margin:auto;display:grid;grid-template-columns:1fr 1.45fr;gap:26px;align-items:center;padding:28px;border-radius:22px;
+ background:linear-gradient(180deg,#1d1b18,#121110);border:1px solid rgba(217,178,95,.38);box-shadow:0 30px 80px rgba(0,0,0,.7),inset 0 0 0 1px rgba(217,178,95,.08)}
+#end .end-l{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;min-width:0}
+#end .end-ring{width:min(210px,44vw);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;border:4px solid var(--ec,#d9b25f);
+ background:radial-gradient(circle at 50% 40%,#2b2418,#0f0d0a);box-shadow:0 0 38px var(--eg,rgba(217,178,95,.45)),inset 0 0 22px rgba(0,0,0,.6)}
+#end .end-ring img{width:82%;height:82%;object-fit:contain;display:block}
+#end .end-title{font-weight:800;letter-spacing:.07em;font-size:clamp(38px,6.4vw,74px);line-height:1;color:var(--ec,#d9b25f);
+ background:linear-gradient(180deg,var(--et1,#ffe9a8),var(--et2,#d9a53b));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none;filter:drop-shadow(0 3px 10px rgba(0,0,0,.6))}
+#end .end-sub{font:600 17px system-ui,sans-serif;color:#e8dcc0;min-height:22px}
+#end .end-r{display:flex;flex-direction:column;gap:20px;min-width:0}
+#end .end-vs{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:20px 14px;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid rgba(217,178,95,.18)}
+#end .end-p{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+#end .end-av{position:relative;width:clamp(58px,9vw,84px);aspect-ratio:1;margin-top:20px}
+#end .eav{width:100%;height:100%;border-radius:50%;display:grid;place-items:center;font:700 30px system-ui,sans-serif;color:#1a1208;background:var(--gold);border:3px solid rgba(255,255,255,.18);overflow:hidden}
+#end .end-p.win .eav{border-color:#d9b25f;box-shadow:0 0 18px rgba(217,178,95,.55)}
+#end .crown{display:none;position:absolute;left:50%;top:-24px;transform:translateX(-50%);font-size:26px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
+#end .end-p.win .crown{display:block}
+#end .end-p b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 18px system-ui,sans-serif}
+#end .eballs{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;min-height:30px}
+#end .eballs img{width:30px;height:30px;display:block}
+#end .end-score{display:flex;align-items:center;gap:10px;font:800 clamp(34px,5vw,54px)/1 Georgia,serif;color:#8d887c}
+#end .end-score i{font-style:normal;font-size:.55em;color:#8d887c}
+#end .end-score .w{color:#e9bd5a}
+#end #bBack{width:100%;padding:17px 20px;border-radius:12px;border:0;cursor:pointer;font:800 20px system-ui,sans-serif;letter-spacing:.03em;color:#2a1d05;
+ background:linear-gradient(180deg,#ffd77a,#d89a2b);box-shadow:0 6px 0 #9a6a14,0 12px 26px rgba(0,0,0,.45)}
+#end #bBack:active{transform:translateY(3px);box-shadow:0 3px 0 #9a6a14,0 8px 18px rgba(0,0,0,.45)}
+#end.lose{--ec:#d8574f;--eg:rgba(216,87,79,.4);--et1:#ff9a8e;--et2:#c23b33}
+@media(max-width:760px){#end .end-card{grid-template-columns:1fr;gap:18px;padding:20px 16px}#end .end-ring{width:min(150px,38vw)}}
+@media(max-height:520px) and (min-width:761px){#end{padding:8px}#end .end-card{padding:14px 18px;gap:16px}#end .end-ring{width:min(130px,30vh)}#end .end-title{font-size:clamp(30px,9vh,52px)}#end .end-vs{padding:10px}#end #bBack{padding:11px 14px;font-size:17px}}
 </style>
 </head>
 <body>
@@ -348,6 +383,25 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
     <button id="bLeave" class="alt">Sair da partida</button>
   </div>
   <p class="help">Mirar: clique e arraste na mesa (a linha só gira enquanto você segura o botão). Força: arraste o taco para baixo (0 a 100) e solte para tacar. Setas do teclado fazem o ajuste fino (baixo = mais força). No celular: arraste o dedo na mesa para mirar e puxe a barra de força para tacar.</p>
+</div>
+
+
+<div id="end" role="dialog" aria-modal="true" aria-label="Fim da partida">
+  <div class="end-card">
+    <div class="end-l">
+      <div class="end-ring"><img id="endBall" alt="Bola 8"></div>
+      <div class="end-title" id="endTitle">VITÓRIA</div>
+      <div class="end-sub" id="endSub"></div>
+    </div>
+    <div class="end-r">
+      <div class="end-vs">
+        <div class="end-p" id="ep0"><div class="end-av"><span class="crown">👑</span><div class="eav" id="ea0"></div></div><b id="en0"></b><div class="eballs" id="eb0"></div></div>
+        <div class="end-score"><span id="es0">0</span><i>×</i><span id="es1">0</span></div>
+        <div class="end-p" id="ep1"><div class="end-av"><span class="crown">👑</span><div class="eav" id="ea1"></div></div><b id="en1"></b><div class="eballs" id="eb1"></div></div>
+      </div>
+      <button type="button" id="bBack">← Voltar ao Lobby</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -495,8 +549,8 @@ function onMsg(m) {
   else if (m.t === 'lobby') { showLobby(); }
   else if (m.t === 'online') { document.querySelectorAll('.js-onl').forEach(e => { e.textContent = m.n; }); }
 }
-function showLobby() { $('spinPop').classList.remove('open'); $('game').style.display = 'none'; $('game').classList.remove('fs'); document.body.classList.remove('fs'); $('lobby').style.display = 'flex'; }
-function showGame() { $('lobby').style.display = 'none'; $('game').style.display = 'flex'; $('status').textContent = ''; $('bAgain').style.display = 'none'; layout(); }
+function showLobby() { hideEnd(); $('spinPop').classList.remove('open'); $('game').style.display = 'none'; $('game').classList.remove('fs'); document.body.classList.remove('fs'); $('lobby').style.display = 'flex'; }
+function showGame() { hideEnd(); $('lobby').style.display = 'none'; $('game').style.display = 'flex'; $('status').textContent = ''; $('bAgain').style.display = 'none'; layout(); }
 
 const gname = g => g === 'solid' ? 'lisas (1–7)' : g === 'stripe' ? 'listradas (9–15)' : 'mesa aberta';
 const BC = ['#fff', '#f2c200', '#1e5bd8', '#d62828', '#6a2c91', '#f27d0c', '#1f8a3d', '#8b1e1e', '#111'];
@@ -544,8 +598,44 @@ function updateUI() {
   $('g0').textContent = (!solo && seat === 0 ? 'você · ' : '') + gname(S.grp[0]); $('g1').textContent = (!solo && seat === 1 ? 'você · ' : '') + gname(S.grp[1]);
   for (const k of [0, 1]) paintAv($('a' + k), S.av && S.av[k], S.names[k]);
   $('p0').className = 'pl' + (S.turn === 0 ? ' on' : ''); $('p1').className = 'pl' + (S.turn === 1 ? ' on' : '');
-  $('bAgain').style.display = S.over ? '' : 'none';
+  $('bAgain').style.display = 'none';   // no fim da partida so existe o botao Voltar ao Lobby
+  showEnd();
 }
+
+// ---------- tela de fim de partida ----------
+let endShown = false;
+function hideEnd() { $('end').classList.remove('on', 'lose'); endShown = false; }
+function showEnd() {
+  const el = $('end');
+  if (!S || !S.over) { if (endShown || el.classList.contains('on')) hideEnd(); return; }
+  if (endShown) return;                       // o estado chega 60x por segundo: monta so uma vez
+  endShown = true;
+  const mine = solo ? 0 : seat, opp = 1 - mine;
+  const win = solo ? S.winner === S.turn : S.winner === seat;
+  const b8 = D && D.find(d => d.n === 8), eightDown = !!(b8 && !b8.act);
+  const byMe = solo || S.turn === mine;       // quem cacapou a bola 8
+  let sub = '';
+  if (!eightDown) sub = win ? 'Seu adversário saiu da partida.' : '';
+  else if (S.winner === S.turn) sub = byMe ? 'Você encaçapou a bola 8!' : S.names[opp] + ' encaçapou a bola 8.';
+  else sub = byMe ? 'Você encaçapou a bola 8 antes da hora.' : S.names[opp] + ' encaçapou a bola 8 antes da hora.';
+  el.classList.toggle('lose', !win);
+  $('endTitle').textContent = win ? 'VITÓRIA' : 'DERROTA';
+  $('endSub').textContent = sub;
+  $('endBall').src = ballIcon(8);
+  [mine, opp].forEach((k, i) => {             // esquerda = voce, direita = adversario
+    const g = S.grp[k], list = g === 'solid' ? [1, 2, 3, 4, 5, 6, 7] : g === 'stripe' ? [9, 10, 11, 12, 13, 14, 15] : [];
+    const got = list.filter(n => { const d = D && D.find(x => x.n === n); return d && !d.act; });
+    if (eightDown && S.winner === k && S.turn === k) got.push(8);   // fechou a mesa com a 8
+    $('en' + i).textContent = (i === 0 && !solo ? 'Você · ' : '') + S.names[k];
+    $('ep' + i).classList.toggle('win', S.winner === k);
+    paintAv($('ea' + i), S.av && S.av[k], S.names[k]);
+    const bx = $('eb' + i); bx.innerHTML = '';
+    got.forEach(n => { const im = document.createElement('img'); im.src = ballIcon(n); im.alt = 'Bola ' + n; bx.appendChild(im); });
+    const sc = $('es' + i); sc.textContent = got.length; sc.classList.toggle('w', S.winner === k);
+  });
+  el.classList.add('on');
+}
+$('bBack').onclick = () => { hideEnd(); send({ t: 'leave' }); };
 
 // ---------- botoes ----------
 // tela cheia do navegador (precisa de um toque do usuario; no celular tenta ao entrar em uma partida)
