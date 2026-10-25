@@ -1836,7 +1836,7 @@ const TEXSRC = {
     $('lgPass').autocomplete = r ? 'new-password' : 'current-password';
   }
   function finish(u) {                       // conta pronta (com apelido): vai para o lobby
-    acct = { email: u.email, nick: u.nick, avatar: u.avatar || null, perfil: u.perfil || null }; renderChip();
+    acct = { email: u.email, nick: u.nick, avatar: u.avatar || null, perfil: u.perfil || null }; renderChip(); if (window.setSaldo) window.setSaldo(u.saldo || 0);
     $('name').value = u.nick; $('name').readOnly = true;
     try { localStorage.setItem('sinuca-name', u.nick); } catch (e) {}
     L.style.display = 'none'; N.style.display = 'none'; $('lobby').style.display = 'flex';
