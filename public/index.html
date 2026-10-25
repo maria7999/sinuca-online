@@ -290,6 +290,12 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 
 /* removidos da tela do jogo: mensagem, botoes (tela cheia, som, sair) e texto de ajuda */
 #game #msg,#game > .row,#game .help{display:none!important}
+
+/* celular (retrato): nome na horizontal (nunca de cabeca para baixo) e os dois perfis juntos, com um espaco pequeno entre eles */
+#game #stage.rot .bar{left:-42px;width:40px;justify-content:center;gap:30px}
+#game #stage.rot .pl{flex:0 0 auto;width:100%}
+#game #stage.rot .pl .who{writing-mode:horizontal-tb;transform:none;width:100%;text-align:center}
+#game #stage.rot .pl b{max-height:none;font-size:10px;line-height:1.1;white-space:normal;overflow-wrap:anywhere;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 </style>
 </head>
 <body>
@@ -1245,14 +1251,16 @@ function layout() {
   else if (bar.parentNode !== gm) gm.insertBefore(bar, st);
   cv.style.width = cv.style.height = cv.style.transform = '';
   tw.style.width = tw.style.height = ''; left.style.height = left.style.width = '';
+  tw.style.marginLeft = left.style.marginLeft = $('right').style.marginLeft = '';
   if (rot) {
     const sw = st.clientWidth, sh = st.clientHeight, gap = 8, topH = 46;
     // coluna: [efeito + forca] / mesa em pe / trilho deitado (largura do trilho = largura da mesa)
-    const dw = Math.max(120, Math.min(sw - 76, (sh - topH - 2 * gap) / (CW / CH + 40 / 380))), dh = dw * CW / CH;   // sw-76: sobra uma faixa de cada lado; a da esquerda tem os jogadores
+    const dw = Math.max(120, Math.min(sw - 62, (sh - topH - 2 * gap) / (CW / CH + 40 / 380))), dh = dw * CW / CH;   // sw-76: sobra uma faixa de cada lado; a da esquerda tem os jogadores
     tw.style.width = dw + 'px'; tw.style.height = dh + 'px';
     cv.style.width = dh + 'px'; cv.style.height = dw + 'px';
     cv.style.transform = 'translateX(' + dw + 'px) rotate(90deg)';
     left.style.width = dw + 'px';
+    tw.style.marginLeft = left.style.marginLeft = $('right').style.marginLeft = '14px';   // desloca 7px p/ a direita: abre espaco p/ a faixa dos jogadores na esquerda
     st.style.setProperty('--k', (dw / 380).toFixed(4));
   } else {
     let k = Math.min(gm.clientWidth, 1000) / 932;   // tamanho de antes
