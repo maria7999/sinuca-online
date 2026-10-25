@@ -176,7 +176,8 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #lobby .lb-tile:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.55),0 0 18px rgba(217,178,95,.25),inset 0 0 0 1px rgba(217,178,95,.3)}
 #lobby .lb-tag{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--gold);color:#010a22;font:800 9px/1 system-ui,sans-serif;letter-spacing:1px;padding:4px 9px;border-radius:6px}
 #lobby .lb-pill{background:#050f24;border-radius:999px;padding:6px 14px;font:700 15px system-ui,sans-serif;color:#f4ead3}
-#lobby .lb-rooms{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;max-width:900px}
+#lobby .lb-panel{width:100%}
+#lobby .lb-rooms{display:grid;grid-template-columns:repeat(4,minmax(0,190px));justify-content:center;gap:clamp(4px,1.4vw,16px);width:100%;max-width:900px}
 #lobby .lb-tile{font-size:24px}
 #lobby .lb-tile .lb-av{position:absolute;top:-9px;right:-9px;display:flex}
 #lobby .lb-tile .lb-av i{width:36px;height:36px;font-size:16px;border-radius:50%;border:2px solid #38d4ff;box-shadow:0 0 8px rgba(56,212,255,.6);display:grid;place-items:center;font:700 13px system-ui,sans-serif;color:#010a22;background:#d9b25f;margin-left:-10px}
@@ -226,6 +227,15 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #lobby .lb-tile[data-room="10"].art{background-image:url(/rooms/r10.webp)}
 #lobby .lb-tile[data-room="25"].art{background-image:url(/rooms/r25.webp)}
 #lobby .lb-tile[data-room="50"].art{background-image:url(/rooms/r50.webp)}
+/* 4 em cima e 4 embaixo em qualquer tela (inclusive celular): tudo escala junto com o tamanho do card */
+#lobby .lb-tile.art{width:100%;container-type:inline-size}
+#lobby .lb-tile.art .lb-pill{gap:3.5cqw}
+#lobby .lb-tile.art .lb-pill .rn{font-size:9.2cqw}
+#lobby .lb-tile.art .lb-pill::after{width:10.5cqw;height:8.5cqw}
+#lobby .lb-tile.art .lb-pill{border-width:max(1px,.8cqw)}
+#lobby .lb-tile .lb-av i{width:min(36px,19cqw);height:min(36px,19cqw);font-size:min(16px,8.5cqw);border-width:max(1.5px,1cqw);margin-left:-6px}
+#lobby .lb-tile.art .lb-av{top:-3cqw;right:-3cqw}
+@media(max-width:600px){#lobby{padding-left:8px;padding-right:8px}}
 #lobby .lb-join{display:flex;gap:8px;width:100%;max-width:300px}
 #lobby .lb-join input{background:#06132b;border:1px solid rgba(217,178,95,.4);color:#f4ead3;font-family:inherit;text-transform:uppercase}
 #lobby .lb-join button{background:#1f6fd1;font-family:inherit;white-space:nowrap}
