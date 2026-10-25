@@ -310,9 +310,9 @@ function nm() { return $('name').value.trim() || 'Jogador'; }
 function onMsg(m) {
   if (m.t === 'wait') { $('status').textContent = m.m; }
   else if (m.t === 'error') { $('status').textContent = m.m; }
-  else if (m.t === 'match') { seat = m.seat; solo = !!m.solo; S = null; D = null; potted = []; lastTurn = null; showGame(); }
+  else if (m.t === 'match') { SIM = null; seat = m.seat; solo = !!m.solo; S = null; D = null; potted = []; lastTurn = null; showGame(); }
   else if (m.t === 'state') {
-    S = m; sync(m);
+    S = m; sync(m); simSync(m);
     clkEnd = m.tl != null && !m.moving && !m.over ? performance.now() + m.tl : 0;
     if (lastTurn !== null && m.turn !== lastTurn && !m.over) playTurn();
     lastTurn = m.turn;
@@ -784,6 +784,84 @@ function rot0() {
   spin(o, rnd(-6, 6), rnd(-6, 6)); return o.M;
 }
 
+// ---------- fisica local (copia da do servidor) ----------
+// A bola anda lisa na tela mesmo se um pacote atrasar. O servidor continua sendo a verdade: a cada ~100 ms ele manda
+// as velocidades, o navegador refaz a conta a partir dali e esconde a diferenca com um ajuste suave (d.ex, d.ey).
+let SIM = null;
+const hy = (a, b) => Math.sqrt(a * a + b * b);
+const cbk = v => Math.max(.5, .72 - .01 * Math.abs(v));
+function simKick(b, rx, ry, vn) { if (b.n !== 0 || !b.w) return; const f = b.w * .35 * Math.abs(vn); b.vx += ry * f; b.vy += -rx * f; b.w *= .5; }
+function simSub(s, h) {
+  const B = s.B;
+  for (const b of B) {
+    if (!b.a) continue;
+    b.x += b.vx * h; b.y += b.vy * h;
+    const sp = hy(b.vx, b.vy);
+    if (sp > 0) { const ns = sp * Math.pow(.9995, h) - .012 * h * sp / (sp + .15), k = ns > .01 ? ns / sp : 0; b.vx *= k; b.vy *= k; }
+    if (b.n === 0) b.w *= Math.pow(.9993, h);
+    if (hy(b.vx, b.vy) < .02) { b.vx = 0; b.vy = 0; }
+  }
+  for (let i = 0; i < B.length; i++) {
+    const a = B[i]; if (!a.a) continue;
+    for (let j = i + 1; j < B.length; j++) {
+      const b = B[j]; if (!b.a) continue;
+      const dx = b.x - a.x, dy = b.y - a.y, d = hy(dx, dy);
+      if (d < 2 * R && d > 0) {
+        const nx = dx / d, ny = dy / d, o = (2 * R - d) / 2;
+        a.x -= nx * o; a.y -= ny * o; b.x += nx * o; b.y += ny * o;
+        const p = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
+        if (p > 0) {
+          const q = p * (1 + .96) / 2;
+          a.vx -= q * nx; a.vy -= q * ny; b.vx += q * nx; b.vy += q * ny;
+          if ((a.n === 0 || b.n === 0) && !s.spun) {
+            const c = a.n === 0 ? a : b;
+            s.spun = true;
+            if (c.top) { c.vx += c.ux * c.top * .8 * p; c.vy += c.uy * c.top * .8 * p; c.top = 0; }
+            c.w *= .7;
+          }
+        }
+      }
+    }
+  }
+  for (const b of B) {
+    if (!b.a) continue;
+    const outside = b.x < M + R || b.x > W - M - R || b.y < M + R || b.y > H - M - R;
+    let mouth = false;
+    for (const p of PK) {
+      const dx = p[0] - b.x, dy = p[1] - b.y, d = hy(dx, dy);
+      if (d < PR || (d < 28 && (outside || hy(b.vx, b.vy) < 2))) { b.a = 0; b.vx = b.vy = 0; mouth = true; break; }
+      if (d < 28) { mouth = true; b.vx += dx / d * .1 * h; b.vy += dy / d * .1 * h; }
+    }
+    if (!b.a || mouth) continue;
+    if (b.x < M + R) { const v = b.vx; b.x = M + R; b.vx = -b.vx * cbk(v); simKick(b, -1, 0, v); }
+    if (b.x > W - M - R) { const v = b.vx; b.x = W - M - R; b.vx = -b.vx * cbk(v); simKick(b, 1, 0, v); }
+    if (b.y < M + R) { const v = b.vy; b.y = M + R; b.vy = -b.vy * cbk(v); simKick(b, 0, -1, v); }
+    if (b.y > H - M - R) { const v = b.vy; b.y = H - M - R; b.vy = -b.vy * cbk(v); simKick(b, 0, 1, v); }
+  }
+}
+// um relogio do servidor = 4 passos x 4 subpassos
+function simTickOnce(s) { for (const b of s.B) { b.x0 = b.x; b.y0 = b.y; } for (let i = 0; i < 16; i++) simSub(s, .25); s.tick++; }
+function simRun(now) {
+  const s = SIM; if (!s) return;
+  s.acc += Math.min(100, now - s.t); s.t = now;
+  while (s.acc >= 1000 / 60) { s.acc -= 1000 / 60; simTickOnce(s); }
+  s.al = s.acc / (1000 / 60);
+}
+// chamada a cada estado do servidor
+function simSync(m) {
+  if (!m.moving) { SIM = null; return; }
+  if (!m.v || !D) return;                       // so os quadros-chave trazem as velocidades
+  const B = m.b.map((b, i) => ({ n: b[0], x: b[1], y: b[2], x0: b[1] - m.v[i][0] * 4, y0: b[2] - m.v[i][1] * 4, a: b[3], vx: m.v[i][0], vy: m.v[i][1], ux: 0, uy: 0, top: 0, w: 0 }));
+  const c = B[0], q = m.cs; c.w = q[0]; c.top = q[1]; c.ux = q[2]; c.uy = q[3];
+  const old = SIM, ns = { B, spun: !!q[4], tick: m.k, acc: old ? old.acc : 0, t: old ? old.t : performance.now(), al: old ? old.al : 0 };
+  if (old) for (let n = 0; ns.tick < old.tick && n < 120; n++) simTickOnce(ns);   // alcanca o relogio local
+  D.forEach((d, i) => {
+    const b = ns.B[i], ex = d.x - (b.x0 + (b.x - b.x0) * ns.al), ey = d.y - (b.y0 + (b.y - b.y0) * ns.al);
+    if (d.act && old && Math.hypot(ex, ey) < 40) { d.ex = ex; d.ey = ey; } else { d.ex = 0; d.ey = 0; }
+  });
+  SIM = ns;
+}
+
 // ---------- estado das bolas na tela ----------
 let snapT = 0, snapDur = 40;   // quando chegou o ultimo estado do servidor e o intervalo medio entre estados
 function sync(m) {
@@ -954,14 +1032,16 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSpin();
 
 // ---------- desenho ----------
 function frame() {
+  const nowF = performance.now(), kd = Math.exp(-Math.min(100, nowF - (frame.t || nowF)) / 90); frame.t = nowF; simRun(nowF);
   ctx.setTransform(SC, 0, 0, SC, 0, 0);
   ctx.drawImage(TB, 0, 0, CW, CH); ctx.translate(F, F);
   if (S && D) {
     for (const d of D) {
       if (d.act) {
-        const ox = d.x, oy = d.y;
+        const ox = d.x, oy = d.y, sb = SIM && SIM.B[D.indexOf(d)];
         const fk = Math.min(1, (performance.now() - snapT) / snapDur);
-        if (Math.hypot(d.tx - d.p0x, d.ty - d.p0y) > 60) { d.x = d.tx; d.y = d.ty; } else { d.x = d.p0x + (d.tx - d.p0x) * fk; d.y = d.p0y + (d.ty - d.p0y) * fk; }
+        if (sb) { d.ex = (d.ex || 0) * kd; d.ey = (d.ey || 0) * kd; d.x = sb.x0 + (sb.x - sb.x0) * SIM.al + d.ex; d.y = sb.y0 + (sb.y - sb.y0) * SIM.al + d.ey; }
+        else if (Math.hypot(d.tx - d.p0x, d.ty - d.p0y) > 60) { d.x = d.tx; d.y = d.ty; } else { d.x = d.p0x + (d.tx - d.p0x) * fk; d.y = d.p0y + (d.ty - d.p0y) * fk; }
         spin(d, d.x - ox, d.y - oy);
       } else if (d.s > 0) { d.s = Math.max(0, d.s - .07); d.x += (d.px - d.x) * .3; d.y += (d.py - d.y) * .3; }
       if (d.s > 0) {
