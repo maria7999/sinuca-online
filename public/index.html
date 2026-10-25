@@ -1100,7 +1100,7 @@ function rot0() {
 // as velocidades, o navegador refaz a conta a partir dali e esconde a diferenca com um ajuste suave (d.ex, d.ey).
 let SIM = null;
 const hy = (a, b) => Math.sqrt(a * a + b * b);
-const cbk = v => Math.max(.5, .72 - .01 * Math.abs(v));
+const cbk = v => Math.min(.85, .72 + .01 * Math.abs(v));   // igual ao cb() do server.js
 function simKick(b, rx, ry, vn) { if (b.n !== 0 || !b.w) return; const f = b.w * .35 * Math.abs(vn); b.vx += ry * f; b.vy += -rx * f; b.w *= .5; }
 function simSub(s, h) {
   const B = s.B;
@@ -1108,7 +1108,7 @@ function simSub(s, h) {
     if (!b.a) continue;
     b.x += b.vx * h; b.y += b.vy * h;
     const sp = hy(b.vx, b.vy);
-    if (sp > 0) { const ns = sp * Math.pow(.9995, h) - .012 * h * sp / (sp + .15), k = ns > .01 ? ns / sp : 0; b.vx *= k; b.vy *= k; }
+    if (sp > 0) { const ns = sp * Math.pow(.9995, h) - .006 * h * sp / (sp + .15), k = ns > .01 ? ns / sp : 0; b.vx *= k; b.vy *= k; }
     if (b.n === 0) b.w *= Math.pow(.9993, h);
     if (hy(b.vx, b.vy) < .02) { b.vx = 0; b.vy = 0; }
   }
