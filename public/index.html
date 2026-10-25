@@ -428,6 +428,90 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #prof .pf-submit:disabled{opacity:.5;cursor:default}
 #prof .pf-fmsg{min-height:16px;margin-top:8px;text-align:center;font:600 13px system-ui,sans-serif;color:#ff9b8a}
 #prof .pf-fmsg.ok{color:#3dff8c}
+
+@media(max-width:620px){
+#lobby .lb-r{flex:1 1 100%;flex-wrap:nowrap;justify-content:flex-start;gap:5px;min-width:0}
+#lobby .lb-wal{flex:none;gap:5px}
+#lobby .wl-bal{height:34px;padding:0 8px;gap:5px;font-size:9px;letter-spacing:.4px}
+#lobby .wl-bal b{font-size:13px;letter-spacing:.3px}
+#lobby .wl-gift{width:30px;height:30px}#lobby .wl-gift svg{width:16px;height:16px}
+#lobby .wl-btn{height:34px;padding:0 8px;font-size:10.5px;letter-spacing:.2px}
+#lobby .lb-chip{flex:1 1 0;min-width:38px;max-width:none;padding:3px 8px 3px 3px;gap:6px;font-size:12px}
+}
+@media(max-width:400px){#lobby .wl-bal span{display:none}#lobby .lb-chip{flex:none;padding:3px}#lobby .lb-chip #chipNick{display:none}}
+
+/* ---------- saque ---------- */
+#saq,#dep{position:fixed;inset:0;z-index:26;display:none;place-items:center;overflow:auto;padding:20px 16px;background:rgba(5,12,8,.72);font-family:Georgia,"Times New Roman",serif;color:#f1e6cf}
+#saq.open,#dep.open{display:grid}
+#saq .sq-card,#dep .sq-card{position:relative;width:100%;max-width:460px;padding:26px 24px 22px;border-radius:14px;border:1px solid rgba(217,178,95,.45);background:linear-gradient(180deg,#0f3a7a,#0a2554);box-shadow:0 18px 44px rgba(0,0,0,.6),inset 0 0 0 1px rgba(217,178,95,.08)}
+#saq .sq-x,#dep .sq-x{position:absolute;top:10px;right:10px;width:34px;height:34px;padding:0;border-radius:50%;background:transparent;border:1px solid rgba(217,178,95,.3);color:#d8cdb3;font:400 22px/1 system-ui,sans-serif;cursor:pointer}
+#saq .sq-x:hover,#dep .sq-x:hover{color:var(--gold);border-color:rgba(217,178,95,.7)}
+#saq h2,#dep h2{margin:0;text-align:center;font-size:26px;color:#f4d98f}
+#saq h2 i,#dep h2 i{font-style:normal;color:#3dff8c}
+#saq .sq-sub,#dep .sq-sub{margin:6px 0 16px;text-align:center;font:14px system-ui,sans-serif;color:#d8cdb3}
+#saq .sq-bal,#dep .sq-bal{padding:12px 16px;border-radius:10px;border:1px solid rgba(61,255,140,.3);background:rgba(61,255,140,.07);font-family:system-ui,sans-serif}
+#saq .sq-bal small,#dep .sq-bal small{display:block;font:600 11px system-ui,sans-serif;letter-spacing:.5px;color:#a9bdb2}
+#saq .sq-bal b,#dep .sq-bal b{font:800 26px Georgia,serif;color:#3dff8c}
+#saq .sq-ic,#dep .sq-ic{display:block;width:56px;height:56px;margin:20px auto 8px;fill:#3dff8c}
+#saq h3,#dep h3{margin:0 0 6px;text-align:center;font-size:23px;color:#e9fff3}
+#saq .sq-p,#dep .sq-p{margin:0 0 16px;text-align:center;font:14px/1.45 system-ui,sans-serif;color:#d8cdb3}
+#saq .sq-box,#dep .sq-box{padding:18px;border-radius:12px;border:1px solid rgba(217,178,95,.22);background:rgba(0,0,0,.22);font-family:system-ui,sans-serif}
+#saq .sq-box label,#dep .sq-box label{display:block;margin:0 0 6px;font:700 13px system-ui,sans-serif;color:#f4ead3}
+#saq .sq-box label:not(:first-child),#dep .sq-box label:not(:first-child){margin-top:14px}
+#saq .pf-in,#dep .pf-in{display:flex;align-items:center;border-radius:8px;background:#06132b;border:1px solid rgba(217,178,95,.28)}
+#saq .pf-in:focus-within,#dep .pf-in:focus-within{border-color:var(--gold);box-shadow:0 0 0 2px rgba(217,178,95,.22)}
+#saq .pf-in.bad,#dep .pf-in.bad{border-color:#ff7b6b}
+#saq .pf-in svg,#dep .pf-in svg{flex:none;width:16px;height:16px;margin:0 8px 0 12px;fill:#7f9087}
+#saq .pf-in input,#dep .pf-in input{flex:1;min-width:0;background:transparent;border:0;padding:12px;font:15px system-ui,sans-serif;color:#f4ead3}
+#saq .pf-in input:focus-visible,#dep .pf-in input:focus-visible{outline:none}
+#saq .pf-in input::placeholder,#dep .pf-in input::placeholder{color:#6f7f78}
+#saq .pf-in span,#dep .pf-in span{padding-left:12px;font:700 15px system-ui,sans-serif;color:#98a39b}
+#saq .sq-hint,#dep .sq-hint{margin:6px 0 0;font:italic 12.5px system-ui,sans-serif;color:#98a39b}
+#saq .sq-hint.bad,#dep .sq-hint.bad{color:#ff9b8a;font-style:normal}
+#saq .sq-go,#dep .sq-go{width:100%;margin-top:16px;padding:13px;border-radius:8px;border:1px solid rgba(120,255,170,.35);background:linear-gradient(180deg,#2fd06b,#13933f);color:#fff;font:800 14px system-ui,sans-serif;letter-spacing:1.5px;cursor:pointer}
+#saq .sq-go:disabled,#dep .sq-go:disabled{opacity:.5;cursor:default}
+#saq .sq-msg,#dep .sq-msg{min-height:16px;margin-top:8px;text-align:center;font:600 13px system-ui,sans-serif;color:#ff9b8a}
+#saq .sq-msg.ok,#dep .sq-msg.ok{color:#3dff8c}
+#saq .sq-info,#dep .sq-info{margin-top:16px;padding:14px 16px;border-radius:12px;border:1px solid rgba(217,178,95,.2);background:rgba(0,0,0,.2);font:13.5px/1.5 system-ui,sans-serif;color:#cfd6d0}
+#saq .sq-info h4,#dep .sq-info h4{display:flex;align-items:center;gap:8px;margin:0 0 8px;font:700 15px Georgia,serif;color:#e9fff3}
+#saq .sq-info h4 svg,#dep .sq-info h4 svg{width:16px;height:16px;fill:#3dff8c}
+#saq .sq-info p,#dep .sq-info p{margin:0 0 8px 24px}
+#saq .sq-info p:last-child,#dep .sq-info p:last-child{margin-bottom:0}
+#saq .sq-key,#dep .sq-key{margin:0;padding:10px 12px;border-radius:8px;background:#06132b;border:1px solid rgba(217,178,95,.2);font:600 14px system-ui,sans-serif;color:#f4ead3}
+#saq .sq-key small,#dep .sq-key small{display:block;font:600 11px system-ui,sans-serif;letter-spacing:.5px;color:#98a39b}
+#saq [hidden],#dep [hidden]{display:none!important}
+#dep .dp-q{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+#dep .dp-q button{padding:10px 0;border-radius:8px;background:#06132b;border:1px solid rgba(217,178,95,.25);color:#f4ead3;font:700 13px system-ui,sans-serif;cursor:pointer}
+#dep .dp-q button:hover{border-color:rgba(61,255,140,.6)}
+#dep .dp-q button.on{border-color:#3dff8c;background:rgba(61,255,140,.1)}
+#dep .dp-code{margin-top:14px;padding:12px;border-radius:10px;background:#06132b;border:1px solid rgba(61,255,140,.3);font:12.5px/1.4 ui-monospace,monospace;color:#d8f5e3;word-break:break-all}
+#dep .dp-code img{display:block;width:180px;height:180px;margin:0 auto 10px;background:#fff;border-radius:8px;padding:6px}
+#dep .dp-copy{width:100%;margin-top:10px;padding:10px;border-radius:8px;background:transparent;border:1px solid rgba(61,255,140,.5);color:#3dff8c;font:800 13px system-ui,sans-serif;letter-spacing:1px;cursor:pointer}
+
+/* ---------- recompensa ---------- */
+#rec{position:fixed;inset:0;z-index:27;display:none;place-items:center;overflow:auto;padding:20px 16px;background:rgba(5,12,8,.72);font-family:system-ui,sans-serif;color:#f1e6cf}
+#rec.open{display:grid}
+#rec .rc-card{position:relative;width:100%;max-width:420px;padding:22px 22px 20px;border-radius:14px;border:1px solid rgba(217,178,95,.45);background:linear-gradient(180deg,#0f3a7a,#0a2554);box-shadow:0 18px 44px rgba(0,0,0,.6),inset 0 0 0 1px rgba(217,178,95,.08);text-align:center}
+#rec .rc-top{display:flex;align-items:center;gap:10px;margin-bottom:18px;text-align:left}
+#rec .rc-top svg{width:20px;height:20px;fill:#f4d98f}
+#rec .rc-top b{flex:1;font:800 14px system-ui,sans-serif;letter-spacing:2.5px;color:#f4d98f}
+#rec .rc-x{width:34px;height:34px;padding:0;border-radius:50%;background:transparent;border:1px solid rgba(217,178,95,.3);color:#d8cdb3;font:400 22px/1 system-ui,sans-serif;cursor:pointer}
+#rec .rc-x:hover{color:var(--gold);border-color:rgba(217,178,95,.7)}
+#rec .rc-how{display:flex;align-items:center;gap:12px;width:100%;padding:10px 14px;border-radius:10px;background:rgba(61,255,140,.07);border:1px solid rgba(61,255,140,.3);color:#3dff8c;font:700 14px system-ui,sans-serif;cursor:pointer;text-align:left}
+#rec .rc-how i{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#2fd06b;color:#062314;font-size:11px;font-style:normal}
+#rec .rc-how[aria-expanded=true] i{transform:rotate(90deg)}
+#rec .rc-help{margin:8px 0 0;padding:12px 14px;border-radius:10px;background:rgba(0,0,0,.22);font:13.5px/1.5 system-ui,sans-serif;color:#d8cdb3;text-align:left}
+#rec .rc-win{margin-top:18px;padding:22px 12px;border-radius:14px;border:2px solid #3dff8c;background:rgba(0,0,0,.28)}
+#rec .rc-win small{display:block;font:700 12px system-ui,sans-serif;letter-spacing:2px;color:#a9bdb2}
+#rec .rc-win b{display:block;margin-top:6px;font:700 44px "Courier New",ui-monospace,monospace;color:#3dff8c;text-shadow:0 0 14px rgba(61,255,140,.35)}
+#rec h3{margin:22px 0 4px;font:800 24px system-ui,sans-serif;color:#fff}
+#rec .rc-sub{margin:0 0 18px;font:14px system-ui,sans-serif;color:#b9c3bc}
+#rec .rc-in{font:800 11px system-ui,sans-serif;letter-spacing:2px;color:#3dff8c}
+#rec .rc-t{margin:6px 0 14px;font:700 44px Georgia,serif;color:#3dff8c;letter-spacing:2px}
+#rec .rc-all{padding-top:14px;border-top:1px solid rgba(217,178,95,.2);font:13px system-ui,sans-serif;color:#b9c3bc}
+#rec .rc-all b{color:#3dff8c}
+#rec .rc-go{display:none;width:100%;margin-bottom:14px;padding:13px;border-radius:8px;border:1px solid rgba(120,255,170,.35);background:linear-gradient(180deg,#2fd06b,#13933f);color:#fff;font:800 14px system-ui,sans-serif;letter-spacing:1.5px;cursor:pointer}
+#rec.ready .rc-go{display:block}
 </style>
 </head>
 <body>
@@ -510,6 +594,115 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
     <div class="pf-msg" id="pfMsg" role="status"></div>
     <button type="button" class="pf-save" id="pfSave" disabled>SALVAR AVATAR</button>
     <button type="button" class="pf-out" id="bLogout">Sair da conta</button>
+  </div>
+</div>
+
+<div id="saq" role="dialog" aria-modal="true" aria-labelledby="sqTitle">
+  <div class="sq-card">
+    <button type="button" class="sq-x" id="sqClose" aria-label="Fechar">×</button>
+    <h2 id="sqTitle"><i>↑</i> Solicitar Saque</h2>
+    <p class="sq-sub">Retire dinheiro da sua carteira via PIX</p>
+    <div class="sq-bal"><small>SALDO SACÁVEL</small><b id="sqBal">R$ 0,00</b></div>
+
+    <form id="sqSetup" novalidate>
+      <svg class="sq-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4.5 4.5 0 1 0-4.5-4.5A4.5 4.5 0 0 0 12 12zm0 2c-3.6 0-8 1.8-8 5v2h9.3A6.5 6.5 0 0 1 15 15.5 10 10 0 0 0 12 14zm7-1-3.5 1.4v2.3c0 2.2 1.5 4 3.5 4.8 2-.8 3.5-2.6 3.5-4.8v-2.3z"/></svg>
+      <h3>Configure sua Conta</h3>
+      <p class="sq-p">Para usar a carteira digital, você precisa cadastrar seus dados pessoais.</p>
+      <div class="sq-box">
+        <label for="sqName">Nome Completo</label>
+        <div class="pf-in" id="sqNameW"><input id="sqName" type="text" autocomplete="name" maxlength="80" placeholder="Digite seu nome completo"></div>
+        <label for="sqCpf">CPF</label>
+        <div class="pf-in" id="sqCpfW"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM9 8a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm4 8H5v-.5C5 13.8 7.4 13 9 13s4 .8 4 2.5zm6-2h-4v-2h4zm0-4h-4V8h4z"/></svg><input id="sqCpf" type="text" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="000.000.000-00"></div>
+        <p class="sq-hint" id="sqCpfH">Os 11 dígitos do seu CPF, o mesmo do documento.</p>
+        <button type="submit" class="sq-go" id="sqSave">SALVAR DADOS</button>
+        <div class="sq-msg" id="sqSetMsg" role="status"></div>
+      </div>
+      <div class="sq-info">
+        <h4><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg>Como usamos seus dados</h4>
+        <p>Seu CPF vira a chave PIX que recebe os saques. Se preferir receber no celular, dá para trocar a chave depois, no perfil.</p>
+        <p>O nome completo identifica sua conta no banco na hora do saque.</p>
+        <p>Usamos esses dados só nas transações, como exige a regulamentação do PIX.</p>
+      </div>
+    </form>
+
+    <form id="sqForm" novalidate hidden>
+      <div class="sq-box" style="margin-top:16px">
+        <label for="sqVal">Valor do saque</label>
+        <div class="pf-in" id="sqValW"><span>R$</span><input id="sqVal" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
+        <p class="sq-hint" id="sqValH">Informe quanto quer sacar.</p>
+        <label style="margin-top:14px">Chave PIX que vai receber</label>
+        <p class="sq-key" id="sqKey"><small id="sqKeyT">CPF</small><span id="sqKeyV"></span></p>
+        <p class="sq-hint">Para trocar a chave, abra o seu perfil.</p>
+        <button type="submit" class="sq-go" id="sqGo" disabled>SOLICITAR SAQUE</button>
+        <div class="sq-msg" id="sqMsg" role="status"></div>
+      </div>
+      <div class="sq-info">
+        <h4><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg>Como funciona</h4>
+        <p>O valor é enviado por PIX para a chave acima, no seu nome.</p>
+        <p>Só é possível sacar até o seu saldo sacável.</p>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="dep" role="dialog" aria-modal="true" aria-labelledby="dpTitle">
+  <div class="sq-card">
+    <button type="button" class="sq-x" id="dpClose" aria-label="Fechar">×</button>
+    <h2 id="dpTitle"><i>↓</i> Fazer Depósito</h2>
+    <p class="sq-sub">Deposite dinheiro em sua carteira via PIX de forma rápida e segura</p>
+
+    <form id="dpSetup" novalidate>
+      <svg class="sq-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4.5 4.5 0 1 0-4.5-4.5A4.5 4.5 0 0 0 12 12zm0 2c-3.6 0-8 1.8-8 5v2h9.3A6.5 6.5 0 0 1 15 15.5 10 10 0 0 0 12 14zm7-1-3.5 1.4v2.3c0 2.2 1.5 4 3.5 4.8 2-.8 3.5-2.6 3.5-4.8v-2.3z"/></svg>
+      <h3>Configure sua Conta</h3>
+      <p class="sq-p">Para usar a carteira digital, você precisa cadastrar seus dados pessoais.</p>
+      <div class="sq-box">
+        <label for="dpName">Nome Completo</label>
+        <div class="pf-in" id="dpNameW"><input id="dpName" type="text" autocomplete="name" maxlength="80" placeholder="Digite seu nome completo"></div>
+        <label for="dpCpf">CPF</label>
+        <div class="pf-in" id="dpCpfW"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM9 8a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm4 8H5v-.5C5 13.8 7.4 13 9 13s4 .8 4 2.5zm6-2h-4v-2h4zm0-4h-4V8h4z"/></svg><input id="dpCpf" type="text" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="000.000.000-00"></div>
+        <p class="sq-hint" id="dpCpfH">Os 11 dígitos do seu CPF, o mesmo do documento.</p>
+        <button type="submit" class="sq-go" id="dpSave">SALVAR DADOS</button>
+        <div class="sq-msg" id="dpSetMsg" role="status"></div>
+      </div>
+      <div class="sq-info">
+        <h4><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg>Como usamos seus dados</h4>
+        <p>Seu CPF vira a chave PIX que recebe os saques. Se preferir receber no celular, dá para trocar a chave depois, no perfil.</p>
+        <p>O nome completo identifica sua conta no banco na hora do saque.</p>
+        <p>Usamos esses dados só nas transações, como exige a regulamentação do PIX.</p>
+      </div>
+    </form>
+
+    <form id="dpForm" novalidate hidden>
+      <div class="sq-box" style="margin-top:16px">
+        <label for="dpVal">Valor do depósito</label>
+        <div class="pf-in" id="dpValW"><span>R$</span><input id="dpVal" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
+        <div class="dp-q" id="dpQ"><button type="button" data-v="10">R$ 10</button><button type="button" data-v="25">R$ 25</button><button type="button" data-v="50">R$ 50</button><button type="button" data-v="100">R$ 100</button></div>
+        <p class="sq-hint" id="dpValH">Informe quanto quer depositar.</p>
+        <button type="submit" class="sq-go" id="dpGo" disabled>GERAR PIX</button>
+        <div class="sq-msg" id="dpMsg" role="status"></div>
+        <div class="dp-code" id="dpCode" hidden><img id="dpQr" alt="QR Code PIX" hidden><span id="dpTxt"></span><button type="button" class="dp-copy" id="dpCopy">COPIAR CÓDIGO PIX</button></div>
+      </div>
+      <div class="sq-info">
+        <h4><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg>Como funciona</h4>
+        <p>Geramos um PIX para você pagar no app do seu banco.</p>
+        <p>Assim que o pagamento é confirmado, o valor entra no seu saldo.</p>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="rec" role="dialog" aria-modal="true" aria-labelledby="rcTitle">
+  <div class="rc-card">
+    <div class="rc-top"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-2.2A3 3 0 0 0 12 4.8 3 3 0 0 0 6.2 7H4a2 2 0 0 0-2 2v2a1 1 0 0 0 1 1h1v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7h1a1 1 0 0 0 1-1V9a2 2 0 0 0-2-2zm-5-1a1 1 0 1 1 0 2h-2V7a1 1 0 0 1 2-1zM9 6a1 1 0 0 1 1 1v1H8a1 1 0 0 1 1-2zM4 9h7v2H4zm2 4h5v7H6zm7 7v-7h5v7zm0-9V9h7v2z"/></svg><b id="rcTitle">RECOMPENSA</b><button type="button" class="rc-x" id="rcClose" aria-label="Fechar">×</button></div>
+    <button type="button" class="rc-how" id="rcHow" aria-expanded="false"><i>▶</i>Como funciona</button>
+    <p class="rc-help" id="rcHelp" hidden>Jogue as partidas pedidas e volte no horário indicado para receber o valor da recompensa no seu saldo. A recompensa abre em horários fixos todos os dias.</p>
+    <div class="rc-win"><small>VOCÊ GANHA</small><b id="rcVal">R$ 0,25</b></div>
+    <h3 id="rcWhen">Volte hoje às 21:00</h3>
+    <p class="rc-sub" id="rcNeed">e jogue 3 partidas</p>
+    <button type="button" class="rc-go" id="rcGo">RESGATAR</button>
+    <div class="rc-in">ABRE EM</div>
+    <div class="rc-t" id="rcT">0:00:00</div>
+    <div class="rc-all">Todo dia às <b>1h, 9h, 14h e 21h</b></div>
   </div>
 </div>
 
@@ -1784,6 +1977,135 @@ const TEXSRC = {
       if (x.status === 401) { closeProf(); showLogin(); } else { $('pfFMsg').textContent = x.message; fCheck(false); }
     }
   });
+  // ---- saque ----
+  const money = v => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const perfilAtual = () => { let d = acct && acct.perfil; if (!d) { try { d = JSON.parse(localStorage.getItem(pkey()) || 'null'); } catch (e) {} } return d || null; };
+  const sqVal = () => { const t = $('sqVal').value.replace(/\./g, '').replace(',', '.'); const n = parseFloat(t); return isFinite(n) ? Math.round(n * 100) / 100 : NaN; };
+  let sqLast = null;
+  function sqView() {
+    const d = perfilAtual(), ok = d && nameOk(d.nome || '') && cpfOk(d.cpf), saldo = window.__saldo || 0;
+    $('sqBal').textContent = money(saldo);
+    $('sqSetup').hidden = !!ok; $('sqForm').hidden = !ok;
+    if (ok) {
+      const tel = d.pix === 'tel' && telOk(d.celular);
+      $('sqKeyT').textContent = tel ? 'CELULAR' : 'CPF'; $('sqKeyV').textContent = tel ? fmtTel(d.celular) : fmtCpf(d.cpf);
+      sqCheck(false);
+    }
+  }
+  function sqCheck(show) {
+    const v = sqVal(), saldo = window.__saldo || 0, has = $('sqVal').value.trim() !== '';
+    let bad = '';
+    if (has && !(v > 0)) bad = 'Digite um valor válido.'; else if (has && v > saldo) bad = 'Valor maior que o saldo sacável.';
+    else if (!has && saldo <= 0) bad = 'Você ainda não tem saldo para sacar.';
+    $('sqValW').classList.toggle('bad', !!(bad && (show || has))); $('sqValH').classList.toggle('bad', !!bad && (show || has || saldo <= 0));
+    $('sqValH').textContent = bad || 'Informe quanto quer sacar.';
+    $('sqGo').disabled = !(has && v > 0 && v <= saldo);
+  }
+  function sqSetCheck(show) {
+    const n = $('sqName').value, c = $('sqCpf').value, eN = n.trim() && !nameOk(n), eC = c && !cpfOk(c);
+    $('sqNameW').classList.toggle('bad', !!(show && (eN || !n.trim()))); $('sqCpfW').classList.toggle('bad', !!(show && (eC || !c)));
+    $('sqCpfH').classList.toggle('bad', !!(show && (eC || !c))); $('sqCpfH').textContent = show && (eC || !c) ? 'CPF inválido. Confira os 11 dígitos.' : 'Os 11 dígitos do seu CPF, o mesmo do documento.';
+    return nameOk(n) && cpfOk(c);
+  }
+  function openSaq() {
+    if (!acct) return; sqLast = document.activeElement;
+    $('sqSetMsg').textContent = ''; $('sqMsg').textContent = ''; $('sqMsg').classList.remove('ok'); $('sqVal').value = '';
+    const d = perfilAtual() || {}; $('sqName').value = d.nome || ''; $('sqCpf').value = fmtCpf(d.cpf); sqSetCheck(false);
+    sqView(); $('saq').classList.add('open'); $('sqClose').focus();
+  }
+  function closeSaq() { $('saq').classList.remove('open'); if (sqLast && sqLast.focus) sqLast.focus(); }
+  $('walSaq').onclick = openSaq;
+  $('sqClose').onclick = closeSaq;
+  $('saq').addEventListener('mousedown', e => { if (e.target === $('saq')) closeSaq(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('saq').classList.contains('open')) closeSaq(); });
+  $('sqCpf').addEventListener('input', () => { $('sqCpf').value = fmtCpf($('sqCpf').value); sqSetCheck(false); });
+  $('sqVal').addEventListener('input', () => { $('sqVal').value = $('sqVal').value.replace(/[^\d.,]/g, ''); $('sqMsg').textContent = ''; sqCheck(false); });
+  window.addEventListener('saldo', () => { if ($('saq').classList.contains('open')) sqView(); });
+  $('sqSetup').addEventListener('submit', async e => {
+    e.preventDefault(); $('sqSetMsg').classList.remove('ok'); $('sqSetMsg').textContent = '';
+    if (!sqSetCheck(true)) { $('sqSetMsg').textContent = 'Revise os campos em vermelho.'; return; }
+    const old = perfilAtual() || {}, body = { nome: $('sqName').value.trim().replace(/\s+/g, ' '), cpf: onlyD($('sqCpf').value), celular: onlyD(old.celular), pix: old.pix === 'tel' && telOk(old.celular) ? 'tel' : 'cpf' };
+    $('sqSave').disabled = true;
+    try {
+      try { await api('perfil', body); }
+      catch (x) { if (x.status !== 404) throw x; try { localStorage.setItem(pkey(), JSON.stringify(body)); } catch (z) {} }
+      acct.perfil = body; sqView();
+    } catch (x) {
+      if (x.status === 401) { closeSaq(); showLogin(); } else $('sqSetMsg').textContent = x.message;
+    }
+    $('sqSave').disabled = false;
+  });
+  $('sqForm').addEventListener('submit', async e => {
+    e.preventDefault(); sqCheck(true); if ($('sqGo').disabled) return;
+    $('sqGo').disabled = true; $('sqMsg').classList.remove('ok'); $('sqMsg').textContent = '';
+    try {
+      const r = await api('saque', { valor: sqVal() });
+      if (r && typeof r.saldo === 'number' && window.setSaldo) window.setSaldo(r.saldo);
+      $('sqVal').value = ''; $('sqMsg').classList.add('ok'); $('sqMsg').textContent = 'Saque solicitado!'; sqCheck(false);
+    } catch (x) {
+      if (x.status === 401) { closeSaq(); showLogin(); }
+      else { $('sqMsg').textContent = x.status === 404 ? 'O saque ainda não está disponível no servidor.' : x.message; sqCheck(false); }
+    }
+  });
+  // ---- deposito ----
+  const DP_MIN = 1;
+  const dpVal = () => { const n = parseFloat($('dpVal').value.replace(/\./g, '').replace(',', '.')); return isFinite(n) ? Math.round(n * 100) / 100 : NaN; };
+  let dpLast = null;
+  function dpView() { const d = perfilAtual(), ok = d && nameOk(d.nome || '') && cpfOk(d.cpf); $('dpSetup').hidden = !!ok; $('dpForm').hidden = !ok; if (ok) dpCheck(false); }
+  function dpCheck(show) {
+    const v = dpVal(), has = $('dpVal').value.trim() !== '', bad = has && !(v >= DP_MIN) ? 'O valor mínimo é ' + money(DP_MIN) + '.' : '';
+    $('dpValW').classList.toggle('bad', !!bad); $('dpValH').classList.toggle('bad', !!bad); $('dpValH').textContent = bad || 'Informe quanto quer depositar.';
+    document.querySelectorAll('#dpQ button').forEach(b => b.classList.toggle('on', has && +b.dataset.v === v));
+    $('dpGo').disabled = !(has && v >= DP_MIN);
+  }
+  function dpSetCheck(show) {
+    const n = $('dpName').value, c = $('dpCpf').value, eN = n.trim() && !nameOk(n), eC = c && !cpfOk(c);
+    $('dpNameW').classList.toggle('bad', !!(show && (eN || !n.trim()))); $('dpCpfW').classList.toggle('bad', !!(show && (eC || !c)));
+    $('dpCpfH').classList.toggle('bad', !!(show && (eC || !c))); $('dpCpfH').textContent = show && (eC || !c) ? 'CPF inválido. Confira os 11 dígitos.' : 'Os 11 dígitos do seu CPF, o mesmo do documento.';
+    return nameOk(n) && cpfOk(c);
+  }
+  function openDep() {
+    if (!acct) return; dpLast = document.activeElement;
+    $('dpSetMsg').textContent = ''; $('dpMsg').textContent = ''; $('dpMsg').classList.remove('ok'); $('dpVal').value = ''; $('dpCode').hidden = true;
+    const d = perfilAtual() || {}; $('dpName').value = d.nome || ''; $('dpCpf').value = fmtCpf(d.cpf); dpSetCheck(false);
+    dpView(); $('dep').classList.add('open'); $('dpClose').focus();
+  }
+  function closeDep() { $('dep').classList.remove('open'); if (dpLast && dpLast.focus) dpLast.focus(); }
+  $('walDep').onclick = openDep;
+  $('dpClose').onclick = closeDep;
+  $('dep').addEventListener('mousedown', e => { if (e.target === $('dep')) closeDep(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('dep').classList.contains('open')) closeDep(); });
+  $('dpCpf').addEventListener('input', () => { $('dpCpf').value = fmtCpf($('dpCpf').value); dpSetCheck(false); });
+  $('dpVal').addEventListener('input', () => { $('dpVal').value = $('dpVal').value.replace(/[^\d.,]/g, ''); $('dpMsg').textContent = ''; dpCheck(false); });
+  document.querySelectorAll('#dpQ button').forEach(b => b.onclick = () => { $('dpVal').value = String(b.dataset.v) + ',00'; $('dpMsg').textContent = ''; dpCheck(false); });
+  $('dpSetup').addEventListener('submit', async e => {
+    e.preventDefault(); $('dpSetMsg').textContent = '';
+    if (!dpSetCheck(true)) { $('dpSetMsg').textContent = 'Revise os campos em vermelho.'; return; }
+    const old = perfilAtual() || {}, body = { nome: $('dpName').value.trim().replace(/\s+/g, ' '), cpf: onlyD($('dpCpf').value), celular: onlyD(old.celular), pix: old.pix === 'tel' && telOk(old.celular) ? 'tel' : 'cpf' };
+    $('dpSave').disabled = true;
+    try {
+      try { await api('perfil', body); }
+      catch (x) { if (x.status !== 404) throw x; try { localStorage.setItem(pkey(), JSON.stringify(body)); } catch (z) {} }
+      acct.perfil = body; dpView();
+    } catch (x) { if (x.status === 401) { closeDep(); showLogin(); } else $('dpSetMsg').textContent = x.message; }
+    $('dpSave').disabled = false;
+  });
+  $('dpForm').addEventListener('submit', async e => {
+    e.preventDefault(); dpCheck(true); if ($('dpGo').disabled) return;
+    $('dpGo').disabled = true; $('dpMsg').classList.remove('ok'); $('dpMsg').textContent = ''; $('dpCode').hidden = true;
+    try {
+      const r = await api('deposito', { valor: dpVal() });
+      const code = r && (r.codigo || r.pix || r.copiaecola), qr = r && (r.qr || r.qrcode);
+      if (!code) throw new Error('Não foi possível gerar o PIX. Tente de novo.');
+      $('dpTxt').textContent = code; $('dpQr').hidden = !qr; if (qr) $('dpQr').src = /^(data:image|https:)/.test(qr) ? qr : 'data:image/png;base64,' + qr;
+      $('dpCode').hidden = false; $('dpMsg').classList.add('ok'); $('dpMsg').textContent = 'PIX gerado! Pague no app do seu banco.';
+    } catch (x) {
+      if (x.status === 401) { closeDep(); showLogin(); }
+      else $('dpMsg').textContent = x.status === 404 ? 'O depósito ainda não está disponível no servidor.' : x.message;
+    }
+    dpCheck(false);
+  });
+  $('dpCopy').onclick = async () => { try { await navigator.clipboard.writeText($('dpTxt').textContent); $('dpCopy').textContent = 'COPIADO!'; } catch (e) { $('dpCopy').textContent = 'SELECIONE E COPIE O CÓDIGO'; } setTimeout(() => { $('dpCopy').textContent = 'COPIAR CÓDIGO PIX'; }, 1800); };
   window.__needLogin = showLogin;            // o servidor pediu login (sessao expirou): volta para a tela de entrada
   $('lgTop').onclick = () => mode(!reg);
   $('lgAlt').onclick = () => mode(!reg);
@@ -1836,12 +2158,24 @@ const TEXSRC = {
 (function () {
   const bal = document.getElementById('walBal'), tt = document.createElement('div'); tt.id = 'walToast'; tt.setAttribute('role', 'status'); document.body.appendChild(tt);
   let tm = 0;
-  window.setSaldo = v => { const n = Number(v) || 0; bal.textContent = n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); };
+  window.__saldo = 0;
+  window.setSaldo = v => { const n = Number(v) || 0; window.__saldo = n; window.dispatchEvent(new Event('saldo')); bal.textContent = n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); };
   const note = t => { tt.textContent = t; tt.classList.add('on'); clearTimeout(tm); tm = setTimeout(() => tt.classList.remove('on'), 2200); };
-  document.getElementById('walDep').addEventListener('click', () => note('Depósito em breve'));
-  document.getElementById('walSaq').addEventListener('click', () => note('Saque em breve'));
-  document.getElementById('walGift').addEventListener('click', () => note('Presentes em breve'));
 })();
+
+  // recompensa: o servidor controla valor e horario (window.setRecompensa); o relogio comeca zerado
+  (function () {
+    const r = document.getElementById('rec'), g = id => document.getElementById(id); let ret = null, left = 0, tm = 0;
+    const pad = n => String(n).padStart(2, '0'), show = () => { g('rcT').textContent = Math.floor(left / 3600) + ':' + pad(Math.floor(left % 3600 / 60)) + ':' + pad(left % 60); r.classList.toggle('ready', left <= 0 && window.__recPronta === true); };
+    window.setRecompensa = o => { o = o || {}; if (o.valor != null) g('rcVal').textContent = Number(o.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); if (o.quando) g('rcWhen').textContent = o.quando; if (o.partidas != null) g('rcNeed').textContent = 'e jogue ' + o.partidas + ' partidas'; left = Math.max(0, Math.floor(o.segundos || 0)); window.__recPronta = !!o.pronta; show(); };
+    const open = () => { ret = document.activeElement; r.classList.add('open'); g('rcClose').focus(); clearInterval(tm); tm = setInterval(() => { if (left > 0) { left--; show(); } }, 1000); };
+    const close = () => { r.classList.remove('open'); clearInterval(tm); if (ret && ret.focus) ret.focus(); };
+    g('walGift').addEventListener('click', open); g('rcClose').onclick = close;
+    r.addEventListener('mousedown', e => { if (e.target === r) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && r.classList.contains('open')) close(); });
+    g('rcHow').onclick = () => { const o = g('rcHow').getAttribute('aria-expanded') === 'true'; g('rcHow').setAttribute('aria-expanded', !o); g('rcHelp').hidden = o; };
+    show();
+  })();
 </script>
 </body>
 </html>
