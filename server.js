@@ -49,6 +49,7 @@ const POCKET_SLOW = 2;     // bola mais devagar que isso, dentro da boca, cai na
 const POCKET_PULL = 0.1;   // puxao leve para dentro da cacapa
 const BALL_E = 0.96;       // quicada entre bolas (1 = perfeita, menor = perde um pouco de energia)
 const POWER = 1.45;        // multiplica a forca da tacada (1 = original). A tacada mais forte vira 13 em vez de 9
+const POWER_CURVE = 0.7;   // curva da forca: 1 = linear; menor que 1 = tacadas medias andam mais (a forte continua igual)
 const BOUNCE = 0.72;       // quanto da velocidade a bola guarda ao bater na almofada devagar; batida forte perde mais (ver cb). Menor = almofada mais "fofa" (a bola nao fica quicando)
 const cb = v => Math.max(0.50, BOUNCE - 0.010 * Math.abs(v));
 const SPIN_MAX = 0.72;       // mesmo limite do seletor no site
@@ -96,6 +97,7 @@ class Game {
     c.w = -sx;                              // efeito lateral (+ = giro horario visto de cima)
     this.spun = false;
     this.moving = true; this.deadline = 0; this.info = { p: [], f: null };
+    this.tick = 0;                          // quantos relogios de 1/60 s se passaram desde a tacada
   }
   // empurra a branca de lado quando ela bate na almofada com efeito lateral
   // (rx, ry) = direcao da almofada em relacao a bola; vn = velocidade que bateu nela
@@ -195,13 +197,21 @@ class Game {
     return (foul ? 'Falta! ' : '') + 'Vez de ' + N[this.turn] + '.';
   }
   snap(m) {
-    return {
+    const o = {
       t: 'state',
       b: this.B.map(b => [b.n, +b.x.toFixed(1), +b.y.toFixed(1), b.a]),
       turn: this.turn, grp: this.grp, moving: this.moving, over: this.over, winner: this.winner,
       names: this.names, m,
-      tl: this.deadline ? Math.max(0, this.deadline - Date.now()) : null
+      tl: this.deadline ? Math.max(0, this.deadline - Date.now()) : null,
+      k: this.tick || 0
     };
+    // a cada 6 relogios (e no primeiro) manda tambem velocidades e efeito da branca: o navegador refaz a fisica a partir dai
+    if (this.moving && (this.tick || 0) % 6 === 1) {
+      const c = this.B[0];
+      o.v = this.B.map(b => [+b.vx.toFixed(4), +b.vy.toFixed(4)]);
+      o.cs = [+c.w.toFixed(4), +c.top.toFixed(4), +c.ux.toFixed(4), +c.uy.toFixed(4), this.spun ? 1 : 0];
+    }
+    return o;
   }
   send(obj) {
     const s = JSON.stringify(obj);
@@ -218,7 +228,10 @@ class Game {
 //  BOT_MISS = 0.10 -> executa 90% das tacadas certinhas e erra 10%.
 //  Mais perto de 0 = robo mais forte. Mais perto de 1 = robo mais fraco.
 // ============================================================
-const BOT_MISS = 0.10;       // chance de errar a tacada de proposito
+const BOT_MISS = 0.45;       // chance de errar a tacada de proposito (0.10 = quase perfeito, 0.45 = jogador normal, 0.7 = fraco)
+const BOT_ERR_MIN = 0.03;    // tamanho do erro de mira quando erra, em radianos (0.03 = ~1.7 graus)
+const BOT_ERR_MAX = 0.11;    // erro maximo (0.11 = ~6 graus). Maior = erra mais feio
+const BOT_JITTER = 0.006;    // tremida pequena que existe ate nas tacadas "certas" (~0.3 grau): tacadas longas e dificeis falham as vezes
 const BOT_THINK_MS = 1100;   // tempo que o robo "pensa" antes de tacar
 const BOT_SPEEDS = [3, 4.5, 6.5, 9];   // forcas testadas (antes do POWER)
 const BOT_TOP = 10;          // quantas tacadas candidatas ele simula de verdade
@@ -357,10 +370,14 @@ function* botPlanGen(g, me) {
 function botPlan(g, me) { const it = botPlanGen(g, me); let r; while (!(r = it.next()).done); return r.value; }
 const gauss = () => { let u = 0, v = 0; while (!u) u = Math.random(); v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(6.2832 * v); };
 function botHumanize(p) {
-  if (Math.random() >= BOT_MISS) return { vx: p.vx, vy: p.vy };           // tacada certinha (a que passou na simulacao)
-  const s = hyp(p.vx, p.vy), sg = Math.random() < 0.5 ? -1 : 1;
-  const a = Math.atan2(p.vy, p.vx) + sg * (0.015 + Math.random() * 0.035);  // erra a mira em 1 a 3 graus
-  const v = Math.min(9, s * (0.9 + Math.random() * 0.2));                   // e a forca em +-10%
+  const s = hyp(p.vx, p.vy), a0 = Math.atan2(p.vy, p.vx);
+  if (Math.random() >= BOT_MISS) {                                          // tacada "certa": so com uma tremidinha
+    const a = a0 + gauss() * BOT_JITTER;
+    return { vx: Math.cos(a) * s, vy: Math.sin(a) * s };
+  }
+  const sg = Math.random() < 0.5 ? -1 : 1;
+  const a = a0 + sg * (BOT_ERR_MIN + Math.random() * (BOT_ERR_MAX - BOT_ERR_MIN));   // erra a mira
+  const v = Math.min(9, s * (0.8 + Math.random() * 0.4));                   // e a forca em +-20%
   return { vx: Math.cos(a) * v, vy: Math.sin(a) * v };
 }
 
@@ -459,6 +476,9 @@ wss.on('connection', ws => {
       const s = hyp(vx, vy);
       if (s < 0.2) return;
       if (s > 9) { vx = vx / s * 9; vy = vy / s * 9; }
+      // curva de forca: so muda tacadas fracas/medias (forca 100% continua 9)
+      const pw = Math.min(1, hyp(vx, vy) / 9), pf = Math.pow(pw, POWER_CURVE) / pw;
+      vx *= pf; vy *= pf;
       // efeito escolhido no site (sx = lado, sy = cima/baixo); valores invalidos viram "centro"
       let sx = +m.sx, sy = +m.sy;
       if (!isFinite(sx)) sx = 0;
@@ -495,6 +515,7 @@ setInterval(() => {
     }
     if (!g.moving) continue;
     for (let s = 0; s < 4; s++) g.step();
+    g.tick++;
     if (g.allStopped()) { const msg = g.endTurn(); g.send(g.snap(msg)); botSchedule(g); }
     else g.send(g.snap());
   }
