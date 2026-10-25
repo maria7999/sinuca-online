@@ -127,7 +127,8 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #game #stage.rot .pl{flex:1 1 0;min-width:0;min-height:0;width:100%;flex-wrap:nowrap;flex-direction:column;justify-content:center;align-items:center;align-content:center;gap:4px;padding:0;background:none;border:0;border-radius:0;overflow:hidden}
 #game #stage.rot .av{width:26px;height:26px;font-size:13px;box-shadow:0 0 0 2px transparent}
 #game #stage.rot .pl.on .av{box-shadow:0 0 0 2px var(--gold)}
-#game #stage.rot .pl .who{flex:none;min-height:0;min-width:0;writing-mode:vertical-rl;transform:rotate(180deg)}
+#game #stage.rot .av::before{inset:-2px;-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px))}
+#game #stage.rot .pl .who{flex:none;min-height:0;min-width:0;writing-mode:vertical-rl;text-align:center}
 #game #stage.rot .pl b{max-height:84px;font-size:13px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #game #stage.rot .pl:not(.on) b{color:var(--muted)}
 #game #stage.rot .pl small{display:none}
@@ -286,6 +287,9 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #end.lose{--ec:#d8574f;--eg:rgba(216,87,79,.4);--et1:#ff9a8e;--et2:#c23b33}
 @media(max-width:760px){#end .end-card{grid-template-columns:1fr;gap:18px;padding:20px 16px}#end .end-ring{width:min(150px,38vw)}}
 @media(max-height:520px) and (min-width:761px){#end{padding:8px}#end .end-card{padding:14px 18px;gap:16px}#end .end-ring{width:min(130px,30vh)}#end .end-title{font-size:clamp(30px,9vh,52px)}#end .end-vs{padding:10px}#end #bBack{padding:11px 14px;font-size:17px}}
+
+/* removidos da tela do jogo: mensagem, botoes (tela cheia, som, sair) e texto de ajuda */
+#game #msg,#game > .row,#game .help{display:none!important}
 </style>
 </head>
 <body>
