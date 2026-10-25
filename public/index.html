@@ -310,6 +310,11 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #prof h2{margin:0 0 14px;text-align:center;font-size:24px;color:#f4d98f}
 #prof .pf-x{position:absolute;top:10px;right:10px;width:34px;height:34px;padding:0;border-radius:50%;background:transparent;border:1px solid rgba(217,178,95,.3);color:#d8cdb3;font:400 22px/1 system-ui,sans-serif}
 #prof .pf-x:hover{color:var(--gold);border-color:rgba(217,178,95,.7)}
+#prof .pf-avw{position:relative;width:96px;margin:0 auto}
+#prof .pf-edit{position:absolute;right:-6px;bottom:-2px;width:34px;height:34px;padding:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:linear-gradient(180deg,#f6dc8e,#c9962f);border:2px solid #0a2554;box-shadow:0 3px 8px rgba(0,0,0,.5);transition:transform .15s}
+#prof .pf-edit:hover{transform:scale(1.1)}
+#prof .pf-edit svg{width:18px;height:18px;fill:#0a2554}
+#prof:not(.editing) .pf-sec,#prof:not(.editing) .pf-grid,#prof:not(.editing) .pf-save{display:none}
 #prof .pf-av{width:96px;height:96px;margin:0 auto;border-radius:50%;display:grid;place-items:center;background:var(--gold);color:#010a22;font:800 44px system-ui,sans-serif;line-height:1;box-shadow:0 0 0 3px rgba(217,178,95,.35),0 8px 22px rgba(0,0,0,.45)}
 #prof .pf-nick{margin:12px 0 4px;text-align:center;font-size:22px;font-weight:700;color:#f4ead3;word-break:break-word}
 #prof .pf-mail{margin:0 0 16px;text-align:center;font:13px system-ui,sans-serif;color:#d8cdb3;word-break:break-all}
@@ -428,7 +433,7 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
   <div class="pf-card">
     <button type="button" class="pf-x" id="pfClose" aria-label="Fechar">×</button>
     <h2 id="pfTitle">Meu perfil</h2>
-    <div class="pf-av" id="pfAv"></div>
+    <div class="pf-avw"><div class="pf-av" id="pfAv"></div><button type="button" class="pf-edit" id="pfEdit" aria-label="Editar avatar" title="Editar avatar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zm17.7-10.2a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button></div>
     <div class="pf-nick" id="pfNick"></div>
     <p class="pf-mail"><small>E-MAIL DA CONTA</small><span id="pfEmail"></span></p>
     <div class="pf-sec">ESCOLHA SEU AVATAR</div>
@@ -1627,7 +1632,7 @@ const TEXSRC = {
     const im = new Image(); im.src = '/avatars/' + id + '.webp'; im.alt = ''; im.width = im.height = 320; im.loading = 'lazy'; im.decoding = 'async'; b.appendChild(im);
     b.onclick = () => { pick = id; $('pfMsg').textContent = ''; paintPicker(); }; $('pfGrid').appendChild(b); });
   function openProf() {
-    lastFocus = document.activeElement;
+    lastFocus = document.activeElement; $('prof').classList.remove('editing');
     pick = acct.avatar && acct.avatar.id ? acct.avatar.id : null;
     $('pfNick').textContent = acct.nick; $('pfEmail').textContent = acct.email; $('pfMsg').textContent = ''; $('pfMsg').classList.remove('ok');
     paintPicker(); $('prof').classList.add('open'); $('pfClose').focus();
@@ -1635,6 +1640,10 @@ const TEXSRC = {
   function closeProf() { $('prof').classList.remove('open'); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
   $('bProfile').onclick = openProf;
   $('pfClose').onclick = closeProf;
+  $('pfEdit').onclick = () => {   // o lapis abre/fecha a escolha de avatar; fechar sem salvar volta ao avatar atual
+    const on = $('prof').classList.toggle('editing');
+    if (!on) { pick = acct.avatar && acct.avatar.id ? acct.avatar.id : null; $('pfMsg').textContent = ''; paintPicker(); }
+  };
   $('prof').addEventListener('mousedown', e => { if (e.target === $('prof')) closeProf(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('prof').classList.contains('open')) closeProf(); });
   $('pfSave').onclick = async () => {
@@ -1642,7 +1651,7 @@ const TEXSRC = {
     try {
       const r = await api('avatar', { id: pick });
       acct.avatar = r.avatar; renderChip(); paintPicker();
-      $('pfMsg').classList.add('ok'); $('pfMsg').textContent = 'Avatar salvo!';
+      $('pfMsg').classList.add('ok'); $('pfMsg').textContent = 'Avatar salvo!'; $('prof').classList.remove('editing');
     } catch (x) {
       if (x.status === 401) { closeProf(); showLogin(); } else { $('pfMsg').textContent = x.message; paintPicker(); }
     }
