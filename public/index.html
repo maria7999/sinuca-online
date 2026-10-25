@@ -34,6 +34,10 @@ button.alt{background:transparent;color:var(--fg);border:1px solid #4b5b51}
 .ico i.off{background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 canvas{width:100%;height:auto;touch-action:none;border-radius:16px;display:block;box-shadow:0 18px 44px rgba(0,0,0,.6)}
 #msg{font-size:15px;min-height:22px;text-align:center}
+#clk{align-self:center;min-width:64px;text-align:center;font:700 18px/1 system-ui,sans-serif;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.12);color:#fff;visibility:hidden}
+#clk.on{visibility:visible}
+#clk.warn{background:#d62828;animation:clkp .5s infinite alternate}
+@keyframes clkp{to{transform:scale(1.12)}}
 #stage{width:100%;position:relative;display:grid;justify-content:center;align-items:start}
 #stage.wide{--sp:max(34px,calc(var(--k,1)*40px));grid-template-columns:calc(var(--k,1)*44px) calc(var(--k,1)*824px) calc(var(--k,1)*44px);column-gap:calc(var(--k,1)*10px)}
 #stage.stack{display:flex;flex-direction:column;align-items:center;gap:10px;--sp:46px}
@@ -165,6 +169,7 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
       <div class="row"><button type="button" class="alt" id="spinReset">Centro</button><button type="button" id="spinOk">Ok</button></div>
     </div>
   </div>
+  <div id="clk" aria-live="off">20</div>
   <div id="msg"></div>
   <div class="row">
     <button id="bAgain" style="display:none">Jogar de novo</button>
@@ -262,6 +267,28 @@ function playTurn() {
   src.connect(g); g.connect(AC.destination); src.start();
 }
 let lastTurn = null;
+// ---------- relogio da vez: 20s, com tic-tac nos ultimos 5s ----------
+let clkEnd = 0, clkIdx = -1, clkFlip = 0;
+function tick(hi) {          // tic (agudo) / tac (grave): um estalo curto e seco
+  if (!AC || muted) return;
+  const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(), f = AC.createBiquadFilter();
+  o.type = 'square'; o.frequency.setValueAtTime(hi ? 1900 : 1250, t); o.frequency.exponentialRampToValueAtTime(hi ? 900 : 600, t + .04);
+  f.type = 'bandpass'; f.frequency.value = hi ? 1800 : 1200; f.Q.value = 3;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.35, t + .002); g.gain.exponentialRampToValueAtTime(.001, t + .07);
+  o.connect(f); f.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + .09);
+}
+setInterval(() => {
+  const el = $('clk');
+  if (!S || S.over || S.moving || !clkEnd) { el.className = ''; clkIdx = -1; return; }
+  const rem = Math.max(0, clkEnd - performance.now());
+  el.textContent = Math.ceil(rem / 1000);
+  const mine = !solo && S.turn === seat, warn = rem <= 5000 && rem > 0;
+  el.className = 'on' + (warn && mine ? ' warn' : '');
+  if (warn && mine) {
+    const idx = Math.ceil(rem / 500);          // um estalo a cada meio segundo
+    if (idx !== clkIdx) { clkIdx = idx; tick(clkFlip ^= 1); }
+  } else clkIdx = -1;
+}, 50);
 $('bMute').onclick = () => { muted = !muted; $('bMute').textContent = muted ? '🔇' : '🔊'; };
 
 // ---------- conexao ----------
@@ -286,6 +313,7 @@ function onMsg(m) {
   else if (m.t === 'match') { seat = m.seat; solo = !!m.solo; S = null; D = null; potted = []; lastTurn = null; showGame(); }
   else if (m.t === 'state') {
     S = m; sync(m);
+    clkEnd = m.tl != null && !m.moving && !m.over ? performance.now() + m.tl : 0;
     if (lastTurn !== null && m.turn !== lastTurn && !m.over) playTurn();
     lastTurn = m.turn;
     if (m.m) $('msg').textContent = m.m;
