@@ -134,22 +134,60 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #game #stage.rot .ico{flex:none;flex-direction:column;flex-wrap:nowrap;justify-content:flex-start;align-items:center;margin:0;min-height:0;gap:1px}
 #game #stage.rot .ico i{width:15px;height:15px}
 #game #stage.rot .ico i span{width:8px;height:8px;font-size:6px;line-height:8px}
+
+/* ---------- lobby (tela inicial) ---------- */
+#lobby{position:fixed;inset:0;z-index:20;overflow:auto;flex-direction:column;align-items:center;padding:0 16px calc(28px + env(safe-area-inset-bottom,0px));color:#f1e6cf;font-family:Georgia,"Times New Roman",serif;background:radial-gradient(120% 70% at 50% 0%,#382c1c 0%,#261d13 55%,#1b150e 100%)}
+#lobby .lb-top{width:100%;max-width:1200px;display:flex;justify-content:space-between;align-items:center;padding:20px 0 16px;border-bottom:1px solid rgba(217,178,95,.22)}
+#lobby .lb-brand{font-weight:700;font-size:22px;letter-spacing:2.5px;color:var(--gold)}
+#lobby .lb-on{display:flex;align-items:center;gap:8px;font:600 13px system-ui,sans-serif;color:#d8cdb3;background:rgba(0,0,0,.28);border:1px solid rgba(217,178,95,.28);border-radius:999px;padding:7px 14px}
+#lobby .dot{width:8px;height:8px;border-radius:50%;background:#4cd48a;box-shadow:0 0 8px #4cd48a;display:inline-block}
+#lobby .lb-h{margin:34px 0 0;font-size:clamp(30px,3.2vw,48px);font-weight:700;text-align:center;color:#f4ead3;text-shadow:0 2px 14px rgba(0,0,0,.5)}
+#lobby .lb-h em{font-style:normal;color:var(--gold)}
+#lobby .lb-div{display:flex;align-items:center;gap:10px;margin:12px 0;color:var(--gold);font-size:11px}
+#lobby .lb-div span{width:90px;height:1px;background:linear-gradient(90deg,transparent,rgba(217,178,95,.7))}
+#lobby .lb-div span:last-child{background:linear-gradient(270deg,transparent,rgba(217,178,95,.7))}
+#lobby .lb-cnt{font-size:15px;letter-spacing:2px;color:#cdbf9c}
+#lobby .lb-cnt b{font-size:34px;color:var(--gold);letter-spacing:0;margin-right:6px}
+#lobby #name{margin:22px 0 0;max-width:300px;text-align:center;background:#17110b;border:1px solid rgba(217,178,95,.4);color:#f4ead3;font-family:inherit}
+#lobby #name::placeholder{color:#8f8267}
+#lobby .lb-tabs{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:22px 0 0;padding:5px;background:rgba(0,0,0,.3);border:1px solid rgba(217,178,95,.22);border-radius:14px}
+#lobby .lb-tab{background:transparent;border:1px solid transparent;border-radius:10px;padding:9px 22px;color:#cdbf9c;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:112px}
+#lobby .lb-tab b{font-size:12px;letter-spacing:1px}
+#lobby .lb-tab small{font:600 11px system-ui,sans-serif;color:#7fe0a8;display:flex;align-items:center;gap:5px}
+#lobby .lb-tab.on{background:rgba(217,178,95,.14);border-color:rgba(217,178,95,.7);color:var(--gold)}
+#lobby .lb-panel{display:none;margin-top:34px;flex-direction:column;align-items:center;gap:18px}
+#lobby .lb-panel.on{display:flex}
+#lobby .lb-tile{position:relative;width:158px;min-height:124px;padding:20px 10px 14px;border-radius:16px;border:1px solid var(--gold);background:linear-gradient(180deg,#3d2f1d,#251c11);color:#f4ead3;font:700 26px Georgia,"Times New Roman",serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;box-shadow:0 10px 26px rgba(0,0,0,.5),inset 0 0 0 1px rgba(217,178,95,.14);transition:transform .15s,box-shadow .15s}
+#lobby .lb-tile:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.55),0 0 18px rgba(217,178,95,.25),inset 0 0 0 1px rgba(217,178,95,.3)}
+#lobby .lb-tag{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--gold);color:#2a2118;font:800 9px/1 system-ui,sans-serif;letter-spacing:1px;padding:4px 9px;border-radius:6px}
+#lobby .lb-pill{background:#14100a;border-radius:999px;padding:6px 14px;font:700 15px system-ui,sans-serif;color:#f4ead3}
+#lobby .lb-join{display:flex;gap:8px;width:100%;max-width:300px}
+#lobby .lb-join input{background:#17110b;border:1px solid rgba(217,178,95,.4);color:#f4ead3;font-family:inherit;text-transform:uppercase}
+#lobby .lb-join button{background:#2e7d4f;font-family:inherit;white-space:nowrap}
+#lobby #status{margin-top:24px;color:#cdbf9c;font:14px system-ui,sans-serif}
 </style>
 </head>
 <body>
-<div id="lobby" style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%">
-  <h1>🎱 Sinuca Online</h1>
-  <p class="sub">Bola 8, 1 contra 1, de graça. Sem cadastro.</p>
-  <div class="card">
-    <input id="name" placeholder="Seu apelido" maxlength="16" autocomplete="off">
-    <button id="bQueue">Jogar agora (achar adversário)</button>
-    <button id="bPractice" class="alt">Treinar sozinho</button>
-    <button id="bBot" class="alt">🤖 Jogar contra o robô</button>
-    <hr style="width:100%;border:0;border-top:1px solid var(--muted);opacity:.3">
-    <button id="bCreate" class="alt">Criar sala para um amigo</button>
-    <div class="row"><input id="code" placeholder="Código da sala" maxlength="6" autocomplete="off"><button id="bJoin" style="white-space:nowrap">Entrar</button></div>
-    <div id="status"></div>
+<div id="lobby" style="display:flex">
+  <header class="lb-top"><span class="lb-brand">SINUCA ONLINE</span><span class="lb-on"><i class="dot"></i><b class="js-onl">—</b> online</span></header>
+  <h1 class="lb-h">Jogue <em>sinuca online</em></h1>
+  <div class="lb-div"><span></span><i>◆</i><span></span></div>
+  <div class="lb-cnt"><b class="js-onl">—</b>JOGADORES ONLINE</div>
+  <input id="name" placeholder="Seu apelido" maxlength="16" autocomplete="off">
+  <div class="lb-tabs" role="tablist">
+    <button class="lb-tab on" data-p="pOnline" role="tab"><b>ONLINE</b><small><i class="dot"></i><span class="js-onl">—</span> jogando</small></button>
+    <button class="lb-tab" data-p="pBot" role="tab"><b>ROBÔ</b><small>1 contra 1</small></button>
+    <button class="lb-tab" data-p="pPractice" role="tab"><b>TREINO</b><small>sozinho</small></button>
+    <button class="lb-tab" data-p="pFriend" role="tab"><b>AMIGO</b><small>sala privada</small></button>
   </div>
+  <section class="lb-panel on" id="pOnline"><button id="bQueue" class="lb-tile"><span class="lb-tag">POPULAR</span>Bola 8<span class="lb-pill"><span class="js-onl">—</span> 👥</span></button></section>
+  <section class="lb-panel" id="pBot"><button id="bBot" class="lb-tile">Robô<span class="lb-pill">🤖 1 x 1</span></button></section>
+  <section class="lb-panel" id="pPractice"><button id="bPractice" class="lb-tile">Treino<span class="lb-pill">🎱 livre</span></button></section>
+  <section class="lb-panel" id="pFriend">
+    <button id="bCreate" class="lb-tile">Criar sala<span class="lb-pill">🔑 código</span></button>
+    <div class="lb-join"><input id="code" placeholder="Código da sala" maxlength="6" autocomplete="off"><button id="bJoin">Entrar</button></div>
+  </section>
+  <div id="status"></div>
 </div>
 
 <div id="game">
@@ -322,6 +360,7 @@ function onMsg(m) {
   }
   else if (m.t === 'info') { $('msg').textContent = m.m; }
   else if (m.t === 'lobby') { showLobby(); }
+  else if (m.t === 'online') { document.querySelectorAll('.js-onl').forEach(e => { e.textContent = m.n; }); }
 }
 function showLobby() { $('spinPop').classList.remove('open'); $('game').style.display = 'none'; $('game').classList.remove('fs'); document.body.classList.remove('fs'); $('lobby').style.display = 'flex'; }
 function showGame() { $('lobby').style.display = 'none'; $('game').style.display = 'flex'; $('status').textContent = ''; $('bAgain').style.display = 'none'; layout(); }
@@ -379,6 +418,12 @@ $('bCreate').onclick = () => { if (phoneLike()) goFull(); send({ t: 'create', na
 $('bJoin').onclick = () => { const c = $('code').value.trim(); if (c) { if (phoneLike()) goFull(); send({ t: 'join', name: nm(), code: c }); } };
 $('bAgain').onclick = () => send({ t: 'again' });
 $('bLeave').onclick = () => send({ t: 'leave' });
+// abas do lobby
+document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
+  document.querySelectorAll('.lb-tab').forEach(x => x.classList.toggle('on', x === t));
+  document.querySelectorAll('.lb-panel').forEach(p => p.classList.toggle('on', p.id === t.dataset.p));
+}; });
+connect(() => {});   // conecta ao abrir a pagina: mostra quantos estao online (e ja acorda o servidor)
 $('name').value = (() => { try { return localStorage.getItem('sinuca-name') || ''; } catch (e) { return ''; } })();
 $('name').addEventListener('input', () => { try { localStorage.setItem('sinuca-name', $('name').value); } catch (e) {} });
 
