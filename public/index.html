@@ -206,12 +206,12 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #lobby .lb-h em{background:linear-gradient(180deg,#fff2c0 0%,#f0cd7a 38%,#c9962f 70%,#f0cd7a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;text-shadow:none;filter:drop-shadow(0 3px 10px rgba(0,0,0,.55)) drop-shadow(0 0 14px rgba(217,178,95,.25))}
 #lobby .lb-brand{background:linear-gradient(180deg,#f6dc8e,#c9962f);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
 /* cards com arte feita pela IA (imagem em /rooms/rX.webp); o numero de jogadores e o avatar continuam ao vivo por cima */
-#lobby .lb-tile.art{padding:0;border:0;background:none center/100% 100% no-repeat;box-shadow:none;aspect-ratio:1171/857;min-height:0;height:auto;transition:transform .15s,filter .15s;filter:drop-shadow(0 8px 12px rgba(0,0,0,.5))}
+#lobby .lb-tile.art{padding:0;border:0;background:none center/100% 100% no-repeat;box-shadow:none;aspect-ratio:364/372;min-height:0;height:auto;transition:transform .15s,filter .15s;filter:drop-shadow(0 8px 12px rgba(0,0,0,.5))}
 #lobby .lb-tile.art::before,#lobby .lb-tile.art::after{display:none}
 #lobby .lb-tile.art:hover{transform:translateY(-4px) scale(1.02);filter:drop-shadow(0 10px 16px rgba(0,0,0,.55)) drop-shadow(0 0 12px var(--c))}
 #lobby .lb-tile.art.hot{background-color:transparent;filter:drop-shadow(0 8px 12px rgba(0,0,0,.5)) drop-shadow(0 0 14px rgba(56,212,255,.9))}
 #lobby .lb-tile.art .lb-v,#lobby .lb-tile.art .lb-tag{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);opacity:0}
-#lobby .lb-tile.art .lb-pill{position:absolute;left:17%;width:66%;top:74.5%;height:21%;padding:0;display:flex;align-items:center;justify-content:center;gap:7px;border-radius:999px;
+#lobby .lb-tile.art .lb-pill{position:absolute;left:11%;width:78%;top:72.5%;height:24%;padding:0;display:flex;align-items:center;justify-content:center;gap:7px;border-radius:999px;
   font:700 17px Georgia,"Times New Roman",serif;color:#fbf2d6;text-shadow:0 1px 2px rgba(0,0,0,.7);
   background:linear-gradient(180deg,#0b2d62 0%,#051a3d 100%);border:1.5px solid #d9b25f;box-shadow:0 0 6px rgba(243,210,127,.55),inset 0 1px 0 rgba(255,255,255,.12),inset 0 -6px 10px rgba(0,0,0,.35)}
 #lobby .lb-tile.art .lb-pill::after{content:"";width:20px;height:16px;background:linear-gradient(180deg,#fff0b5,#d9a93e);-webkit-mask:var(--ppl) center/contain no-repeat;mask:var(--ppl) center/contain no-repeat;order:-1}
@@ -219,6 +219,13 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #lobby .lb-tile.art .lb-pill{font-size:0}#lobby .lb-tile.art .lb-pill .rn{font-size:17px}
 #lobby .lb-tile.art .lb-av{top:-6px;right:-6px}
 #lobby .lb-tile[data-room="0"].art{background-image:url(/rooms/r0.webp)}
+#lobby .lb-tile[data-room="0.25"].art{background-image:url(/rooms/r0_25.webp)}
+#lobby .lb-tile[data-room="1"].art{background-image:url(/rooms/r1.webp)}
+#lobby .lb-tile[data-room="2"].art{background-image:url(/rooms/r2.webp)}
+#lobby .lb-tile[data-room="5"].art{background-image:url(/rooms/r5.webp)}
+#lobby .lb-tile[data-room="10"].art{background-image:url(/rooms/r10.webp)}
+#lobby .lb-tile[data-room="25"].art{background-image:url(/rooms/r25.webp)}
+#lobby .lb-tile[data-room="50"].art{background-image:url(/rooms/r50.webp)}
 #lobby .lb-join{display:flex;gap:8px;width:100%;max-width:300px}
 #lobby .lb-join input{background:#06132b;border:1px solid rgba(217,178,95,.4);color:#f4ead3;font-family:inherit;text-transform:uppercase}
 #lobby .lb-join button{background:#1f6fd1;font-family:inherit;white-space:nowrap}
@@ -403,7 +410,7 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
   <div class="lb-tabs" role="tablist">
     <button class="lb-tab on" data-p="pOnline" role="tab"><b>ONLINE</b><small><i class="dot"></i><span class="js-onl">—</span> jogando</small></button>
   </div>
-  <section class="lb-panel on" id="pOnline"><div class="lb-rooms" id="lbRooms"><button class="lb-tile art" data-room="0"><span class="lb-tag">POPULAR</span><span class="lb-v">Grátis</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile" data-room="0.25"><span class="lb-v">R$ 0,25</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile" data-room="1"><span class="lb-v">R$ 1</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile" data-room="2"><span class="lb-v">R$ 2</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile" data-room="5"><span class="lb-v">R$ 5</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile" data-room="10"><span class="lb-v">R$ 10</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile" data-room="25"><span class="lb-v">R$ 25</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile" data-room="50"><span class="lb-v">R$ 50</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button></div></section>
+  <section class="lb-panel on" id="pOnline"><div class="lb-rooms" id="lbRooms"><button class="lb-tile art" data-room="0"><span class="lb-tag">POPULAR</span><span class="lb-v">Grátis</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="0.25"><span class="lb-v">R$ 0,25</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="1"><span class="lb-v">R$ 1</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="2"><span class="lb-v">R$ 2</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="5"><span class="lb-v">R$ 5</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="10"><span class="lb-v">R$ 10</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="25"><span class="lb-v">R$ 25</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="50"><span class="lb-v">R$ 50</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button></div></section>
   <div id="status"></div>
 </div>
 
