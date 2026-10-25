@@ -306,7 +306,7 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 .pav{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--gold);color:#010a22;font:800 14px system-ui,sans-serif;line-height:1}
 #prof{position:fixed;inset:0;z-index:25;display:none;place-items:center;overflow:auto;padding:20px 16px;background:rgba(5,12,8,.72);font-family:Georgia,"Times New Roman",serif;color:#f1e6cf}
 #prof.open{display:grid}
-#prof .pf-card{position:relative;width:100%;max-width:420px;padding:26px 26px 22px;border-radius:14px;border:1px solid rgba(217,178,95,.45);background:linear-gradient(180deg,#0f3a7a,#0a2554);box-shadow:0 18px 44px rgba(0,0,0,.6),inset 0 0 0 1px rgba(217,178,95,.08)}
+#prof .pf-card{position:relative;width:100%;max-width:460px;padding:26px 26px 22px;border-radius:14px;border:1px solid rgba(217,178,95,.45);background:linear-gradient(180deg,#0f3a7a,#0a2554);box-shadow:0 18px 44px rgba(0,0,0,.6),inset 0 0 0 1px rgba(217,178,95,.08)}
 #prof h2{margin:0 0 14px;text-align:center;font-size:24px;color:#f4d98f}
 #prof .pf-x{position:absolute;top:10px;right:10px;width:34px;height:34px;padding:0;border-radius:50%;background:transparent;border:1px solid rgba(217,178,95,.3);color:#d8cdb3;font:400 22px/1 system-ui,sans-serif}
 #prof .pf-x:hover{color:var(--gold);border-color:rgba(217,178,95,.7)}
@@ -400,6 +400,34 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #walToast.on{opacity:1}
 @media(max-width:900px){#lobby .lb-top{flex-wrap:wrap;row-gap:10px}#lobby .lb-r{flex-wrap:wrap;justify-content:flex-end}}
 @media(max-width:520px){#lobby .lb-r{flex:1 1 100%;flex-wrap:wrap;justify-content:space-between;row-gap:8px}#lobby .wl-bal{padding:0 9px;gap:6px;font-size:10px;letter-spacing:.6px}#lobby .wl-bal b{font-size:14px}#lobby .wl-btn{padding:0 10px;font-size:11px}#lobby .wl-gift{width:32px;height:32px}#lobby .lb-wal{gap:5px}}
+#lobby .lb-r{gap:6px}#lobby .lb-wal{gap:6px}
+
+/* ---------- perfil: dados pessoais + chave PIX ---------- */
+#prof .pf-form{margin:4px 0 6px;border-radius:12px;border:1px solid rgba(217,178,95,.22);background:rgba(0,0,0,.22);text-align:left;font-family:system-ui,sans-serif}
+#prof .pf-blk{padding:18px 18px 16px}
+#prof .pf-blk+.pf-blk{border-top:1px solid rgba(217,178,95,.16)}
+#prof .pf-h{margin:0 0 12px;font:700 11px system-ui,sans-serif;letter-spacing:1px;color:#98a39b}
+#prof .pf-form label{display:block;margin:12px 0 6px;font:700 13px system-ui,sans-serif;color:#f4ead3}
+#prof .pf-form label small{font-weight:500;color:#98a39b}
+#prof .pf-in{display:flex;align-items:center;border-radius:8px;background:#06132b;border:1px solid rgba(217,178,95,.28)}
+#prof .pf-in:focus-within{border-color:var(--gold);box-shadow:0 0 0 2px rgba(217,178,95,.22)}
+#prof .pf-in.bad{border-color:#ff7b6b}
+#prof .pf-in svg{flex:none;width:16px;height:16px;margin:0 8px 0 12px;fill:#7f9087}
+#prof .pf-in input{flex:1;min-width:0;background:transparent;border:0;padding:12px;font:15px system-ui,sans-serif;color:#f4ead3}
+#prof .pf-in input:focus-visible{outline:none}
+#prof .pf-in input::placeholder{color:#6f7f78}
+#prof .pf-hint{margin:6px 0 0;font:12.5px system-ui,sans-serif;color:#98a39b}
+#prof .pf-hint.bad{color:#ff9b8a}
+#prof .pf-pix{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#prof .pf-pix button{position:relative;display:flex;align-items:center;gap:10px;padding:14px;border-radius:10px;background:#06132b;border:1px solid rgba(217,178,95,.22);color:#d8cdb3;font:700 14px system-ui,sans-serif;cursor:pointer;text-align:left}
+#prof .pf-pix button svg{width:18px;height:18px;fill:currentColor}
+#prof .pf-pix button.on{border-color:#3dff8c;color:#fff;background:rgba(61,255,140,.08)}
+#prof .pf-pix button.on::after{content:"\2713";position:absolute;top:6px;right:10px;font-size:13px;color:#3dff8c}
+#prof .pf-pix button:disabled{opacity:.45;cursor:not-allowed}
+#prof .pf-submit{width:100%;margin-top:14px;padding:13px;border-radius:8px;border:1px solid rgba(120,255,170,.35);background:linear-gradient(180deg,#2fd06b,#13933f);color:#fff;font:800 14px system-ui,sans-serif;letter-spacing:1.5px;cursor:pointer}
+#prof .pf-submit:disabled{opacity:.5;cursor:default}
+#prof .pf-fmsg{min-height:16px;margin-top:8px;text-align:center;font:600 13px system-ui,sans-serif;color:#ff9b8a}
+#prof .pf-fmsg.ok{color:#3dff8c}
 </style>
 </head>
 <body>
@@ -435,7 +463,7 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 </div>
 
 <div id="lobby" style="display:none">
-  <header class="lb-top"><span class="lb-l"><span class="lb-brand">SINUQUINHA GOLD</span><span class="lb-wppw" id="wppWrap" hidden><button type="button" class="lb-wpp" id="wppBtn" title="WhatsApp" aria-label="WhatsApp" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg></button><a class="lb-wppmsg" id="wppLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Entrar no grupo do WhatsApp</a></span></span><span class="lb-r"><span class="lb-wal"><span class="wl-bal" title="Saldo"><span>SALDO</span><b id="walBal">R$ 0,00</b></span><button type="button" class="wl-gift" id="walGift" title="Presentes" aria-label="Presentes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-2.2A3 3 0 0 0 12 4.8 3 3 0 0 0 6.2 7H4a2 2 0 0 0-2 2v2a1 1 0 0 0 1 1h1v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7h1a1 1 0 0 0 1-1V9a2 2 0 0 0-2-2zm-5-1a1 1 0 1 1 0 2h-2V7a1 1 0 0 1 2-1zM9 6a1 1 0 0 1 1 1v1H8a1 1 0 0 1 1-2zM4 9h7v2H4zm2 4h5v7H6zm7 7v-7h5v7zm0-9V9h7v2z"/></svg></button><button type="button" class="wl-btn wl-dep" id="walDep">+ DEPÓSITO</button><button type="button" class="wl-btn wl-saq" id="walSaq">↑ SAQUE</button></span><span class="lb-on"><i class="dot"></i><b class="js-onl">—</b> online</span><button type="button" class="lb-chip" id="bProfile" aria-haspopup="dialog" title="Meu perfil"><span class="pav" id="chipAv">?</span><span id="chipNick"></span></button></span></header>
+  <header class="lb-top"><span class="lb-l"><span class="lb-brand">SINUQUINHA GOLD</span><span class="lb-wppw" id="wppWrap" hidden><button type="button" class="lb-wpp" id="wppBtn" title="WhatsApp" aria-label="WhatsApp" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg></button><a class="lb-wppmsg" id="wppLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Entrar no grupo do WhatsApp</a></span></span><span class="lb-r"><span class="lb-wal"><span class="wl-bal" title="Saldo"><span>SALDO</span><b id="walBal">R$ 0,00</b></span><button type="button" class="wl-gift" id="walGift" title="Presentes" aria-label="Presentes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-2.2A3 3 0 0 0 12 4.8 3 3 0 0 0 6.2 7H4a2 2 0 0 0-2 2v2a1 1 0 0 0 1 1h1v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7h1a1 1 0 0 0 1-1V9a2 2 0 0 0-2-2zm-5-1a1 1 0 1 1 0 2h-2V7a1 1 0 0 1 2-1zM9 6a1 1 0 0 1 1 1v1H8a1 1 0 0 1 1-2zM4 9h7v2H4zm2 4h5v7H6zm7 7v-7h5v7zm0-9V9h7v2z"/></svg></button><button type="button" class="wl-btn wl-dep" id="walDep">+ DEPÓSITO</button><button type="button" class="wl-btn wl-saq" id="walSaq">↑ SAQUE</button></span><button type="button" class="lb-chip" id="bProfile" aria-haspopup="dialog" title="Meu perfil"><span class="pav" id="chipAv">?</span><span id="chipNick"></span></button></span></header>
   <h1 class="lb-h"><img src="/rooms/logo.webp" alt="Jogue Sinuquinha Gold"></h1>
   <div class="lb-div"><span></span><i>◆</i><span></span></div>
   <input id="name" type="hidden">
@@ -453,6 +481,30 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
     <div class="pf-avw"><div class="pf-av" id="pfAv"></div><button type="button" class="pf-edit" id="pfEdit" aria-label="Editar avatar" title="Editar avatar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zm17.7-10.2a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button></div>
     <div class="pf-nick" id="pfNick"></div>
     <p class="pf-mail"><small>E-MAIL DA CONTA</small><span id="pfEmail"></span></p>
+    <form class="pf-form" id="pfForm" novalidate>
+      <div class="pf-blk">
+        <div class="pf-h">DADOS PESSOAIS</div>
+        <label for="pfName">Nome Completo</label>
+        <div class="pf-in" id="pfNameW"><input id="pfName" type="text" autocomplete="name" maxlength="80" placeholder="Digite seu nome completo"></div>
+        <label for="pfCpf">CPF</label>
+        <div class="pf-in" id="pfCpfW"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM9 8a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm4 8H5v-.5C5 13.8 7.4 13 9 13s4 .8 4 2.5zm6-2h-4v-2h4zm0-4h-4V8h4z"/></svg><input id="pfCpf" type="text" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="000.000.000-00"></div>
+        <p class="pf-hint" id="pfCpfH">Os 11 dígitos do seu CPF, o mesmo do documento.</p>
+        <label for="pfTel">Celular <small>(opcional)</small></label>
+        <div class="pf-in" id="pfTelW"><input id="pfTel" type="tel" inputmode="numeric" autocomplete="tel" maxlength="15" placeholder="(11) 99999-9999"></div>
+        <p class="pf-hint" id="pfTelH">Opcional. Pode ser usado como chave PIX para saques.</p>
+      </div>
+      <div class="pf-blk">
+        <div class="pf-h">CHAVE PIX</div>
+        <label style="margin-top:0">Chave PIX padrão</label>
+        <div class="pf-pix">
+          <button type="button" id="pxCpf" class="on" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM9 8a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm4 8H5v-.5C5 13.8 7.4 13 9 13s4 .8 4 2.5zm6-2h-4v-2h4zm0-4h-4V8h4z"/></svg>CPF</button>
+          <button type="button" id="pxTel" aria-pressed="false" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 1H7a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm-5 21a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm5-4H7V4h10z"/></svg>Celular</button>
+        </div>
+        <p class="pf-hint" id="pxH">Cadastre um celular acima para usá-lo como chave PIX.</p>
+        <button type="submit" class="pf-submit" id="pfFSave" disabled>SALVAR</button>
+        <div class="pf-fmsg" id="pfFMsg" role="status"></div>
+      </div>
+    </form>
     <div class="pf-sec">ESCOLHA SEU AVATAR</div>
     <div class="pf-grid" id="pfGrid"></div>
     <div class="pf-msg" id="pfMsg" role="status"></div>
@@ -1591,7 +1643,7 @@ const TEXSRC = {
     $('lgPass').autocomplete = r ? 'new-password' : 'current-password';
   }
   function finish(u) {                       // conta pronta (com apelido): vai para o lobby
-    acct = { email: u.email, nick: u.nick, avatar: u.avatar || null }; renderChip();
+    acct = { email: u.email, nick: u.nick, avatar: u.avatar || null, perfil: u.perfil || null }; renderChip();
     $('name').value = u.nick; $('name').readOnly = true;
     try { localStorage.setItem('sinuca-name', u.nick); } catch (e) {}
     L.style.display = 'none'; N.style.display = 'none'; $('lobby').style.display = 'flex';
@@ -1653,7 +1705,7 @@ const TEXSRC = {
     lastFocus = document.activeElement; $('prof').classList.remove('editing');
     pick = acct.avatar && acct.avatar.id ? acct.avatar.id : null;
     $('pfNick').textContent = acct.nick; $('pfEmail').textContent = acct.email; $('pfMsg').textContent = ''; $('pfMsg').classList.remove('ok');
-    paintPicker(); $('prof').classList.add('open'); $('pfClose').focus();
+    paintPicker(); fLoad(); $('prof').classList.add('open'); $('pfClose').focus();
   }
   function closeProf() { $('prof').classList.remove('open'); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
   $('bProfile').onclick = openProf;
@@ -1674,6 +1726,64 @@ const TEXSRC = {
       if (x.status === 401) { closeProf(); showLogin(); } else { $('pfMsg').textContent = x.message; paintPicker(); }
     }
   };
+  // ---- dados pessoais + chave PIX ----
+  const onlyD = v => String(v || '').replace(/\D/g, '');
+  const fmtCpf = v => { const d = onlyD(v).slice(0, 11); return d.replace(/^(\d{3})(\d)/, '$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1-$2'); };
+  const fmtTel = v => { const d = onlyD(v).slice(0, 11); return d.length <= 2 ? (d ? '(' + d : '') : d.length <= 6 ? '(' + d.slice(0, 2) + ') ' + d.slice(2) : d.length <= 10 ? '(' + d.slice(0, 2) + ') ' + d.slice(2, 6) + '-' + d.slice(6) : '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7); };
+  function cpfOk(c) {
+    c = onlyD(c); if (c.length !== 11 || /^(\d)\1{10}$/.test(c)) return false;
+    for (const n of [9, 10]) { let t = 0; for (let i = 0; i < n; i++) t += +c[i] * (n + 1 - i); if ((t * 10 % 11) % 10 !== +c[n]) return false; }
+    return true;
+  }
+  const telOk = t => { t = onlyD(t); return t.length === 11 && t[2] === '9' && +t.slice(0, 2) >= 11; };
+  const nameOk = n => n.trim().split(/\s+/).filter(x => x.length > 1).length >= 2 && n.trim().length <= 80;
+  let pix = 'cpf', base = '';
+  const pkey = () => 'sq_perfil_' + (acct ? acct.email : '');
+  const snap = () => JSON.stringify([$('pfName').value.trim(), onlyD($('pfCpf').value), onlyD($('pfTel').value), pix]);
+  function fCheck(show) {
+    const n = $('pfName').value, c = $('pfCpf').value, t = $('pfTel').value, d = onlyD(t);
+    const eN = n.trim() && !nameOk(n), eC = c && !cpfOk(c), eT = t && !telOk(t);
+    const tOk = telOk(t); if (!tOk && pix === 'tel') pix = 'cpf';
+    $('pxTel').disabled = !tOk; $('pxCpf').classList.toggle('on', pix === 'cpf'); $('pxTel').classList.toggle('on', pix === 'tel');
+    $('pxCpf').setAttribute('aria-pressed', pix === 'cpf'); $('pxTel').setAttribute('aria-pressed', pix === 'tel');
+    $('pxH').textContent = tOk ? 'Os saques serão enviados para a chave escolhida.' : 'Cadastre um celular acima para usá-lo como chave PIX.';
+    $('pfNameW').classList.toggle('bad', !!(show && eN)); $('pfCpfW').classList.toggle('bad', !!(show && eC)); $('pfTelW').classList.toggle('bad', !!(show && eT));
+    $('pfCpfH').classList.toggle('bad', !!(show && eC)); $('pfCpfH').textContent = show && eC ? 'CPF inválido. Confira os 11 dígitos.' : 'Os 11 dígitos do seu CPF, o mesmo do documento.';
+    $('pfTelH').classList.toggle('bad', !!(show && eT)); $('pfTelH').textContent = show && eT ? 'Use DDD + 9 dígitos, ex.: (11) 99999-9999.' : 'Opcional. Pode ser usado como chave PIX para saques.';
+    const ok = nameOk(n) && cpfOk(c) && (!t || tOk);
+    $('pfFSave').disabled = !(ok && snap() !== base);
+    return ok;
+  }
+  function fLoad() {
+    let d = (acct && acct.perfil) || null;
+    if (!d) { try { d = JSON.parse(localStorage.getItem(pkey()) || 'null'); } catch (e) {} }
+    d = d || {};
+    $('pfName').value = d.nome || ''; $('pfCpf').value = fmtCpf(d.cpf); $('pfTel').value = fmtTel(d.celular); pix = d.pix === 'tel' ? 'tel' : 'cpf';
+    $('pfFMsg').textContent = ''; $('pfFMsg').classList.remove('ok'); fCheck(false); base = snap(); fCheck(false);
+  }
+  $('pfCpf').addEventListener('input', () => { $('pfCpf').value = fmtCpf($('pfCpf').value); fCheck(false); });
+  $('pfTel').addEventListener('input', () => { $('pfTel').value = fmtTel($('pfTel').value); fCheck(false); });
+  $('pfName').addEventListener('input', () => fCheck(false));
+  for (const id of ['pfName', 'pfCpf', 'pfTel']) $(id).addEventListener('blur', () => fCheck(true));
+  $('pxCpf').onclick = () => { pix = 'cpf'; fCheck(false); };
+  $('pxTel').onclick = () => { if (telOk($('pfTel').value)) { pix = 'tel'; fCheck(false); } };
+  $('pfForm').addEventListener('submit', async e => {
+    e.preventDefault(); if (!fCheck(true)) { $('pfFMsg').classList.remove('ok'); $('pfFMsg').textContent = 'Revise os campos em vermelho.'; return; }
+    const body = { nome: $('pfName').value.trim().replace(/\s+/g, ' '), cpf: onlyD($('pfCpf').value), celular: onlyD($('pfTel').value), pix };
+    $('pfFSave').disabled = true; $('pfFMsg').classList.remove('ok'); $('pfFMsg').textContent = '';
+    try {
+      let how = '';
+      try { await api('perfil', body); acct.perfil = body; how = 'Dados salvos!'; }
+      catch (x) {
+        if (x.status !== 404) throw x;     // servidor ainda sem a rota /api/perfil: guarda neste aparelho
+        try { localStorage.setItem(pkey(), JSON.stringify(body)); } catch (z) {}
+        acct.perfil = body; how = 'Dados salvos neste aparelho.';
+      }
+      base = snap(); fCheck(false); $('pfFMsg').classList.add('ok'); $('pfFMsg').textContent = how;
+    } catch (x) {
+      if (x.status === 401) { closeProf(); showLogin(); } else { $('pfFMsg').textContent = x.message; fCheck(false); }
+    }
+  });
   window.__needLogin = showLogin;            // o servidor pediu login (sessao expirou): volta para a tela de entrada
   $('lgTop').onclick = () => mode(!reg);
   $('lgAlt').onclick = () => mode(!reg);
