@@ -706,6 +706,35 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
   </div>
 </div>
 
+<style id="searchCss">
+#search{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,6,18,.6);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+#search.on{display:flex}
+#search .sr-card{width:min(460px,100%);box-sizing:border-box;padding:22px 24px 20px;border-radius:14px;background:linear-gradient(180deg,rgba(20,50,43,.97),rgba(9,27,23,.98));border:1px solid rgba(120,205,165,.3);box-shadow:0 18px 50px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.03);color:#e9efe4;font-family:Georgia,"Times New Roman",serif;text-align:center}
+#search .sr-top{display:flex;align-items:center;justify-content:center;gap:12px}
+#search .sr-spin{flex:none;width:22px;height:22px;box-sizing:border-box;border-radius:50%;border:3px solid rgba(255,255,255,.13);border-top-color:#58e0b0;border-right-color:rgba(88,224,176,.45);animation:srspin .85s linear infinite}
+#search .sr-t{font-weight:700;font-size:20px;letter-spacing:.2px}
+#search .sr-dots{display:inline-flex;gap:4px;margin-left:2px}
+#search .sr-dots i{width:5px;height:5px;border-radius:50%;background:#58e0b0;opacity:.25;animation:srdot 1.2s ease-in-out infinite}
+#search .sr-dots i:nth-child(2){animation-delay:.2s}#search .sr-dots i:nth-child(3){animation-delay:.4s}
+#search .sr-room{margin:12px 0 0;font:600 13px system-ui,sans-serif;color:#d9b25f;letter-spacing:.3px;min-height:16px}
+#search .sr-hint{margin:14px 0 20px;min-height:42px;font-weight:700;font-size:15px;line-height:1.4;color:#dfe8dc;transition:opacity .35s}
+#search .sr-hint.fade{opacity:0}
+#search .sr-x{display:block;width:100%;box-sizing:border-box;padding:12px 10px;border-radius:9px;border:1px solid rgba(160,220,195,.28);background:rgba(255,255,255,.05);color:#e9efe4;font:700 13px Georgia,"Times New Roman",serif;letter-spacing:2px;cursor:pointer}
+#search .sr-x:hover{background:rgba(255,255,255,.1)}
+#search .sr-x:focus-visible{outline:2px solid #58e0b0;outline-offset:2px}
+@keyframes srspin{to{transform:rotate(360deg)}}
+@keyframes srdot{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@media (prefers-reduced-motion:reduce){#search .sr-spin{animation-duration:2.4s}#search .sr-hint{transition:none}}
+</style>
+<div id="search" role="dialog" aria-modal="true" aria-label="Procurando partida">
+  <div class="sr-card">
+    <div class="sr-top"><span class="sr-spin" aria-hidden="true"></span><span class="sr-t">Procurando partida</span><span class="sr-dots" aria-hidden="true"><i></i><i></i><i></i></span></div>
+    <p class="sr-room" id="srRoom"></p>
+    <p class="sr-hint" id="srHint"></p>
+    <button type="button" class="sr-x" id="srCancel">CANCELAR</button>
+  </div>
+</div>
+
 <div id="game">
   <div class="bar">
     <div class="pl on" id="p0"><span class="av" id="a0">J</span><div class="who"><b id="n0">Jogador 1</b><small id="g0">mesa aberta</small></div><div class="ico" id="i0"></div></div>
@@ -910,7 +939,7 @@ function onMsg(m) {
   else if (m.t === 'saldo') { if (window.setSaldo) window.setSaldo(m.v); }
   else if (m.t === 'online') { document.querySelectorAll('.js-onl').forEach(e => { e.textContent = m.n; }); }
 }
-function showLobby() { hideEnd(); $('spinPop').classList.remove('open'); $('game').style.display = 'none'; $('game').classList.remove('fs'); document.body.classList.remove('fs'); $('lobby').style.display = 'flex'; }
+function showLobby() { hideSearch(); hideEnd(); $('spinPop').classList.remove('open'); $('game').style.display = 'none'; $('game').classList.remove('fs'); document.body.classList.remove('fs'); $('lobby').style.display = 'flex'; }
 function showGame() { hideEnd(); $('lobby').style.display = 'none'; $('game').style.display = 'flex'; $('status').textContent = ''; $('bAgain').style.display = 'none'; layout(); }
 
 const gname = g => g === 'solid' ? 'lisas (1–7)' : g === 'stripe' ? 'listradas (9–15)' : 'mesa aberta';
@@ -1012,7 +1041,43 @@ $('bAgain').onclick = () => send({ t: 'again' });
 $('bLeave').onclick = () => send({ t: 'leave' });
 // entrar numa sala: o seu perfil aparece no card (e o contador sobe). Clicar de novo no card, na tela ou apertar Esc sai da sala.
 let myRoom = null;
+// ---------- janela "Procurando partida": circulo girando, dicas e som ----------
+var srTimer = null, srHintTimer = null, srHintI = 0;
+var SR_HINTS = [
+  'O primeiro toque da branca tem que ser em uma bola do seu grupo',
+  'Você tem 20 segundos para cada jogada',
+  'Encaçape todas as bolas do seu grupo antes de tentar a bola 8',
+  'Encaçapar a bola 8 antes da hora faz você perder a partida',
+  'Se a bola branca cair na caçapa, é falta'
+];
+function srPing() {   // pulso suave de "buscando": um "blip" curto que sobe de tom (sem arquivo de som)
+  if (!AC || muted) return;
+  try {
+    const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(587, t); o.frequency.exponentialRampToValueAtTime(880, t + .16);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.07, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .5);
+    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + .55);
+  } catch (e) {}
+}
+function srShowHint() { const h = $('srHint'); h.classList.add('fade'); setTimeout(() => { h.textContent = SR_HINTS[srHintI % SR_HINTS.length]; srHintI++; h.classList.remove('fade'); }, 350); }
+function showSearch(room) {
+  const r = Number(room);
+  $('srRoom').textContent = r > 0 ? 'Sala ' + r.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) + ' · sua aposta fica reservada' : 'Sala grátis';
+  $('srHint').textContent = SR_HINTS[0]; srHintI = 1;
+  $('search').classList.add('on');
+  try { audio(); } catch (e) {}
+  srPing();
+  clearInterval(srTimer); srTimer = setInterval(srPing, 1700);
+  clearInterval(srHintTimer); srHintTimer = setInterval(srShowHint, 6000);
+  try { $('srCancel').focus({ preventScroll: true }); } catch (e) {}
+}
+function hideSearch() {
+  clearInterval(srTimer); srTimer = null; clearInterval(srHintTimer); srHintTimer = null;
+  const el = $('search'); if (el) el.classList.remove('on');
+}
+$('srCancel').onclick = () => leaveRoom();
 function clearMine() {
+  hideSearch();
   if (!myRoom) return;
   const t = document.querySelector('#lbRooms .lb-tile[data-room="' + myRoom + '"]');
   myRoom = null;
@@ -1030,6 +1095,7 @@ function setMine(room) {
   av.appendChild(i); t.appendChild(av);
   const n = t.querySelector('.rn'); if (n && !(+n.textContent >= 1)) n.textContent = 1;
   t.classList.add('hot');
+  showSearch(room);
 }
 function leaveRoom() { if (!myRoom) return; clearMine(); send({ t: 'leave' }); }
 document.querySelectorAll('#lbRooms .lb-tile').forEach(t => { t.onclick = e => {
