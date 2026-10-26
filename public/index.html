@@ -819,7 +819,15 @@ function loadHit() {
       return b;
     };
     SND.ball = mk(.32, () => { let y = 0; return t => { y += .55 * (rn() - y); return att(t) * (2.6 * y * Math.exp(-t / .003) + modes(t, [[2400, .7, .014], [3600, .5, .009], [1400, .5, .024], [5600, .3, .005], [900, .3, .03]]) + .25 * Math.sin(TAU * 190 * t) * Math.exp(-t / .018)); }; });
-    SND.cush = mk(.3, () => { let y = 0; return t => { y += .08 * (rn() - y); return att(t) * (1.8 * y * Math.exp(-t / .011) + modes(t, [[150, .7, .05], [420, .3, .025], [95, .35, .07]])); }; });
+    // tabela = "tuf!" de batida no microfone: pancada grave que cai de tom rapido (160 -> 55 Hz) + sopro abafado, curto e sem agudo
+    SND.cush = mk(.16, () => { let y = 0; return t => {
+      y += .035 * (rn() - y);                                                        // ruido bem abafado (o "sopro" do microfone)
+      const ph = TAU * (55 * t + 105 * .022 * (1 - Math.exp(-t / .022)));            // fase da senoide que desce de 160 para 55 Hz
+      const thump = Math.sin(ph) * Math.exp(-t / .035);                              // o corpo do "tuf"
+      const pop = 3.2 * y * Math.exp(-t / .012);                                     // o "t" macio do comeco
+      const boom = .25 * Math.sin(TAU * 230 * t) * Math.exp(-t / .012);              // um pouquinho de corpo no meio
+      return Math.min(1, t / .0012) * (thump + pop + boom);
+    }; });
     SND.pot = mk(.7, () => {
       let y = 0, z = 0;
       return t => {
@@ -832,7 +840,7 @@ function loadHit() {
     SND.cue = mk(.2, () => { let y = 0; return t => { y += .6 * (rn() - y); return att(t) * (.8 * y * Math.exp(-t / .0009) + modes(t, [[3300, .6, .006], [900, .5, .015], [220, .45, .016]])); }; });
   } catch (e) {}
 }
-const lastK = {}, BASEG = { ball: 1, cush: .85, pot: .9, cue: 1 };
+const lastK = {}, BASEG = { ball: 1, cush: 1, pot: .9, cue: 1 };
 function hit(v, k = 'ball') {
   if (!AC || muted) return;
   const buf = k === 'ball' ? BALL_BUF : SND[k]; if (!buf) return;   // bola x bola usa so o arquivo enviado (nunca o sintetizado)
@@ -841,7 +849,7 @@ function hit(v, k = 'ball') {
   const src = AC.createBufferSource(), g = AC.createGain(), lp = AC.createBiquadFilter();
   src.buffer = buf; src.playbackRate.value = k === 'ball' ? 1 : .95 + Math.random() * .10;      // leve variacao para nao soar repetido
   g.gain.value = BASEG[k] * (.22 + v * .78);                                  // batida mais forte = mais alto
-  lp.type = 'lowpass'; lp.frequency.value = k === 'ball' ? 22000 : k === 'cue' ? 2200 + v * 14000 : 9000;   // batida fraca = mais abafada
+  lp.type = 'lowpass'; lp.frequency.value = k === 'ball' ? 22000 : k === 'cue' ? 2200 + v * 14000 : k === 'cush' ? 1500 : 9000;   // batida fraca = mais abafada
   src.connect(lp); lp.connect(g); g.connect(AC.destination); src.start(t);
 }
 // ---------- sons gravados (arquivos embutidos) ----------
