@@ -1161,7 +1161,7 @@ function shootNow() { if (!canShoot()) return; if (aimPow < .025) { aimPow = .02
 const fire = (ux, uy, d) => {
   const pw = Math.min(d, 160) / 160;
   lastShot = { ux, uy, off: R + 5 + pw * 55, t: performance.now() };
-  cueFired = performance.now(); hit(.35 + pw * .65, 'cue');
+  cueFired = performance.now();   // (sem som na tacada)
   const bar = Math.max(0, (pw - .02) / .98);   // numero da barra (0 a 1): o servidor deixa a velocidade da bola proporcional a ele
   if (!solo) send({ t: 'aim', a: +Math.atan2(uy, ux).toFixed(4), p: +pw.toFixed(3) });   // o adversario ve a ultima posicao do taco
   send({ t: 'shot', vx: ux * bar * 9, vy: uy * bar * 9, sx: eff[0], sy: eff[1] });
@@ -1685,7 +1685,7 @@ function sync(m) {
     const d = D[i], vx = b[1] - d.lx, vy = b[2] - d.ly, sp = Math.hypot(vx, vy);
     if (b[3] && d.act) {
       if (sp - d.lsp > 1.3) {
-        if (i === 0 && d.lsp < .5) { if (performance.now() - cueFired > 400) hit(sp / 9, 'cue'); }   // tacada (ja tocou na hora de tacar)
+        if (i === 0 && d.lsp < .5) { /* tacada: sem som */ }
         else hit((sp - d.lsp) / 9, 'ball');
       } else if (sp > 1 && (vx * d.lvx < -.5 || vy * d.lvy < -.5)) hit(sp / 14, 'cush');
     }
