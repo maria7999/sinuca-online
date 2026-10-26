@@ -725,6 +725,10 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #falta{position:absolute;inset:0;z-index:6;display:none;align-items:center;justify-content:center;pointer-events:none;font:900 min(11vw,19vh)/1 Impact,"Arial Black",system-ui,sans-serif;letter-spacing:.04em;color:#e8584a;-webkit-text-stroke:max(2px,.02em) #1a0a08;paint-order:stroke fill;text-shadow:0 .04em 0 rgba(0,0,0,.35)}
 #falta.on{display:flex;animation:faltaPop 2.3s ease-out forwards}
 @keyframes faltaPop{0%{opacity:0;transform:scale(.55)}10%{opacity:.95;transform:scale(1.08)}18%{transform:scale(1)}78%{opacity:.95}100%{opacity:0;transform:scale(1)}}
+#vez{position:absolute;inset:0;z-index:6;display:none;align-items:center;justify-content:center;text-align:center;pointer-events:none;font:900 min(6.5vw,11vh)/1.05 Impact,"Arial Black",system-ui,sans-serif;letter-spacing:.04em;color:#f2c200;-webkit-text-stroke:max(2px,.02em) #1a1203;paint-order:stroke fill;text-shadow:0 .04em 0 rgba(0,0,0,.35)}
+#vez.opp{color:#9cc4ff;-webkit-text-stroke-color:#07121f}
+#vez.on{display:flex;animation:vezPop 1.7s ease-out forwards}
+@keyframes vezPop{0%{opacity:0;transform:scale(.6)}12%{opacity:.95;transform:scale(1.06)}22%{transform:scale(1)}75%{opacity:.95}100%{opacity:0;transform:scale(1)}}
 @keyframes srspin{to{transform:rotate(360deg)}}
 @keyframes srdot{0%,80%,100%{opacity:.25}40%{opacity:1}}
 @media (prefers-reduced-motion:reduce){#search .sr-spin{animation-duration:2.4s}#search .sr-hint{transition:none}}
@@ -749,6 +753,7 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
       <div id="pwbox"><div id="pw" role="meter" aria-label="Força da tacada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="pwf"></i></div><span id="pwn">0</span></div>
     </div>
     <div id="falta" aria-hidden="true">FALTA!</div>
+    <div id="vez" aria-hidden="true"></div>
     <div id="tw"><canvas id="c" width="1648" height="848"></canvas></div>
     <div id="right"><canvas id="rail" width="80" height="760" aria-label="Bolas encaçapadas"></canvas></div>
     <div id="spinPop" role="dialog" aria-label="Efeito na bola branca">
@@ -933,6 +938,7 @@ function onMsg(m) {
     clkEnd = m.tl != null && !m.moving && !m.over ? performance.now() + m.tl : 0;
     if (m.tl != null && !m.moving) turnTotal = Math.max(turnTotal, m.tl);
     if (lastTurn !== null && m.turn !== lastTurn && !m.over) playTurn();
+    if (!solo && !m.over && (lastTurn === null || m.turn !== lastTurn)) { clearTimeout(vezTimer); vezTimer = setTimeout(showVez, m.scr ? 1500 : 0); }   // se deu FALTA!, espera ela sumir
     lastTurn = m.turn;
     if (m.m) $('msg').textContent = m.m;
     updateUI();
@@ -956,6 +962,19 @@ function onMsg(m) {
   else if (m.t === 'online') { document.querySelectorAll('.js-onl').forEach(e => { e.textContent = m.n; }); }
 }
 function showLobby() { hideSearch(); hideEnd(); $('spinPop').classList.remove('open'); $('game').style.display = 'none'; $('game').classList.remove('fs'); document.body.classList.remove('fs'); $('lobby').style.display = 'flex'; }
+// Mensagem grande no meio da mesa quando a vez muda: "SUA VEZ!" (dourado) ou "VEZ DO ADVERSÁRIO" (azul).
+// Para NAO mostrar o "SUA VEZ!" (so o do adversario), troque VEZ_AVISA_MINHA para false.
+const VEZ_AVISA_MINHA = true;
+let vezTimer = 0;
+function showVez() {
+  if (solo || !S || S.over) return;
+  const el = $('vez'); if (!el) return;
+  const mine = S.turn === seat;
+  if (mine && !VEZ_AVISA_MINHA) return;
+  el.textContent = mine ? 'SUA VEZ!' : 'VEZ DO ADVERSÁRIO';
+  el.classList.toggle('opp', !mine);
+  el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+}
 function showFalta() {   // "FALTA!" vermelho grande na mesa quando a branca e encacapada
   const el = $('falta'); if (!el) return;
   el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
