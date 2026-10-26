@@ -911,7 +911,8 @@ function onMsg(m) {
   if (m.t === 'wait') { /* sem texto: o seu perfil ja aparece no card da sala */ }
   else if (m.t === 'error') { clearMine(); $('status').textContent = m.m; }
   else if (m.t === 'needlogin') { clearMine(); if (window.__needLogin) window.__needLogin(); }
-  else if (m.t === 'match') { clearMine(); SIM = null; seat = m.seat; solo = !!m.solo; S = null; D = null; potted = []; lastTurn = null; showGame(); }
+  else if (m.t === 'match') { clearMine(); SIM = null; seat = m.seat; solo = !!m.solo; S = null; D = null; potted = []; lastTurn = null; oppAim = null; aimSent = null; showGame(); }
+  else if (m.t === 'aim') { oppAimMsg(m); }
   else if (m.t === 'state') {
     S = m; sync(m); simSync(m);
     clkEnd = m.tl != null && !m.moving && !m.over ? performance.now() + m.tl : 0;
@@ -1143,6 +1144,7 @@ const fire = (ux, uy, d) => {
   lastShot = { ux, uy, off: R + 5 + pw * 55, t: performance.now() };
   cueFired = performance.now(); hit(.35 + pw * .65, 'cue');
   const bar = Math.max(0, (pw - .02) / .98);   // numero da barra (0 a 1): o servidor deixa a velocidade da bola proporcional a ele
+  if (!solo) send({ t: 'aim', a: +Math.atan2(uy, ux).toFixed(4), p: +pw.toFixed(3) });   // o adversario ve a ultima posicao do taco
   send({ t: 'shot', vx: ux * bar * 9, vy: uy * bar * 9, sx: eff[0], sy: eff[1] });
   aimPow = .02;   // depois da tacada a forca volta para 0
 };
@@ -1198,6 +1200,55 @@ document.addEventListener('keydown', e => {
     const a = Math.atan2(aim[1], aim[0]) + (k === 'ArrowLeft' ? -st : st); aim = [Math.cos(a), Math.sin(a)]; e.preventDefault();
   } else if (k === 'ArrowUp' || k === 'ArrowDown') { setPow(aimPow + (k === 'ArrowDown' ? .02 : -.02)); e.preventDefault(); }
 });
+
+// ---------- taco e mira do adversario ----------
+// Na sua vez, o angulo e a forca da mira sao enviados ao servidor (~20x por segundo, so quando mudam).
+// O servidor repassa ao adversario como {t:'aim', a, p}; aqui a gente recebe a mira dele e desenha o taco e a linha dele.
+const angD = (a, b) => { let d = a - b; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
+let oppAim = null;          // { a, p: alvo recebido; ca, cp: o que esta sendo mostrado (suavizado); t: ultima atualizacao; ft: ultimo frame }
+let aimSent = null, aimSentT = 0, prevMov = false;
+function oppAimMsg(m) {
+  if (solo || !S || S.over || S.moving || S.turn === seat) return;   // so vale na vez dele, com a bola parada
+  const a = Number(m.a), p = Number(m.p);
+  if (!isFinite(a) || !isFinite(p)) return;
+  const pp = Math.max(.02, Math.min(1, p)), now = performance.now();
+  if (!oppAim) oppAim = { a, p: pp, ca: a, cp: pp, t: now, ft: now };
+  else { oppAim.a = a; oppAim.p = pp; oppAim.t = now; }
+}
+setInterval(() => {
+  if (solo || !ws || ws.readyState !== 1 || !canShoot() || !D || !D[0].act) { aimSent = null; return; }
+  const a = Math.atan2(aim[1], aim[0]), p = aimPow, now = performance.now();
+  if (aimSent && Math.abs(angD(a, aimSent.a)) < .0007 && Math.abs(p - aimSent.p) < .004 && now - aimSentT < 500) return;   // nada mudou (reenvia a cada 0,5 s so para manter vivo)
+  aimSent = { a, p }; aimSentT = now;
+  try { ws.send(JSON.stringify({ t: 'aim', a: +a.toFixed(4), p: +p.toFixed(3) })); } catch (e) {}
+}, 50);
+function drawOppAim(c) {
+  const mv = !!(S && S.moving), now = performance.now();
+  // quando a bola comeca a andar na vez dele, o taco dele faz a tacada (mesma animacao da sua)
+  if (mv && !prevMov && oppAim && !solo && S.turn !== seat && now - oppAim.t < 3000)
+    lastShot = { ux: Math.cos(oppAim.ca), uy: Math.sin(oppAim.ca), off: R + 5 + oppAim.cp * 55, t: now };
+  prevMov = mv;
+  if (!oppAim) return;
+  if (solo || !S || S.over || mv || S.turn === seat || !c.act) { oppAim = null; return; }
+  if (now - oppAim.t > 3000) return;   // sem noticias dele ha muito tempo: esconde ate chegar algo novo
+  const k = 1 - Math.exp(-Math.min(100, now - oppAim.ft) / 55); oppAim.ft = now;   // suaviza: chega ~20x/s, a tela roda a 60
+  oppAim.ca += angD(oppAim.a, oppAim.ca) * k; oppAim.cp += (oppAim.p - oppAim.cp) * k;
+  const ux = Math.cos(oppAim.ca), uy = Math.sin(oppAim.ca);
+  const r = ray(c, ux, uy), gx = c.x + ux * r.t, gy = c.y + uy * r.t;
+  ctx.save();
+  ctx.lineWidth = 1.4; ctx.lineCap = 'butt'; ctx.strokeStyle = 'rgba(255,255,255,.8)';
+  ctx.beginPath(); ctx.moveTo(c.x + ux * R, c.y + uy * R); ctx.lineTo(gx, gy); ctx.stroke();
+  ctx.beginPath(); ctx.arc(gx, gy, R, 0, 7); ctx.stroke();
+  if (r.hit >= 0) {
+    const b = D[r.hit];
+    let nx = b.x - gx, ny = b.y - gy; const nl = Math.hypot(nx, ny) || 1; nx /= nl; ny /= nl;
+    ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x + nx * 70, b.y + ny * 70); ctx.stroke();
+    const dt = ux * nx + uy * ny; let tx = ux - dt * nx, ty = uy - dt * ny; const tl = Math.hypot(tx, ty);
+    if (tl > .05) { tx /= tl; ty /= tl; ctx.strokeStyle = 'rgba(255,255,255,.36)'; ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + tx * 38 * tl, gy + ty * 38 * tl); ctx.stroke(); }
+  }
+  ctx.restore();
+  cue(c.x, c.y, ux, uy, R + 5 + oppAim.cp * 55);
+}
 
 // ---------- mesa (desenhada uma vez) ----------
 const TB = document.createElement('canvas'); TB.width = CW * SC; TB.height = CH * SC;
@@ -1849,6 +1900,7 @@ function frame() {
       const e = (performance.now() - lastShot.t) / 130;
       if (e < 1) cue(c.x, c.y, lastShot.ux, lastShot.uy, lastShot.off + (R + 1 - lastShot.off) * e); else lastShot = null;
     }
+    drawOppAim(c);   // vez do adversario: o taco e a linha de mira dele
   }
   const key = (D ? potted.join() : '') + (railVert ? 'v' : 'h');
   const railMoving = railStep(performance.now());
