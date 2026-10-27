@@ -1533,9 +1533,54 @@ window.__ckCounts = m => {
   }
   // ---- mao manual em lugares fixos: 3 grupos de 3 cartas com um espaco entre eles (+ 1 lugar extra a direita para a carta comprada).
   //      Cada carta ocupa um lugar; arrastar uma carta para outro lugar TROCA as duas. Nada se junta nem escorrega para o lado. ----
-  const hxOf = i => i >= 9 ? 27.3 + 1.5 + 4.8 : -27.3 + Math.floor(i / 3) * 18.7 + (i % 3) * 3.8 + 4.8;   // centro do lugar i (cqw a partir do meio)
-  const nearSlot = (hx, n) => { let b = 0; for (let i = 1; i < n; i++) if (Math.abs(hxOf(i) - hx) < Math.abs(hxOf(b) - hx)) b = i; return b; };
-  function dropHand(c) { const i = hand.indexOf(c); if (i < 0) return; if (i < 9 && hand.length > 9) hand[i] = hand.pop(); else hand.splice(i, 1); }   // carta sai: a do lugar extra ocupa o buraco, o resto nao muda
+  // mao em GRUPOS de tamanho livre (gsz = tamanho de cada grupo, na ordem de `hand`). Arrastar uma carta para o meio de um grupo ENCAIXA ela ali (o grupo cresce);
+  // soltar no vao entre grupos / nas pontas cria um grupo novo. Ao descartar, o grupo encolhe e grupos vazios somem. Carta comprada entra como grupo avulso a direita.
+  const STEP = 3.8, GAP = 11.1;
+  let gsz = [];
+  function fixSizes() {                                     // rede de seguranca: tamanhos precisam somar o total da mao
+    if (gsz.reduce((a, b) => a + b, 0) === hand.length && gsz.every(v => v > 0)) return;
+    gsz = []; for (let i = 0; i < hand.length; i += 3) gsz.push(Math.min(3, hand.length - i));
+    if (hand.length === 10) { gsz = [4, 3, 3]; }
+  }
+  function xsOf(sz) {                                       // centro x (cqw a partir do meio) de cada carta para os tamanhos sz
+    const xs = []; let x = 0;
+    sz.forEach((n, g) => { for (let k = 0; k < n; k++) { if (xs.length) x += k ? STEP : GAP; xs.push(x); } });
+    const off = -(xs[xs.length - 1] || 0) / 2;
+    return xs.map(v => v + off);
+  }
+  const handXs = () => { fixSizes(); return xsOf(gsz); };
+  const hxOf = i => handXs()[i];
+  const nearSlot = (hx, n) => { const xs = handXs(); let b = 0; for (let i = 1; i < Math.min(n, xs.length); i++) if (Math.abs(xs[i] - hx) < Math.abs(xs[b] - hx)) b = i; return b; };
+  function pushHand(o) {                                    // carta nova na mao: ao montar a mao inicial agrupa de 3 em 3; depois entra como grupo avulso
+    fixSizes();
+    if (hand.length < 9) { if (gsz.length && gsz[gsz.length - 1] < 3) gsz[gsz.length - 1]++; else gsz.push(1); hand.push(o); }
+    else { hand.splice(gsz[0], 0, o); gsz[0]++; }            // carta comprada ja nasce junto das outras, no fim do 1o grupo (fica com 4)
+  }
+  function dropHand(c) {
+    fixSizes(); const i = hand.indexOf(c); if (i < 0) return;
+    let g = 0, acc = 0; while (acc + gsz[g] <= i) acc += gsz[g++];
+    hand.splice(i, 1); gsz[g]--; if (!gsz[g]) gsz.splice(g, 1);
+    fixSizes();
+  }
+  function moveHand(c, hx) {                                // solta c perto de hx: encaixa no grupo mais proximo (ou cria grupo novo no vao)
+    fixSizes(); const i = hand.indexOf(c); if (i < 0) return;
+    let g = 0, acc = 0; while (acc + gsz[g] <= i) acc += gsz[g++];
+    const rest = hand.filter(x => x !== c), rs = gsz.slice(); rs[g]--; const restSz = rs.filter(v => v > 0);
+    const bounds = [0]; restSz.forEach(n => bounds.push(bounds[bounds.length - 1] + n));      // limites de grupo em indices de `rest`
+    let best = null;
+    for (let p = 0; p <= rest.length; p++) {
+      const gi = bounds.indexOf(p), opts = [];                                                // opcoes de tamanhos resultantes inserindo em p
+      if (gi < 0) { let q = 0; while (bounds[q + 1] <= p) q++; const z = restSz.slice(); z[q]++; opts.push(z); }   // no meio de um grupo
+      else {
+        if (gi > 0) { const z = restSz.slice(); z[gi - 1]++; opts.push(z); }                  // entra no fim do grupo anterior
+        if (gi < restSz.length) { const z = restSz.slice(); z[gi]++; opts.push(z); }          // entra no inicio do proximo
+        const z = restSz.slice(); z.splice(gi, 0, 1); opts.push(z);                           // grupo novo
+      }
+      for (const z of opts) { const xs = xsOf(z), d = Math.abs(xs[p] - hx); if (!best || d < best.d - 1e-6) best = { d, p, z }; }
+    }
+    if (!best) return;
+    rest.splice(best.p, 0, c); hand.length = 0; rest.forEach(x => hand.push(x)); gsz = best.z; fixSizes();
+  }
   let dragC = null, drag = null, noClickUntil = 0;
   function canBater() { return phase === 'discard' && hand.length === 10 && hand.some(c => groupsOf(hand.filter(x => x !== c)).rest.length === 0); }
   function layout() {
@@ -1543,10 +1588,10 @@ window.__ckCounts = m => {
     deck.forEach((c, i) => { const k = n - 1 - i, kk = Math.min(k, 4); place(c, 'calc(' + DX + '% - ' + (kk * .3) + 'cqw)', 'calc(' + DY + '% - ' + (kk * .3) + 'cqw)', 0, 10 + (n - k), false, k === 0 && myDraw ? 'pick' : ''); });
     if (vira) place(vira, 'calc(' + DX + '% - 5.2cqw)', 'calc(' + DY + '% - 1cqw)', -11, 8, true, '', 1);   // vira (define o curinga): debaixo do monte, de frente, inclinada
     S.querySelectorAll('.ck-tag').forEach(e => e.remove());
-    hand.forEach((c, i) => { if (c !== dragC) place(c, 'calc(50% + ' + hxOf(i) + 'cqw)', c === selC ? 'calc(' + HY + '% - 3cqw)' : HY + '%', 0, 100 + i + (c === selC ? 50 : 0), true, 'hand'); });
+    const HXS = handXs(); hand.forEach((c, i) => { if (c !== dragC) place(c, 'calc(50% + ' + HXS[i] + 'cqw)', c === selC ? 'calc(' + HY + '% - 3cqw)' : HY + '%', 0, 100 + i + (c === selC ? 50 : 0), true, 'hand'); });
     if (selC && (!hand.includes(selC) || phase !== 'discard' || turn !== 0 || over)) selC = null;
     dcEl.style.display = selC && selC !== dragC ? 'flex' : 'none';
-    if (selC) { dcEl.style.left = 'calc(50% + ' + Math.max(-26, Math.min(26, hxOf(hand.indexOf(selC)))) + 'cqw)'; dcEl.style.top = 'calc(' + HY + '% - 14.5cqw)'; }
+    if (selC) { dcEl.style.left = 'calc(50% + ' + Math.max(-26, Math.min(26, HXS[hand.indexOf(selC)])) + 'cqw)'; dcEl.style.top = 'calc(' + HY + '% - 14.5cqw)'; }
     disc.forEach((c, i) => { const top = i === disc.length - 1; place(c, 'calc(' + XX + '% + ' + c.ox + 'cqw)', 'calc(' + DY + '% + ' + c.oy + 'cqw)', c.rot, 20 + i, true, top && myDraw ? 'pick' : '', i >= disc.length - 3 ? 1 : 0); });
     for (let k = 1; k <= 2; k++) opp[k].forEach(c => place(c, PL[k].x + '%', PL[k].y + '%', 0, 5 + (c.vis ? 600 : 0), false, '', c.vis ? 1 : 0));
     lbDeck.textContent = 'monte · ' + n;
@@ -1591,8 +1636,8 @@ window.__ckCounts = m => {
     for (const id of st.hand) {                                             // carta nova na minha mao (do monte ou do descarte)
       if (have.has(id)) continue;
       const o = ev.a === 'T' && ev.w === 0 && disc.length ? disc.pop() : (deck.pop() || newHidden());
-      refact(o, id); hand.push(o); have.add(id);
-      if (pendAt != null && pendAt < hand.length - 1) { const j = hand.length - 1; [hand[pendAt], hand[j]] = [hand[j], hand[pendAt]]; }
+      refact(o, id); pushHand(o); have.add(id);
+      if (pendAt != null) moveHand(o, pendAt);
       pendAt = null;
     }
     for (let k = 1; k < nSeats; k++) {                                      // adversarios: so a quantidade de cartas e conhecida
@@ -1631,7 +1676,7 @@ window.__ckCounts = m => {
       const ii = i, kk = k;
       later(() => {
         cardSnd(.55, 1.2 + Math.random() * .25); const c = deck.pop();
-        if (kk === 0) { refact(c, st.hand[ii]); hand.push(c); } else { c.vis = true; opp[kk].push(c); later(() => { c.vis = false; layout(); }, 520); }
+        if (kk === 0) { refact(c, st.hand[ii]); pushHand(c); } else { c.vis = true; opp[kk].push(c); later(() => { c.vis = false; layout(); }, 520); }
         layout();
       }, t); t += 85;
     }
@@ -1681,17 +1726,17 @@ window.__ckCounts = m => {
     if (!d.moved) return;                                   // so um toque: o clique trata (comprar / descartar)
     noClickUntil = Date.now() + 350;
     if (cancel) { layout(); return; }
-    const R = S.getBoundingClientRect(), u = R.width / 100, hx = (e.clientX - d.ox - R.left) / u - 50, inHand = (e.clientY - d.oy - R.top) / R.height > .74;
+    const R = S.getBoundingClientRect(), u = R.width / 100, hx = (e.clientX - d.ox - R.left) / u - 50, inHand = (e.clientY - d.oy - R.top) / R.height > .66;
     if (d.src === 'hand') {
       if (overTrash(e) && canTrash()) {
         if (d.c.r === wildR) { msg.textContent = 'O curinga não pode ser descartado'; later(layout, 1600); layout(); }
         else throwCard(d.c);
         return;
       }
-      if (inHand) { const i = hand.indexOf(d.c), j = nearSlot(hx, hand.length); if (j !== i) [hand[i], hand[j]] = [hand[j], hand[i]]; }   // solta sobre outro lugar: as duas cartas trocam
+      if (inHand) moveHand(d.c, hx);   // solta no meio de um grupo: a carta encaixa ali (o grupo cresce); no vao entre grupos: vira grupo novo
       layout(); return;
     }
-    if (inHand) askDraw(d.src === 'deck' ? 'deck' : 'disc', nearSlot(hx, 9));   // soltou na mao: a carta ocupa esse lugar e a que estava la vai para o lugar extra
+    if (inHand) askDraw(d.src === 'deck' ? 'deck' : 'disc', hx);   // soltou na mao: a carta ocupa esse lugar e a que estava la vai para o lugar extra
     else layout();
   };
   document.addEventListener('pointerup', e => dragEnd(e, false));
@@ -1810,7 +1855,7 @@ window.__ckCounts = m => {
   function resetTable() {
     build(); clean(); myProfile();
     over = false; leftShown = false; busy = false; matched = false; dealing = false; dealt = false; pend = null; pendEnd = null; pendAt = null; selC = null;
-    wildR = -1; vira = null; cards = []; deck = []; hand = []; disc = []; opp = [null, [], []]; turn = 0; phase = 'wait'; left = TIME; badge.textContent = '';
+    wildR = -1; vira = null; cards = []; deck = []; hand = []; gsz = []; disc = []; opp = [null, [], []]; turn = 0; phase = 'wait'; left = TIME; badge.textContent = '';
     trashEl.classList.remove('full'); btn.classList.remove('ok');
     avEl.forEach((a, k) => { a.classList.remove('on', 'off'); if (k) a.style.visibility = 'hidden'; });   // adversarios aparecem quando a mesa fechar
     tick = setInterval(() => {                      // relogio da vez: so mostra (quem manda e o servidor)
