@@ -1470,27 +1470,22 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
     const val = { out, rest: h.filter(c => !used.has(c)) };
     if (gcache.size > 300) gcache.clear(); gcache.set(key, val); return val;
   }
-  // ---- mao manual: posicao horizontal (hx, em cqw a partir do centro) de cada carta; so evita que uma cobra a outra ----
-  const SP = 3.8, XMAX = 50 - 9.6 / 2 - 1; let dragC = null, pinC = null, drag = null, noClickUntil = 0;
-  function hxFix() {
-    const pin = pinC; pinC = null;
-    hand.forEach(c => { if (c.hx == null) { const o = hand.filter(x => x !== c && x.hx != null); c.hx = o.length ? Math.max(...o.map(x => x.hx)) + SP : -17; } });
-    const a = hand.slice().sort((p, q) => p.hx - q.hx || (p === pin) - (q === pin)), n = a.length; if (!n) return;
-    if (a[0].hx < -XMAX) a[0].hx = -XMAX;
-    for (let i = 1; i < n; i++) if (a[i].hx < a[i - 1].hx + SP) a[i].hx = a[i - 1].hx + SP;
-    if (a[n - 1].hx > XMAX) { a[n - 1].hx = XMAX; for (let i = n - 2; i >= 0; i--) if (a[i].hx > a[i + 1].hx - SP) a[i].hx = a[i + 1].hx - SP; }
-  }
+  // ---- mao manual em lugares fixos: 3 grupos de 3 cartas com um espaco entre eles (+ 1 lugar extra a direita para a carta comprada).
+  //      Cada carta ocupa um lugar; arrastar uma carta para outro lugar TROCA as duas. Nada se junta nem escorrega para o lado. ----
+  const hxOf = i => i >= 9 ? 27.3 + 1.5 + 4.8 : -27.3 + Math.floor(i / 3) * 18.7 + (i % 3) * 3.8 + 4.8;   // centro do lugar i (cqw a partir do meio)
+  const nearSlot = (hx, n) => { let b = 0; for (let i = 1; i < n; i++) if (Math.abs(hxOf(i) - hx) < Math.abs(hxOf(b) - hx)) b = i; return b; };
+  function dropHand(c) { const i = hand.indexOf(c); if (i < 0) return; if (i < 9 && hand.length > 9) hand[i] = hand.pop(); else hand.splice(i, 1); }   // carta sai: a do lugar extra ocupa o buraco, o resto nao muda
+  let dragC = null, drag = null, noClickUntil = 0;
   function canBater() { return phase === 'discard' && hand.length === 10 && hand.some(c => groupsOf(hand.filter(x => x !== c)).rest.length === 0); }
   function layout() {
     const myDraw = turn === 0 && phase === 'draw', n = deck.length;
     deck.forEach((c, i) => { const k = n - 1 - i, kk = Math.min(k, 4); place(c, 'calc(' + DX + '% - ' + (kk * .3) + 'cqw)', 'calc(' + DY + '% - ' + (kk * .3) + 'cqw)', 0, 10 + (n - k), false, k === 0 && myDraw ? 'pick' : ''); });
     if (vira) place(vira, 'calc(' + DX + '% - 5.2cqw)', 'calc(' + DY + '% - 1cqw)', -11, 8, true, '', 1);   // vira (define o curinga): debaixo do monte, de frente, inclinada
     S.querySelectorAll('.ck-tag').forEach(e => e.remove());
-    hxFix();                                                                                                   // a mao e' do jogador: cada carta fica onde ele colocou (o jogo nao agrupa nem reordena)
-    hand.slice().sort((p, q) => p.hx - q.hx).forEach((c, i) => { if (c !== dragC) place(c, 'calc(50% + ' + c.hx + 'cqw)', c === selC ? 'calc(' + HY + '% - 3cqw)' : HY + '%', 0, 100 + i + (c === selC ? 50 : 0), true, 'hand'); });
+    hand.forEach((c, i) => { if (c !== dragC) place(c, 'calc(50% + ' + hxOf(i) + 'cqw)', c === selC ? 'calc(' + HY + '% - 3cqw)' : HY + '%', 0, 100 + i + (c === selC ? 50 : 0), true, 'hand'); });
     if (selC && (!hand.includes(selC) || phase !== 'discard' || turn !== 0 || over)) selC = null;
     dcEl.style.display = selC && selC !== dragC ? 'flex' : 'none';
-    if (selC) { dcEl.style.left = 'calc(50% + ' + Math.max(-26, Math.min(26, selC.hx)) + 'cqw)'; dcEl.style.top = 'calc(' + HY + '% - 14.5cqw)'; }
+    if (selC) { dcEl.style.left = 'calc(50% + ' + Math.max(-26, Math.min(26, hxOf(hand.indexOf(selC)))) + 'cqw)'; dcEl.style.top = 'calc(' + HY + '% - 14.5cqw)'; }
     disc.forEach((c, i) => { const top = i === disc.length - 1; place(c, 'calc(' + XX + '% + ' + c.ox + 'cqw)', 'calc(' + DY + '% + ' + c.oy + 'cqw)', c.rot, 20 + i, true, top && myDraw ? 'pick' : '', i >= disc.length - 3 ? 1 : 0); });
     for (let k = 1; k <= 2; k++) opp[k].forEach(c => place(c, PL[k].x + '%', PL[k].y + '%', 0, 5 + (c.vis ? 600 : 0), false, '', c.vis ? 1 : 0));
     lbDeck.textContent = 'monte · ' + n;
@@ -1503,9 +1498,9 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
   }
   function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
   function ensureDeck() { if (deck.length) return; const top = disc.pop(); deck = shuffle(disc.splice(0)); if (top) disc.push(top); }
-  function take(c) { cardSnd(); hand.push(c); phase = 'discard'; left = TIME; layout(); busy = true; later(() => busy = false, 500); }
+  function take(c, at) { cardSnd(); hand.push(c); if (at != null && at < hand.length - 1) { const j = hand.length - 1; [hand[at], hand[j]] = [hand[j], hand[at]]; } phase = 'discard'; left = TIME; layout(); busy = true; later(() => busy = false, 500); }
   function throwCard(c) {
-    cardSnd(); hand.splice(hand.indexOf(c), 1); c.hx = null; selC = null; disc.push(c); trashEl.classList.add('full'); phase = 'wait'; turn = 1; busy = true; layout();
+    cardSnd(); dropHand(c); selC = null; disc.push(c); trashEl.classList.add('full'); phase = 'wait'; turn = 1; busy = true; layout();
     later(() => oppPlay(1), 900);
   }
   // bot bate: depois de algumas rodadas, de vez em quando um adversario monta 3 jogos de 3 cartas com as cartas que existem (mao dele + monte) e bate
@@ -1578,16 +1573,17 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
     if (!d.moved) return;                                   // so um toque: o clique trata (comprar / descartar)
     noClickUntil = Date.now() + 350;
     if (cancel) { layout(); return; }
-    const R = S.getBoundingClientRect(), u = R.width / 100, hx = Math.max(-XMAX, Math.min(XMAX, (e.clientX - d.ox - R.left) / u - 50));
+    const R = S.getBoundingClientRect(), u = R.width / 100, hx = (e.clientX - d.ox - R.left) / u - 50, inHand = (e.clientY - d.oy - R.top) / R.height > .74;
     if (d.src === 'hand') {
       if (overTrash(e) && canTrash()) {
         if (d.c.r === wildR) { msg.textContent = 'O curinga não pode ser descartado'; later(layout, 1600); layout(); }
         else throwCard(d.c);
         return;
       }
-      d.c.hx = hx; pinC = d.c; layout(); return;
+      if (inHand) { const i = hand.indexOf(d.c), j = nearSlot(hx, hand.length); if (j !== i) [hand[i], hand[j]] = [hand[j], hand[i]]; }   // solta sobre outro lugar: as duas cartas trocam
+      layout(); return;
     }
-    if ((e.clientY - d.oy - R.top) / R.height > .74) { (d.src === 'deck' ? deck : disc).pop(); d.c.hx = hx; pinC = d.c; take(d.c); }   // soltou na mao: a carta fica onde voce largou
+    if (inHand) { (d.src === 'deck' ? deck : disc).pop(); take(d.c, nearSlot(hx, 9)); }   // soltou na mao: a carta ocupa esse lugar e a que estava la vai para o lugar extra
     else layout();
   };
   document.addEventListener('pointerup', e => dragEnd(e, false));
