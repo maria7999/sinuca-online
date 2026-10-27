@@ -1669,15 +1669,23 @@ function rot0() {
 // as velocidades, o navegador refaz a conta a partir dali e esconde a diferenca com um ajuste suave (d.ex, d.ey).
 let SIM = null;
 const hy = (a, b) => Math.sqrt(a * a + b * b);
+// Bola colada na tabua passando reto pela caçapa do MEIO (so raspando): a caçapa nao puxa. Ela segue a trajetoria ate a caçapa da ponta.
+function grazingMid(b, px, py) {
+  if (px !== W / 2) return false;
+  const rail = py < H / 2 ? M + R : H - M - R;
+  if (Math.abs(b.y - rail) > 3) return false;
+  const par = Math.abs(b.vx), perp = Math.abs(b.vy);
+  return perp < 0.5 * par;
+}
 function pocketed(b, ox, oy) {
-  if (PK.some(p => hy(p[0] - b.x, p[1] - b.y) < PR)) return true;
+  if (PK.some(p => hy(p[0] - b.x, p[1] - b.y) < PR && !grazingMid(b, p[0], p[1]))) return true;
   const edge = M + R;
-  return PK.some(([px, py]) =>
+  return PK.some(([px, py]) => !grazingMid(b, px, py) && (
     (py < H / 2 && oy > edge && b.y <= edge && Math.abs(b.x - px) <= POCKET_MOUTH) ||
     (py > H / 2 && oy < H - edge && b.y >= H - edge && Math.abs(b.x - px) <= POCKET_MOUTH) ||
     (px < W / 2 && ox > edge && b.x <= edge && Math.abs(b.y - py) <= POCKET_MOUTH) ||
     (px > W / 2 && ox < W - edge && b.x >= W - edge && Math.abs(b.y - py) <= POCKET_MOUTH)
-  );
+  ));
 }
 const cbk = v => Math.max(.48, .68 - .02 * Math.abs(v));   // igual ao cb() do server.js
 const OBJECT_DECEL = .0015;
