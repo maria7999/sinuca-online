@@ -908,11 +908,11 @@ function loadCard() {
     SND.card = b;
   } catch (e) {}
 }
-function cardSnd() {
+function cardSnd(vol = .85, rate = 0) {
   if (!AC || muted || !SND.card) return;
   const t = AC.currentTime, src = AC.createBufferSource(), g = AC.createGain();
-  src.buffer = SND.card; src.playbackRate.value = .94 + Math.random() * .12;   // leve variacao para nao soar repetido
-  g.gain.value = .85; src.connect(g); g.connect(AC.destination); src.start(t);
+  src.buffer = SND.card; src.playbackRate.value = rate || (.94 + Math.random() * .12);   // leve variacao para nao soar repetido
+  g.gain.value = vol; src.connect(g); g.connect(AC.destination); src.start(t);
 }
 document.addEventListener('pointerdown', audio);
 // sons de sinuca sintetizados (sem arquivo): bola x bola = estalo seco de resina com corpo grave,
@@ -1478,8 +1478,8 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
     wildR = -1; vira = null; cards = []; badge.textContent = ''; deck = shuffle(all).map(a => mk(a[0], a[1])); hand = []; disc = []; opp = [null, [], []];
     layout();
     let t = 450;
-    for (let i = 0; i < 9; i++) for (let k = 0; k < 3; k++) { const kk = k; later(() => { const c = deck.pop(); if (kk === 0) hand.push(c); else { c.vis = true; opp[kk].push(c); later(() => { c.vis = false; layout(); }, 520); } layout(); }, t); t += 85; }
-    later(() => { const v = deck.pop(); vira = v; wildR = (v.r + 1) % 13; markWild(); badge.textContent = 'Curinga: ' + RK[wildR] + '  (vira ' + RK[v.r] + SU[v.s] + ')'; layout(); }, t + 200);
+    for (let i = 0; i < 9; i++) for (let k = 0; k < 3; k++) { const kk = k; later(() => { cardSnd(.55, 1.2 + Math.random() * .25); const c = deck.pop(); if (kk === 0) hand.push(c); else { c.vis = true; opp[kk].push(c); later(() => { c.vis = false; layout(); }, 520); } layout(); }, t); t += 85; }
+    later(() => { cardSnd(); const v = deck.pop(); vira = v; wildR = (v.r + 1) % 13; markWild(); badge.textContent = 'Curinga: ' + RK[wildR] + '  (vira ' + RK[v.r] + SU[v.s] + ')'; layout(); }, t + 200);
     later(() => { phase = 'draw'; busy = false; left = TIME; layout(); }, t + 800);
     tick = setInterval(() => {
       if (over || turn !== 0 || busy || (phase !== 'draw' && phase !== 'discard')) return;
