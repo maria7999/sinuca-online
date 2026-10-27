@@ -652,7 +652,7 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
       <div class="sq-box" style="margin-top:16px">
         <label for="sqVal">Valor do saque</label>
         <div class="pf-in" id="sqValW"><span>R$</span><input id="sqVal" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
-        <p class="sq-hint" id="sqValH">Informe quanto quer sacar.</p>
+        <p class="sq-hint" id="sqValH">Saque mínimo de R$ 5,00.</p>
         <label style="margin-top:14px">Chave PIX que vai receber</label>
         <p class="sq-key" id="sqKey"><small id="sqKeyT">CPF</small><span id="sqKeyV"></span></p>
         <p class="sq-hint">Para trocar a chave, abra o seu perfil.</p>
@@ -700,7 +700,7 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
         <label for="dpVal">Valor do depósito</label>
         <div class="pf-in" id="dpValW"><span>R$</span><input id="dpVal" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
         <div class="dp-q" id="dpQ"><button type="button" data-v="10">R$ 10</button><button type="button" data-v="25">R$ 25</button><button type="button" data-v="50">R$ 50</button><button type="button" data-v="100">R$ 100</button></div>
-        <p class="sq-hint" id="dpValH">Informe quanto quer depositar.</p>
+        <p class="sq-hint" id="dpValH">Depósito mínimo de R$ 5,00.</p>
         <button type="submit" class="sq-go" id="dpGo" disabled>GERAR PIX</button>
         <div class="sq-msg" id="dpMsg" role="status"></div>
         <div class="dp-code" id="dpCode" hidden><img id="dpQr" alt="QR Code PIX" hidden><span id="dpTxt"></span><button type="button" class="dp-copy" id="dpCopy">COPIAR CÓDIGO PIX</button></div>
@@ -2287,11 +2287,11 @@ const TEXSRC = {
   function sqCheck(show) {
     const v = sqVal(), saldo = window.__saldo || 0, has = $('sqVal').value.trim() !== '';
     let bad = '';
-    if (has && !(v > 0)) bad = 'Digite um valor válido.'; else if (has && v > saldo) bad = 'Valor maior que o saldo sacável.';
+    if (has && !(v > 0)) bad = 'Digite um valor válido.'; else if (has && v < 5) bad = 'O valor mínimo do saque é R$ 5,00.'; else if (has && v > saldo) bad = 'Valor maior que o saldo sacável.';
     else if (!has && saldo <= 0) bad = 'Você ainda não tem saldo para sacar.';
     $('sqValW').classList.toggle('bad', !!(bad && (show || has))); $('sqValH').classList.toggle('bad', !!bad && (show || has || saldo <= 0));
-    $('sqValH').textContent = bad || 'Informe quanto quer sacar.';
-    $('sqGo').disabled = !(has && v > 0 && v <= saldo);
+    $('sqValH').textContent = bad || 'Saque mínimo de R$ 5,00.';
+    $('sqGo').disabled = !(has && v >= 5 && v <= saldo);
   }
   function sqSetCheck(show) {
     const n = $('sqName').value, c = $('sqCpf').value, eN = n.trim() && !nameOk(n), eC = c && !cpfOk(c);
@@ -2333,20 +2333,20 @@ const TEXSRC = {
     try {
       const r = await api('saque', { valor: sqVal() });
       if (r && typeof r.saldo === 'number' && window.setSaldo) window.setSaldo(r.saldo);
-      $('sqVal').value = ''; $('sqMsg').classList.add('ok'); $('sqMsg').textContent = 'Saque solicitado!'; sqCheck(false);
+      $('sqVal').value = ''; $('sqMsg').classList.add('ok'); $('sqMsg').textContent = 'Saque solicitado! Seu dinheiro chegará em 10 minutos.'; sqCheck(false);
     } catch (x) {
       if (x.status === 401) { closeSaq(); showLogin(); }
       else { $('sqMsg').textContent = x.status === 404 ? 'O saque ainda não está disponível no servidor.' : x.message; sqCheck(false); }
     }
   });
   // ---- deposito ----
-  const DP_MIN = 1;
+  const DP_MIN = 5;
   const dpVal = () => { const n = parseFloat($('dpVal').value.replace(/\./g, '').replace(',', '.')); return isFinite(n) ? Math.round(n * 100) / 100 : NaN; };
   let dpLast = null;
   function dpView() { const d = perfilAtual(), ok = d && nameOk(d.nome || '') && cpfOk(d.cpf); $('dpSetup').hidden = !!ok; $('dpForm').hidden = !ok; if (ok) dpCheck(false); }
   function dpCheck(show) {
     const v = dpVal(), has = $('dpVal').value.trim() !== '', bad = has && !(v >= DP_MIN) ? 'O valor mínimo é ' + money(DP_MIN) + '.' : '';
-    $('dpValW').classList.toggle('bad', !!bad); $('dpValH').classList.toggle('bad', !!bad); $('dpValH').textContent = bad || 'Informe quanto quer depositar.';
+    $('dpValW').classList.toggle('bad', !!bad); $('dpValH').classList.toggle('bad', !!bad); $('dpValH').textContent = bad || 'Depósito mínimo de R$ 5,00.';
     document.querySelectorAll('#dpQ button').forEach(b => b.classList.toggle('on', has && +b.dataset.v === v));
     $('dpGo').disabled = !(has && v >= DP_MIN);
   }
