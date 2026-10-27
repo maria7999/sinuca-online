@@ -172,6 +172,49 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #lobby .lb-tab.on{background:rgba(47,140,255,.16);border-color:rgba(217,178,95,.7);color:var(--gold)}
 #lobby .lb-panel{display:none;margin-top:34px;flex-direction:column;align-items:center;gap:18px}
 #lobby .lb-panel.on{display:flex}
+
+/* ---- CACHETA ---- */
+#lobby .ck-intro{width:100%;max-width:420px;text-align:center;color:#f4ead3;padding:26px 16px;font:500 14px system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;gap:14px}
+#lobby .ck-play{border:1px solid rgba(217,178,95,.8);background:linear-gradient(#e9c36d,#b78a3a);color:#2a1a08;font:800 15px system-ui,sans-serif;letter-spacing:.5px;padding:14px 28px;border-radius:12px;cursor:pointer}
+#ckGame{position:fixed;inset:0;z-index:9999;background:#0d0705;display:flex;justify-content:center;align-items:center;overflow:hidden}
+#ckGame[hidden]{display:none}
+#ckGame .ck-st{position:relative;width:min(100vw,calc(100dvh * 940 / 1672));aspect-ratio:940/1672;container-type:inline-size;background:#120a06 url(/rooms/cacheta-fundo.webp) center/100% 100% no-repeat;user-select:none;-webkit-user-select:none;overflow:hidden;font-family:system-ui,sans-serif}
+#ckGame .ck-x{position:absolute;left:3cqw;top:3cqw;z-index:900;width:9cqw;height:9cqw;border-radius:50%;border:1px solid rgba(217,178,95,.6);background:rgba(0,0,0,.5);color:#e9c36d;font-size:4.4cqw;cursor:pointer}
+#ckGame .ck-slot{position:absolute;width:15.4cqw;height:21cqw;transform:translate(-50%,-50%);border:.35cqw dashed rgba(217,178,95,.5);border-radius:2cqw;display:flex;align-items:center;justify-content:center;color:rgba(217,178,95,.55);font-size:6cqw}
+#ckGame .ck-c{position:absolute;font-size:14cqw;width:1em;height:1.4em;transform:translate(-50%,-50%) rotate(var(--r,0deg));transition:left .5s cubic-bezier(.25,.8,.3,1),top .5s cubic-bezier(.25,.8,.3,1),transform .5s cubic-bezier(.25,.8,.3,1),opacity .25s;perspective:9em}
+#ckGame .ck-in{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .45s}
+#ckGame .ck-c.up .ck-in{transform:rotateY(180deg)}
+#ckGame .ck-f,#ckGame .ck-b{position:absolute;inset:0;border-radius:.08em;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 .02em .07em rgba(0,0,0,.6)}
+#ckGame .ck-b{background:#14233f;border:.03em solid #d9b25f;box-sizing:border-box;display:flex;align-items:center;justify-content:center;color:#d9b25f;font-size:.3em}
+#ckGame .ck-b::before{content:"";position:absolute;inset:.28em;border:.05em solid rgba(217,178,95,.5);border-radius:.2em}
+#ckGame .ck-f{background:#fbf6ea;transform:rotateY(180deg);color:#16161a;font-family:Georgia,serif;font-weight:700}
+#ckGame .ck-f.red{color:#b3141e}
+#ckGame .ck-f i{position:absolute;left:.06em;top:.03em;font-style:normal;font-size:.22em;line-height:1;text-align:center}
+#ckGame .ck-f i s{display:block;text-decoration:none;font-size:.9em;margin-top:.05em}
+#ckGame .ck-f em{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:.46em;padding-top:.2em}
+#ckGame .ck-c.pick .ck-f,#ckGame .ck-c.pick .ck-b{box-shadow:0 0 .12em .03em #ffd56a,0 .02em .07em rgba(0,0,0,.6)}
+#ckGame .ck-c.pick,#ckGame .ck-c.hand{cursor:pointer}
+#ckGame .ck-c.hand:hover .ck-f{box-shadow:0 0 0 .025em #ffd56a,0 .02em .07em rgba(0,0,0,.6)}
+#ckGame .ck-lb{position:absolute;transform:translateX(-50%);font:600 2.6cqw system-ui,sans-serif;color:#d9b25f;white-space:nowrap;text-shadow:0 .2cqw .5cqw #000;pointer-events:none}
+#ckGame .ck-ar{position:absolute;transform:translateX(-50%);display:flex;align-items:flex-end;gap:1cqw;color:#f0b92f;pointer-events:none;animation:ckbob 1s ease-in-out infinite;text-shadow:0 .3cqw .8cqw #000;z-index:450}
+#ckGame .ck-ar b{font-size:7cqw;line-height:.9;font-weight:400}
+#ckGame .ck-ar span{font:italic 700 2.8cqw Georgia,serif;margin-bottom:.8cqw}
+@keyframes ckbob{50%{margin-top:1.6cqw}}
+#ckGame .ck-av{position:absolute;width:13cqw;height:13cqw;transform:translate(-50%,-50%);z-index:500}
+#ckGame .ck-ph{position:absolute;inset:0;border-radius:50%;border:.5cqw solid #b78a3a;background:#2b1a10;display:flex;align-items:center;justify-content:center;font:700 6cqw Georgia,serif;color:#d9b25f;overflow:hidden;box-shadow:0 .5cqw 1.5cqw rgba(0,0,0,.7)}
+#ckGame .ck-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#ckGame .ck-av.on .ck-ph{border-color:#ffd56a;box-shadow:0 0 3cqw #ffb93a}
+#ckGame .ck-nm{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:.8cqw;font:700 3cqw system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.6);border-radius:4cqw;padding:.5cqw 2.2cqw;white-space:nowrap}
+#ckGame .ck-tm{position:absolute;right:-6cqw;top:50%;transform:translateY(-50%);width:7cqw;height:7cqw;border-radius:50%;background:conic-gradient(#ffb93a var(--p,360deg),#3a2a18 0);display:none;align-items:center;justify-content:center;font:800 3.4cqw system-ui,sans-serif;color:#fff}
+#ckGame .ck-tm::before{content:"";position:absolute;inset:.7cqw;border-radius:50%;background:#1a1109}
+#ckGame .ck-tm span{position:relative}
+#ckGame .ck-av.on .ck-tm{display:flex}
+#ckGame .ck-cnt{position:absolute;right:-1cqw;bottom:-1cqw;min-width:5cqw;height:5cqw;border-radius:50%;background:#14233f;border:.3cqw solid #d9b25f;color:#fff;font:700 2.8cqw/5cqw system-ui,sans-serif;text-align:center}
+#ckGame .ck-bt{position:absolute;left:50%;top:78.2%;transform:translate(-50%,-50%);z-index:400;border:0;font:800 4.2cqw system-ui,sans-serif;letter-spacing:.3cqw;color:#cdbf9c;background:#5b4c34;border-radius:6cqw;padding:2cqw 7cqw;opacity:.8;cursor:default}
+#ckGame .ck-bt.ok{background:linear-gradient(#ffd56a,#e09a1f);color:#2a1a08;opacity:1;cursor:pointer;box-shadow:0 0 3cqw #ffb93a;animation:ckbob 1s ease-in-out infinite}
+#ckGame .ck-tag{position:absolute;transform:translateX(-50%);height:3.4cqw;line-height:3.4cqw;border-radius:.8cqw;font:700 2.5cqw/3.4cqw system-ui,sans-serif;color:#fff;background:#1f9d4a;text-align:center;z-index:300;pointer-events:none;overflow:hidden}
+#ckGame .ck-tag.s{background:#2a6fdb}
+#ckGame .ck-msg{position:absolute;left:0;right:0;top:97%;transform:translateY(-50%);text-align:center;font:600 3.2cqw system-ui,sans-serif;color:#e9c36d;text-shadow:0 .2cqw .5cqw #000;z-index:400}
 #lobby .lb-tile{position:relative;width:158px;min-height:124px;padding:20px 10px 14px;border-radius:16px;border:1px solid var(--gold);background:linear-gradient(180deg,#0f3a7a,#0a2554);color:#f4ead3;font:700 26px Georgia,"Times New Roman",serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;box-shadow:0 10px 26px rgba(0,0,0,.5),inset 0 0 0 1px rgba(217,178,95,.14);transition:transform .15s,box-shadow .15s}
 #lobby .lb-tile:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.55),0 0 18px rgba(217,178,95,.25),inset 0 0 0 1px rgba(217,178,95,.3)}
 #lobby .lb-tag{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--gold);color:#010a22;font:800 9px/1 system-ui,sans-serif;letter-spacing:1px;padding:4px 9px;border-radius:6px}
@@ -576,12 +619,14 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
   <input id="name" type="hidden">
   <div class="lb-tabs" role="tablist">
     <button class="lb-tab on" data-p="pOnline" role="tab"><b>SINUCA</b><small><i class="dot"></i><span class="js-onl">—</span> jogando</small></button>
-    <button class="lb-tab" data-p="pCacheta" role="tab"><b>CACHETA</b><small>em breve</small></button>
+    <button class="lb-tab" data-p="pCacheta" role="tab"><b>CACHETA</b><small>teste</small></button>
   </div>
   <section class="lb-panel on" id="pOnline"><div class="lb-rooms" id="lbRooms"><button class="lb-tile art" data-room="0"><span class="lb-tag">POPULAR</span><span class="lb-v">Grátis</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="0.25"><span class="lb-v">R$ 0,25</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="1"><span class="lb-v">R$ 1</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="2"><span class="lb-v">R$ 2</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="5"><span class="lb-v">R$ 5</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="10"><span class="lb-v">R$ 10</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="25"><span class="lb-v">R$ 25</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="50"><span class="lb-v">R$ 50</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button></div></section>
-  <section class="lb-panel" id="pCacheta"><div style="text-align:center;color:#f4ead3;padding:40px 16px"><div style="font-size:42px">🃏</div><div style="font:700 20px Georgia,serif;color:var(--gold);margin-top:10px">CACHETA</div><div style="font:500 14px system-ui,sans-serif;margin-top:8px;opacity:.85">Em breve!</div></div></section>
+  <section class="lb-panel" id="pCacheta"><div class="ck-intro"><div style="font-size:42px">🃏</div><div style="font:700 20px Georgia,serif;color:var(--gold)">CACHETA</div><div style="opacity:.85">Mesa de teste: 3 jogadores, compre do monte ou do descarte, forme trincas e sequências e bata.</div><button class="ck-play" id="ckPlay" type="button">JOGAR MESA DE TESTE</button></div></section>
   <div id="status"></div>
 </div>
+
+<div id="ckGame" hidden><div class="ck-st" id="ckStage"><button class="ck-x" id="ckX" type="button" aria-label="Sair">✕</button></div></div>
 
 <div id="prof" role="dialog" aria-modal="true" aria-labelledby="pfTitle">
   <div class="pf-card">
@@ -1229,6 +1274,121 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
   document.querySelectorAll('.lb-tab').forEach(x => x.classList.toggle('on', x === t));
   document.querySelectorAll('.lb-panel').forEach(p => p.classList.toggle('on', p.id === t.dataset.p));
 }; });
+
+// ---------- CACHETA: mesa de teste (visual, sem servidor) ----------
+(function () {
+  const G = document.getElementById('ckGame'), S = document.getElementById('ckStage'); if (!G || !S) return;
+  const SU = ['♠', '♥', '♦', '♣'], RK = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+  const DX = 40.5, XX = 59.5, DY = 40, HY = 86, TIME = 25;
+  const PL = [{ n: 'Você', img: 'a05', x: 50, y: 68.5 }, { n: 'Jogador 2', img: 'a11', x: 20, y: 20 }, { n: 'Jogador 3', img: 'a03', x: 80, y: 20 }];
+  let deck, hand, disc, opp, phase, turn, busy, left, tick, built = false, over, timers = [];
+  let avEl = [], msg, btn, lbDeck, arD, arX, slotX, slotD;
+  const later = (f, ms) => { const t = setTimeout(f, ms); timers.push(t); return t; };
+  const mkEl = (cls, st, html) => { const e = document.createElement('div'); e.className = cls; if (st) e.style.cssText = st; if (html) e.innerHTML = html; S.appendChild(e); return e; };
+
+  function build() {
+    if (built) return; built = true;
+    slotD = mkEl('ck-slot', 'left:' + DX + '%;top:' + DY + '%');
+    slotX = mkEl('ck-slot', 'left:' + XX + '%;top:' + DY + '%', '🗑');
+    lbDeck = mkEl('ck-lb', 'left:' + DX + '%;top:calc(' + DY + '% + 12.5cqw)', 'monte');
+    mkEl('ck-lb', 'left:' + XX + '%;top:calc(' + DY + '% + 12.5cqw)', 'descarte');
+    arD = mkEl('ck-ar', 'left:' + DX + '%;top:calc(' + DY + '% - 20cqw)', '<b>↓</b><span>compre</span>');
+    arX = mkEl('ck-ar', 'left:' + XX + '%;top:calc(' + DY + '% - 20cqw)', '<b>↓</b><span>compre</span>');
+    PL.forEach((p, k) => {
+      const a = mkEl('ck-av', 'left:' + p.x + '%;top:' + p.y + '%',
+        '<div class="ck-ph">' + p.n[0] + '<img src="/avatars/' + p.img + '.webp" alt="" onerror="this.remove()"></div><span class="ck-nm">' + p.n + '</span>' +
+        (k === 0 ? '<div class="ck-tm"><span>25</span></div>' : '<div class="ck-cnt">9</div>'));
+      avEl.push(a);
+    });
+    btn = document.createElement('button'); btn.className = 'ck-bt'; btn.type = 'button'; btn.textContent = 'BATER!'; S.appendChild(btn);
+    msg = mkEl('ck-msg', '');
+    btn.onclick = () => { if (!btn.classList.contains('ok') || over) return; over = true; phase = 'over'; msg.textContent = '🎉 Você bateu! Fim da rodada.'; layout(); };
+  }
+  const mk = (s, r) => {
+    const el = document.createElement('div'); el.className = 'ck-c';
+    el.innerHTML = '<div class="ck-in"><div class="ck-b">◆</div><div class="ck-f' + (s === 1 || s === 2 ? ' red' : '') + '"><i>' + RK[r] + '<s>' + SU[s] + '</s></i><em>' + SU[s] + '</em></div></div>';
+    S.appendChild(el); return { el, s, r, vis: false, rot: (Math.random() - .5) * 14, ox: (Math.random() - .5) * 1.8, oy: (Math.random() - .5) * 1.8 };
+  };
+  function place(c, x, y, r, z, up, cls, op) {
+    const e = c.el; e.className = 'ck-c' + (cls ? ' ' + cls : '') + (up ? ' up' : '');
+    e.style.left = x; e.style.top = y; e.style.setProperty('--r', r + 'deg'); e.style.zIndex = z; e.style.opacity = op == null ? 1 : op;
+  }
+  function groupsOf(h) {
+    const used = new Set(), out = [], byR = {};
+    h.forEach(c => (byR[c.r] = byR[c.r] || []).push(c));
+    Object.keys(byR).forEach(r => { const a = byR[r]; if (a.length >= 3) { out.push({ t: 'Trinca', k: 't', cs: a }); a.forEach(c => used.add(c)); } });
+    for (let s = 0; s < 4; s++) {
+      const a = h.filter(c => c.s === s && !used.has(c)).sort((x, y) => x.r - y.r); let run = [];
+      const flush = () => { if (run.length >= 3) { out.push({ t: 'Sequência', k: 's', cs: run }); run.forEach(c => used.add(c)); } run = []; };
+      a.forEach(c => { if (run.length && c.r === run[run.length - 1].r + 1) run.push(c); else { flush(); run = [c]; } }); flush();
+    }
+    return { out, rest: h.filter(c => !used.has(c)) };
+  }
+  function canBater() { return phase === 'discard' && hand.length === 10 && hand.some(c => groupsOf(hand.filter(x => x !== c)).rest.length === 0); }
+  function layout() {
+    const myDraw = turn === 0 && phase === 'draw', n = deck.length;
+    deck.forEach((c, i) => { const k = n - 1 - i, kk = Math.min(k, 4); place(c, 'calc(' + DX + '% - ' + (kk * .3) + 'cqw)', 'calc(' + DY + '% - ' + (kk * .3) + 'cqw)', 0, 10 + (n - k), false, k === 0 && myDraw ? 'pick' : ''); });
+    const g = groupsOf(hand), cl = g.out.slice(); if (g.rest.length) cl.push({ t: null, cs: g.rest });
+    const m = hand.length, K = cl.length, gap = 3, sp = Math.min(8.4, (78 - (K - 1) * gap) / Math.max(m - 1, 1));
+    S.querySelectorAll('.ck-tag').forEach(e => e.remove());
+    let idx = 0; const tot = (m - 1) * sp + (K - 1) * gap;
+    cl.forEach((q, ci) => {
+      const xs = [];
+      q.cs.forEach(c => { const x = idx * sp + ci * gap - tot / 2; xs.push(x); place(c, 'calc(50% + ' + x + 'cqw)', HY + '%', 0, 100 + idx, true, 'hand'); idx++; });
+      if (q.t) { const a = xs[0], b = xs[xs.length - 1], t = mkEl('ck-tag ' + q.k, 'left:calc(50% + ' + ((a + b) / 2) + 'cqw);top:calc(' + HY + '% + 6.3cqw);width:' + (b - a + 14) + 'cqw', q.t); }
+    });
+    disc.forEach((c, i) => { const top = i === disc.length - 1; place(c, 'calc(' + XX + '% + ' + c.ox + 'cqw)', 'calc(' + DY + '% + ' + c.oy + 'cqw)', c.rot, 20 + i, true, top && myDraw ? 'pick' : '', i >= disc.length - 3 ? 1 : 0); });
+    for (let k = 1; k <= 2; k++) opp[k].forEach(c => place(c, PL[k].x + '%', PL[k].y + '%', 0, 5 + (c.vis ? 600 : 0), false, '', c.vis ? 1 : 0));
+    lbDeck.textContent = 'monte · ' + n;
+    arD.style.display = myDraw && n ? 'flex' : 'none'; arX.style.display = myDraw && disc.length ? 'flex' : 'none';
+    slotX.style.opacity = disc.length ? 0 : 1;
+    avEl.forEach((a, k) => { a.classList.toggle('on', turn === k && !over); if (k) a.querySelector('.ck-cnt').textContent = opp[k].length; });
+    const tm = avEl[0].querySelector('.ck-tm'); tm.style.setProperty('--p', (left / TIME * 360) + 'deg'); tm.firstChild.textContent = left;
+    btn.classList.toggle('ok', canBater());
+    if (!over) msg.textContent = turn !== 0 ? 'Jogando: ' + PL[turn].n + '…' : phase === 'draw' ? 'Sua vez: compre do monte ou pegue o descarte' : 'Toque numa carta para descartar';
+  }
+  function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  function ensureDeck() { if (deck.length) return; const top = disc.pop(); deck = shuffle(disc.splice(0)); disc.push(top); }
+  function take(c) { hand.push(c); phase = 'discard'; left = TIME; layout(); busy = true; later(() => busy = false, 500); }
+  function throwCard(c) {
+    hand.splice(hand.indexOf(c), 1); disc.push(c); phase = 'wait'; turn = 1; busy = true; layout();
+    later(() => oppPlay(1), 900);
+  }
+  function oppPlay(k) {
+    if (over) return; turn = k; phase = 'wait'; ensureDeck();
+    const c = deck.pop(); opp[k].push(c); c.vis = true; layout();
+    later(() => { c.vis = false; layout(); }, 600);
+    later(() => {
+      const d = opp[k].splice(Math.floor(Math.random() * opp[k].length), 1)[0]; disc.push(d); layout();
+      later(() => { if (k === 1) oppPlay(2); else { turn = 0; phase = 'draw'; left = TIME; busy = false; layout(); } }, 800);
+    }, 1050);
+  }
+  S.addEventListener('click', e => {
+    const el = e.target.closest('.ck-c'); if (!el || busy || over || turn !== 0) return;
+    const c = [].concat(deck, hand, disc).find(x => x.el === el); if (!c) return;
+    if (phase === 'draw' && deck.length && c === deck[deck.length - 1]) { deck.pop(); take(c); }
+    else if (phase === 'draw' && disc.length && c === disc[disc.length - 1]) { disc.pop(); take(c); }
+    else if (phase === 'discard' && hand.includes(c)) throwCard(c);
+  });
+  function clean() { timers.forEach(clearTimeout); timers = []; clearInterval(tick); S.querySelectorAll('.ck-c,.ck-tag').forEach(e => e.remove()); }
+  function start() {
+    build(); clean(); over = false; busy = true; phase = 'wait'; turn = 0; left = TIME;
+    const all = []; for (let s = 0; s < 4; s++) for (let r = 0; r < 13; r++) all.push([s, r]);
+    deck = shuffle(all).map(a => mk(a[0], a[1])); hand = []; disc = []; opp = [null, [], []];
+    layout();
+    let t = 450;
+    for (let i = 0; i < 9; i++) for (let k = 0; k < 3; k++) { const kk = k; later(() => { const c = deck.pop(); if (kk === 0) hand.push(c); else { c.vis = true; opp[kk].push(c); later(() => { c.vis = false; layout(); }, 520); } layout(); }, t); t += 85; }
+    later(() => { disc.push(deck.pop()); layout(); }, t + 200);
+    later(() => { phase = 'draw'; busy = false; left = TIME; layout(); }, t + 800);
+    tick = setInterval(() => {
+      if (over || turn !== 0 || busy || (phase !== 'draw' && phase !== 'discard')) return;
+      left--; if (left > 0) { layout(); return; }
+      if (phase === 'draw') { ensureDeck(); const c = deck.pop(); take(c); } else throwCard(hand[hand.length - 1]);
+    }, 1000);
+  }
+  document.getElementById('ckPlay').addEventListener('click', () => { G.hidden = false; start(); });
+  document.getElementById('ckX').addEventListener('click', () => { G.hidden = true; clean(); });
+})();
 connect(() => {});   // conecta ao abrir a pagina: mostra quantos estao online (e ja acorda o servidor)
 $('name').value = (() => { try { return localStorage.getItem('sinuca-name') || ''; } catch (e) { return ''; } })();
 $('name').addEventListener('input', () => { try { localStorage.setItem('sinuca-name', $('name').value); } catch (e) {} });
