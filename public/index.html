@@ -692,7 +692,7 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
   <input id="name" type="hidden">
   <div class="lb-tabs" role="tablist">
     <button class="lb-tab on" data-p="pOnline" role="tab"><b>SINUCA</b><small><i class="dot"></i><span class="js-onl">—</span> jogando</small></button>
-    <button class="lb-tab" data-p="pCacheta" role="tab"><b>CACHETA</b><small>3 jogadores</small></button>
+    <button class="lb-tab" data-p="pCacheta" role="tab"><b>CACHETA</b><small>2 a 3 jogadores</small></button>
   </div>
   <section class="lb-panel on" id="pOnline"><div class="lb-rooms" id="lbRooms"><button class="lb-tile art" data-room="0"><span class="lb-tag">POPULAR</span><span class="lb-v">Grátis</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="0.25"><span class="lb-v">R$ 0,25</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="1"><span class="lb-v">R$ 1</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="2"><span class="lb-v">R$ 2</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="5"><span class="lb-v">R$ 5</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="10"><span class="lb-v">R$ 10</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="25"><span class="lb-v">R$ 25</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="50"><span class="lb-v">R$ 50</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button></div></section>
   <section class="lb-panel" id="pCacheta"><div class="ck-rooms" id="ckRooms"><button type="button" class="ck-room" data-croom="0" aria-label="Cacheta Grátis"></button><button type="button" class="ck-room" data-croom="0.25" aria-label="Cacheta R$ 0,25"></button><button type="button" class="ck-room" data-croom="1" aria-label="Cacheta R$ 1"></button><button type="button" class="ck-room" data-croom="2" aria-label="Cacheta R$ 2"></button><button type="button" class="ck-room" data-croom="5" aria-label="Cacheta R$ 5"></button><button type="button" class="ck-room" data-croom="10" aria-label="Cacheta R$ 10"></button><button type="button" class="ck-room" data-croom="25" aria-label="Cacheta R$ 25"></button><button type="button" class="ck-room" data-croom="50" aria-label="Cacheta R$ 50"></button></div></section>
@@ -870,6 +870,18 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 @keyframes faltaPop{0%{opacity:0;transform:scale(.55)}10%{opacity:.95;transform:scale(1.08)}18%{transform:scale(1)}78%{opacity:.95}100%{opacity:0;transform:scale(1)}}
 @keyframes srspin{to{transform:rotate(360deg)}}
 @keyframes srdot{0%,80%,100%{opacity:.25}40%{opacity:1}}
+#search.ck{z-index:10000}
+#search .sr-ready{display:none}
+#search.rd .sr-top,#search.rd .sr-room,#search.rd .sr-hint{display:none}
+#search.rd .sr-ready{display:block}
+#search.ck .sr-room{display:none}
+#search .sr-rt{margin:2px 0 0;font:700 19px Georgia,"Times New Roman",serif;color:#f4ead3}
+#search .sr-rs{margin:10px 0 18px;font:600 13px system-ui,sans-serif;color:#d9b25f;letter-spacing:.3px}
+#search .sr-go,#search .sr-more{display:block;width:100%;box-sizing:border-box;padding:13px 10px;margin:0 0 10px;border-radius:9px;font:700 13px Georgia,"Times New Roman",serif;letter-spacing:2px;cursor:pointer}
+#search .sr-go{border:1px solid rgba(217,178,95,.8);background:linear-gradient(#e9c36d,#b78a3a);color:#2a1a08}
+#search .sr-go:hover{filter:brightness(1.08)}
+#search .sr-more{border:1px solid rgba(217,178,95,.4);background:rgba(255,255,255,.06);color:#e8dcc0}
+#search .sr-more:disabled{opacity:.45;cursor:default}
 @media (prefers-reduced-motion:reduce){#search .sr-spin{animation-duration:2.4s}#search .sr-hint{transition:none}}
 </style>
 <div id="search" role="dialog" aria-modal="true" aria-label="Procurando partida">
@@ -877,6 +889,12 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
     <div class="sr-top"><span class="sr-spin" aria-hidden="true"></span><span class="sr-t">Procurando partida</span><span class="sr-dots" aria-hidden="true"><i></i><i></i><i></i></span></div>
     <p class="sr-room" id="srRoom"></p>
     <p class="sr-hint" id="srHint"></p>
+    <div class="sr-ready">
+      <h3 class="sr-rt">Atingimos o mínimo de jogadores</h3>
+      <p class="sr-rs" id="srRs"></p>
+      <button type="button" class="sr-go" id="srGo">INICIAR PARTIDA</button>
+      <button type="button" class="sr-more" id="srMore">AGUARDAR MAIS JOGADORES</button>
+    </div>
     <button type="button" class="sr-x" id="srCancel">CANCELAR</button>
   </div>
 </div>
@@ -1275,6 +1293,7 @@ var SR_HINTS = [
   'Encaçapar a bola 8 antes da hora faz você perder a partida',
   'Se a bola branca cair na caçapa, é falta'
 ];
+var srHints = SR_HINTS;
 function srPing() {   // pulso suave de "buscando": um "blip" curto que sobe de tom (sem arquivo de som)
   if (!AC || muted) return;
   try {
@@ -1284,11 +1303,11 @@ function srPing() {   // pulso suave de "buscando": um "blip" curto que sobe de 
     o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + .55);
   } catch (e) {}
 }
-function srShowHint() { const h = $('srHint'); h.classList.add('fade'); setTimeout(() => { h.textContent = SR_HINTS[srHintI % SR_HINTS.length]; srHintI++; h.classList.remove('fade'); }, 350); }
-function showSearch(room) {
-  const r = Number(room);
+function srShowHint() { const h = $('srHint'); h.classList.add('fade'); setTimeout(() => { h.textContent = srHints[srHintI % srHints.length]; srHintI++; h.classList.remove('fade'); }, 350); }
+function showSearch(room, hints) {
+  const r = Number(room); srHints = hints || SR_HINTS; $('search').classList.remove('rd'); $('search').classList.toggle('ck', !!hints);
   $('srRoom').textContent = r > 0 ? 'Sala ' + r.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) + ' · sua aposta fica reservada' : 'Sala grátis';
-  $('srHint').textContent = SR_HINTS[0]; srHintI = 1;
+  $('srHint').textContent = srHints[0]; srHintI = 1;
   $('search').classList.add('on');
   try { audio(); } catch (e) {}
   srPing();
@@ -1298,9 +1317,22 @@ function showSearch(room) {
 }
 function hideSearch() {
   clearInterval(srTimer); srTimer = null; clearInterval(srHintTimer); srHintTimer = null;
-  const el = $('search'); if (el) el.classList.remove('on');
+  clearInterval(window.__srCd); const el = $('search'); if (el) el.classList.remove('on', 'rd');
 }
-$('srCancel').onclick = () => leaveRoom();
+$('srCancel').onclick = () => window.__ckSearch ? window.ckCancel() : leaveRoom();
+// Cacheta: quando a fila atinge o minimo (2), a janela troca para "Atingimos o mínimo de jogadores" com contagem regressiva
+function srReady(m) {
+  const s = $('search'), on = !!m.ready, rd = s.classList.contains('rd');
+  if (on && !rd) { s.classList.add('rd'); clearInterval(srTimer); srTimer = null; clearInterval(srHintTimer); srHintTimer = null; srPing(); }
+  if (!on && rd) { s.classList.remove('rd'); clearInterval(srTimer); srTimer = setInterval(srPing, 1700); clearInterval(srHintTimer); srHintTimer = setInterval(srShowHint, 6000); }
+  clearInterval(window.__srCd);
+  if (!on) return;
+  const dl = performance.now() + m.left, paint = () => { $('srRs').textContent = m.n + '/' + m.max + ' jogadores · iniciando em ' + Math.max(0, Math.ceil((dl - performance.now()) / 1000)) + 's'; };
+  paint(); window.__srCd = setInterval(paint, 250);
+  $('srMore').disabled = !(m.ext > 0);
+}
+$('srGo').onclick = () => window.ckSendRaw && window.ckSendRaw({ t: 'ckstart' });
+$('srMore').onclick = () => window.ckSendRaw && window.ckSendRaw({ t: 'ckmore' });
 function clearMine() {
   hideSearch();
   if (!myRoom) return;
@@ -1384,9 +1416,10 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
   const DX = 40.5, XX = 59.5, DY = 40, HY = 89.5, TIME = 25;
   const PL = [{ n: 'Você', img: 'a05', x: 50, y: 68.5 }, { n: 'Jogador 2', img: 'a11', x: 17.5, y: 20 }, { n: 'Jogador 3', img: 'a03', x: 82.5, y: 20 }];
   let deck, hand, disc, opp, vira, phase, turn, busy, left, tick, built = false, over, timers = [];
-  let online = false, matched = false, dealing = false, dealt = false, dl = 0, pend = null, pendEnd = null, pendAt = null, roomId = '0', myStake = 0, wd = 0;
+  let nSeats = 3, online = false, matched = false, dealing = false, dealt = false, dl = 0, pend = null, pendEnd = null, pendAt = null, roomId = '0', myStake = 0, wd = 0;
   let avEl = [], badge, msg, btn, lbDeck, arD, arX, slotX, slotD, trashEl, dcEl, selC = null;
   const TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v7M14 10v7"/></svg>';
+  const CK_HINTS = ['Sequência: 3 cartas seguidas do mesmo naipe', 'Trinca: 3 cartas do mesmo valor, de naipes diferentes', 'O curinga é a carta seguinte à vira', 'Para bater, forme jogos com 9 das suas 10 cartas', 'Você tem 25 segundos para cada jogada'];
   const later = (f, ms) => { const t = setTimeout(f, ms); timers.push(t); return t; };
   const mkEl = (cls, st, html) => { const e = document.createElement('div'); e.className = cls; if (st) e.style.cssText = st; if (html) e.innerHTML = html; S.appendChild(e); return e; };
 
@@ -1538,7 +1571,7 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
       if (pendAt != null && pendAt < hand.length - 1) { const j = hand.length - 1; [hand[pendAt], hand[j]] = [hand[j], hand[pendAt]]; }
       pendAt = null;
     }
-    for (let k = 1; k <= 2; k++) {                                          // adversarios: so a quantidade de cartas e conhecida
+    for (let k = 1; k < nSeats; k++) {                                      // adversarios: so a quantidade de cartas e conhecida
       let d = st.cnt[k] - opp[k].length;
       while (d > 0) {
         const o = ev.a === 'T' && ev.w === k && disc.length ? disc.pop() : (deck.pop() || newHidden());
@@ -1570,7 +1603,7 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
     deck = []; for (let i = 0; i < 52; i++) deck.push(newHidden());
     layout();
     let t = 450;
-    for (let i = 0; i < 9; i++) for (let k = 0; k < 3; k++) {
+    for (let i = 0; i < 9; i++) for (let k = 0; k < nSeats; k++) {
       const ii = i, kk = k;
       later(() => {
         cardSnd(.55, 1.2 + Math.random() * .25); const c = deck.pop();
@@ -1761,21 +1794,25 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
   }
   function queueRoom(room) {
     matched = false; dealt = false;
-    msg.textContent = 'Procurando jogadores… 1/3' + (room === '0' ? ' (na sala Grátis, se faltar gente entram robôs)' : '');
+    msg.textContent = 'Procurando partida…';
     send({ t: 'ckqueue', room });
+    window.__ckSearch = true; showSearch(room, CK_HINTS);   // janela "Procurando partida" por cima do lobby
   }
-  function ckClose() { online = false; matched = false; dealing = false; G.hidden = true; clean(); }
+  function ckClose() { online = false; matched = false; dealing = false; G.hidden = true; clean(); window.__ckSearch = false; hideSearch(); }
   function ckToast(t) {
     const e = document.createElement('div'); e.textContent = t;
     e.style.cssText = 'position:fixed;left:50%;bottom:8%;transform:translateX(-50%);max-width:88vw;background:#1a1410;color:#ffe9a0;border:1px solid #d9b25f;padding:10px 16px;border-radius:12px;font:600 14px system-ui,sans-serif;z-index:100000;text-align:center';
     document.body.appendChild(e); setTimeout(() => e.remove(), 4500);
   }
   window.ckOnMsg = m => {
-    if (m.t === 'ckwait') { if (online && !matched) msg.textContent = 'Procurando jogadores… ' + m.n + '/' + m.need + (roomId === '0' ? ' (na sala Grátis, se faltar gente entram robôs)' : ''); return; }
+    if (m.t === 'ckwait') { if (online && !matched) srReady(m); return; }
     if (m.t === 'ckmatch') {
       if (!online) return;
       matched = true; myStake = m.stake || 0; roomId = String(m.room);
+      nSeats = m.players.length; window.__ckSearch = false; hideSearch(); G.hidden = false;   // achou a mesa: fecha a janela e abre o jogo
+      PL[1].x = nSeats === 2 ? 50 : 17.5; avEl[1].style.left = PL[1].x + '%';                 // com 2 jogadores o adversario fica no centro
       m.players.forEach((p, k) => { if (p.nick) PL[k].n = p.nick; if (p.av && p.av.id) PL[k].img = p.av.id; if (k) { paintPlayer(k); avEl[k].style.visibility = ''; } });
+      for (let k = nSeats; k < 3; k++) avEl[k].style.visibility = 'hidden';
       msg.textContent = 'Distribuindo as cartas…';
       return;
     }
@@ -1790,11 +1827,13 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
     if (m.t === 'ckerror') { ckClose(); ckToast(m.m); return; }
     if (m.t === 'ckneedlogin') { ckClose(); if (window.__needLogin) window.__needLogin(); return; }
   };
-  window.ckClosed = () => { if (online && !G.hidden) { const was = matched && !over; ckClose(); ckToast(was ? 'Conexão perdida. Você saiu da partida.' : 'Conexão perdida.'); } };
+  window.ckClosed = () => { if (online && (!G.hidden || window.__ckSearch)) { const was = matched && !over; ckClose(); ckToast(was ? 'Conexão perdida. Você saiu da partida.' : 'Conexão perdida.'); } };
   document.querySelectorAll('#ckRooms .ck-room').forEach(t => t.addEventListener('click', () => {
     const v = t.dataset.croom; roomId = v; entry = v === '0' ? 'Grátis' : 'R$ ' + v.replace('.', ',');
-    online = true; G.hidden = false; resetTable(); queueRoom(v);
+    online = true; resetTable(); queueRoom(v);
   }));
+  window.ckSendRaw = ckSend;
+  window.ckCancel = () => { ckSend({ t: 'ckleave' }); ckClose(); };   // CANCELAR na janela de busca
   document.getElementById('ckX').addEventListener('click', () => {
     if (matched && !over && myStake > 0 && !confirm('Se sair agora você perde a aposta de R$ ' + myStake.toFixed(2).replace('.', ',') + '. Quer sair mesmo?')) return;
     ckSend({ t: 'ckleave' }); ckClose();
