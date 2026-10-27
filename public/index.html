@@ -274,8 +274,6 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #login .lg-err{min-height:18px;margin-top:12px;text-align:center;font:600 13px system-ui,sans-serif;color:#ff9b8a}
 #login .lg-alt{margin:10px 0 0;text-align:center;font:14px system-ui,sans-serif;color:#d8cdb3}
 #login .lg-alt button{background:none;border:0;padding:0;color:var(--gold);font:700 14px system-ui,sans-serif}
-#login .lg-demo{width:100%;margin-top:14px;background:transparent;border:1px solid rgba(217,178,95,.5);color:#f4ead3}
-#login .lg-demo:hover{background:rgba(217,178,95,.12)}
 #login .reg-only{display:none}
 #login.reg .reg-only{display:block}
 #lobby .lb-out{background:transparent;border:1px solid rgba(217,178,95,.28);color:#d8cdb3;border-radius:999px;padding:7px 14px;font:600 13px system-ui,sans-serif}
@@ -381,6 +379,25 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #end.lose #bBack:hover{box-shadow:0 0 calc(var(--u)*34) rgba(255,255,255,.22)}
 #end #bBack:active{background:rgba(0,0,0,.16)}
 #end #bBack:focus-visible{outline:3px solid #fff;outline-offset:-5px}
+
+
+/* brilho vivo em volta da bola 8 (dourado na vitoria, vermelho na derrota) */
+#end .e-glow{position:absolute;left:calc(var(--u)*(var(--gx,386) - 260));top:calc(var(--u)*(var(--gy,336) - 260));width:calc(var(--u)*520);height:calc(var(--u)*520);pointer-events:none;--gc:255,196,60;--gc2:255,236,160}
+#end.lose .e-glow{--gx:380;--gy:330;--gc:255,40,40;--gc2:255,120,100}
+#end .e-glow .halo{position:absolute;inset:6%;border-radius:50%;mix-blend-mode:screen;
+ background:radial-gradient(circle,rgba(var(--gc),0) 52%,rgba(var(--gc),.55) 66%,rgba(var(--gc),.18) 80%,rgba(var(--gc),0) 100%);
+ animation:gPulse 2.2s ease-in-out infinite}
+#end .e-glow .ring{position:absolute;inset:11%;border-radius:50%;mix-blend-mode:screen;
+ background:conic-gradient(from 0deg,rgba(var(--gc2),0) 0deg,rgba(var(--gc2),.95) 40deg,rgba(var(--gc),0) 110deg,rgba(var(--gc2),0) 200deg,rgba(var(--gc2),.7) 250deg,rgba(var(--gc),0) 320deg);
+ -webkit-mask:radial-gradient(circle,transparent 60%,#000 63%,#000 67%,transparent 70%);mask:radial-gradient(circle,transparent 60%,#000 63%,#000 67%,transparent 70%);
+ filter:blur(calc(var(--u)*3));animation:gSpin 5s linear infinite}
+#end .e-glow .spk{position:absolute;width:calc(var(--u)*9);height:calc(var(--u)*9);margin:calc(var(--u)*-4.5);border-radius:50%;mix-blend-mode:screen;
+ background:radial-gradient(circle,rgb(var(--gc2)) 0,rgba(var(--gc),.7) 40%,rgba(var(--gc),0) 70%);opacity:0;animation:gTw 2.4s ease-in-out infinite}
+#end.lose .e-glow .spk{width:calc(var(--u)*6);height:calc(var(--u)*6)}
+@keyframes gPulse{0%,100%{opacity:.55;transform:scale(.97)}50%{opacity:1;transform:scale(1.04)}}
+@keyframes gSpin{to{transform:rotate(360deg)}}
+@keyframes gTw{0%,100%{opacity:0;transform:scale(.3)}45%{opacity:1;transform:scale(1.25)}70%{opacity:.2;transform:scale(.7)}}
+@media (prefers-reduced-motion:reduce){#end .e-glow *{animation:none!important}#end .e-glow .halo{opacity:.8}}
 
 /* removidos da tela do jogo: mensagem, botoes (tela cheia, som, sair) e texto de ajuda */
 #game #msg,#game > .row,#game .help{display:none!important}
@@ -536,7 +553,6 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
       <button type="submit" class="lg-go" id="lgGo">ENTRAR</button>
       <div class="lg-err" id="lgErr" role="alert"></div>
       <p class="lg-alt"><span id="lgAltTxt">Não tem uma conta?</span> <button type="button" id="lgAlt">Criar conta</button></p>
-      <button type="button" class="lg-demo" id="lgDemo">Experimentar demonstração 2D</button>
     </form>
   </div>
 </div>
@@ -777,6 +793,7 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 <div id="end" role="dialog" aria-modal="true" aria-label="Fim da partida">
   <div class="end-stage" id="endStage">
     <h2 class="sr" id="endTitle">VITÓRIA</h2>
+    <div class="e-glow" id="eGlow" aria-hidden="true"><div class="halo"></div><div class="ring"></div></div>
     <div class="e-av" id="ea0"></div><div class="e-av" id="ea1"></div>
     <div class="e-nm" id="en0"></div><div class="e-nm" id="en1"></div>
     <div class="e-balls" id="eb0"></div><div class="e-balls" id="eb1"></div>
@@ -1021,6 +1038,34 @@ function updateUI() {
 }
 
 // ---------- tela de fim de partida ----------
+// brilho animado da bola 8 + musiquinha de vitoria
+function endGlow() {
+  const g = $('eGlow'); g.querySelectorAll('.spk').forEach(n => n.remove());
+  for (let i = 0; i < 16; i++) {
+    const a = Math.random() * 6.2832, r = 38 + Math.random() * 14;   // % do raio do brilho
+    const d = document.createElement('i'); d.className = 'spk';
+    d.style.left = (50 + Math.cos(a) * r) + '%'; d.style.top = (50 + Math.sin(a) * r) + '%';
+    d.style.animationDelay = (-Math.random() * 2.4).toFixed(2) + 's'; d.style.animationDuration = (1.6 + Math.random() * 1.6).toFixed(2) + 's';
+    g.appendChild(d);
+  }
+}
+function winJingle() {
+  try {
+    audio(); if (!AC || muted) return;
+    const t0 = AC.currentTime + .55, out = AC.createGain(); out.gain.value = .32; out.connect(AC.destination);
+    const note = (f, t, len, type, vol) => {
+      const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t0 + t); g.gain.linearRampToValueAtTime(vol, t0 + t + .015); g.gain.exponentialRampToValueAtTime(.0001, t0 + t + len);
+      o.connect(g); g.connect(out); o.start(t0 + t); o.stop(t0 + t + len + .05);
+    };
+    const C5 = 523.25, E5 = 659.25, G5 = 783.99, C6 = 1046.5, E6 = 1318.5, G6 = 1568;
+    [[C5, 0], [E5, .13], [G5, .26], [C6, .39], [G5, .56], [C6, .7], [E6, .86]].forEach(([f, t]) => { note(f, t, .32, 'square', .22); note(f * 2, t, .25, 'triangle', .08); });
+    // acorde final de fanfarra
+    [C5, E5, G5, C6, E6].forEach(f => { note(f, 1.08, 1.5, 'triangle', .26); note(f, 1.08, 1.2, 'square', .08); });
+    note(G6, 1.1, 1.3, 'sine', .12);
+  } catch (e) {}
+}
+
 let endShown = false;
 function hideEnd() { $('end').classList.remove('on', 'lose'); endShown = false; }
 function showEnd() {
@@ -1054,7 +1099,9 @@ function showEnd() {
     got.forEach(n => { const im = document.createElement('img'); im.src = ballIcon(n); im.alt = 'Bola ' + n; bx.appendChild(im); });
     const sc = $('es' + i); sc.textContent = got.length; sc.classList.toggle('w', S.winner === k);
   });
+  endGlow();
   el.classList.add('on');
+  if (win) winJingle();
 }
 $('bBack').onclick = () => { hideEnd(); send({ t: 'leave' }); };
 
@@ -2351,7 +2398,6 @@ const TEXSRC = {
   });
   $('dpCopy').onclick = async () => { try { await navigator.clipboard.writeText($('dpTxt').textContent); $('dpCopy').textContent = 'COPIADO!'; } catch (e) { $('dpCopy').textContent = 'SELECIONE E COPIE O CÓDIGO'; } setTimeout(() => { $('dpCopy').textContent = 'COPIAR CÓDIGO PIX'; }, 1800); };
   window.__needLogin = showLogin;            // o servidor pediu login (sessao expirou): volta para a tela de entrada
-  $('lgDemo').onclick = startDemo;
   $('lgTop').onclick = () => mode(!reg);
   $('lgAlt').onclick = () => mode(!reg);
   $('lgEye').onclick = () => { const p = $('lgPass'); p.type = p.type === 'password' ? 'text' : 'password'; $('lgEye').setAttribute('aria-label', p.type === 'password' ? 'Mostrar senha' : 'Ocultar senha'); };
