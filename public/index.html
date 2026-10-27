@@ -184,6 +184,15 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #ckGame .ck-slot{position:absolute;width:15.4cqw;height:21cqw;transform:translate(-50%,-50%);border:.35cqw dashed rgba(217,178,95,.5);border-radius:2cqw;display:flex;align-items:center;justify-content:center;color:rgba(217,178,95,.55);font-size:6cqw}
 #ckGame .ck-c{position:absolute;font-size:14cqw;width:1em;height:1.4em;transform:translate(-50%,-50%) rotate(var(--r,0deg));transition:left .5s cubic-bezier(.25,.8,.3,1),top .5s cubic-bezier(.25,.8,.3,1),transform .5s cubic-bezier(.25,.8,.3,1),opacity .25s,font-size .5s cubic-bezier(.25,.8,.3,1);perspective:9em}
 #ckGame .ck-c.hand{font-size:9.6cqw}
+#ckGame .ck-c{touch-action:none}
+#ckGame .ck-c.drag{transition:none!important;z-index:2000!important;cursor:grabbing;filter:drop-shadow(0 1cqw 1.4cqw rgba(0,0,0,.55))}
+#ckGame .ck-trash{border-color:#4fe08a;background:rgba(31,157,74,.38);color:#d6ffe4;transition:background .3s,border-color .3s,color .3s}
+#ckGame .ck-trash svg{width:7.5cqw;height:7.5cqw}
+#ckGame .ck-trash.full{border-color:#ff7a7a;background:rgba(214,48,48,.42);color:#ffe0e0}
+#ckGame .ck-trash.hot{border-style:solid;filter:brightness(1.35)}
+#ckGame .ck-dc{position:absolute;z-index:2500;transform:translate(-50%,-50%);display:none;align-items:center;gap:1.4cqw;padding:2cqw 4.2cqw;border-radius:9cqw;background:linear-gradient(#2b2218,#17110a);border:.35cqw solid #d9b25f;color:#f6e3a6;font:700 3.6cqw system-ui,sans-serif;white-space:nowrap;cursor:pointer;box-shadow:0 1cqw 2.4cqw rgba(0,0,0,.6)}
+#ckGame .ck-dc svg{width:4.4cqw;height:4.4cqw}
+#ckGame .ck-slot.hot{border-color:#ffd56a;background:rgba(255,213,106,.18);color:#ffd56a}
 #ckGame .ck-in{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .45s}
 #ckGame .ck-c.up .ck-in{transform:rotateY(180deg)}
 #ckGame .ck-f,#ckGame .ck-b{position:absolute;inset:0;border-radius:.08em;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 .02em .07em rgba(0,0,0,.6)}
@@ -233,6 +242,12 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #ckGame .ke{position:absolute;inset:0;z-index:1000;display:flex;flex-direction:column;background:#0c2417;color:#f2efe8;font-family:system-ui,sans-serif;animation:keIn .4s both}
 @keyframes keIn{from{opacity:0}to{opacity:1}}
 #ckGame .ke-hd{text-align:center;padding:5cqw 4cqw 3.5cqw;background:linear-gradient(#14472a,#0f3a22)}
+#ckGame .ke.lose{background:#240c0c}
+#ckGame .ke.lose .ke-hd{background:linear-gradient(#5e1717,#451010)}
+#ckGame .ke.lose .ke-hd h2{color:#ffb4a8}
+#ckGame .ke.lose .ke-pill{border-color:#e0766a;color:#ffb4a8;background:#1d0707}
+#ckGame .ke.lose .ke-rm{background:#1d0909;border-top-color:rgba(224,118,106,.4)}
+#ckGame .ke.lose .ke-rh span{border-color:#e0766a;color:#ffb4a8;background:#1d0707}
 #ckGame .ke-hd h2{margin:0;font:700 5.6cqw Georgia,serif;color:#f6e3a6}
 #ckGame .ke-hd p{margin:1cqw 0 0;font-size:2.8cqw;color:#e8e2d0}
 #ckGame .ke-pill{display:inline-block;margin-top:2.6cqw;padding:1cqw 3cqw;border-radius:9cqw;border:.3cqw solid #d9b25f;background:#1b1306;color:#f6e3a6;font:700 2.1cqw system-ui,sans-serif;letter-spacing:.2cqw}
@@ -1352,14 +1367,18 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
   const DX = 40.5, XX = 59.5, DY = 40, HY = 89.5, TIME = 25;
   const PL = [{ n: 'Você', img: 'a05', x: 50, y: 68.5 }, { n: 'Jogador 2', img: 'a11', x: 17.5, y: 20 }, { n: 'Jogador 3', img: 'a03', x: 82.5, y: 20 }];
   let deck, hand, disc, opp, vira, phase, turn, busy, left, tick, built = false, over, timers = [];
-  let avEl = [], badge, msg, btn, lbDeck, arD, arX, slotX, slotD;
+  let avEl = [], badge, msg, btn, lbDeck, arD, arX, slotX, slotD, trashEl, dcEl, selC = null;
+  const TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v7M14 10v7"/></svg>';
   const later = (f, ms) => { const t = setTimeout(f, ms); timers.push(t); return t; };
   const mkEl = (cls, st, html) => { const e = document.createElement('div'); e.className = cls; if (st) e.style.cssText = st; if (html) e.innerHTML = html; S.appendChild(e); return e; };
 
   function build() {
     if (built) return; built = true;
     slotD = mkEl('ck-slot', 'left:' + DX + '%;top:' + DY + '%');
-    slotX = mkEl('ck-slot', 'left:' + XX + '%;top:' + DY + '%', '🗑');
+    slotX = mkEl('ck-slot', 'left:' + XX + '%;top:' + DY + '%');
+    trashEl = mkEl('ck-slot ck-trash', 'left:' + (XX + 16.4) + '%;top:' + DY + '%', TRASH);
+    dcEl = mkEl('ck-dc', '', TRASH + 'Descartar');
+    dcEl.onclick = e => { e.stopPropagation(); if (selC && canTrash()) { const c = selC; selC = null; throwCard(c); } };
     lbDeck = mkEl('ck-lb', 'left:' + DX + '%;top:calc(' + DY + '% + 12.5cqw)', 'monte');
     mkEl('ck-lb', 'left:' + XX + '%;top:calc(' + DY + '% + 12.5cqw)', 'descarte');
     arD = mkEl('ck-ar', 'left:' + DX + '%;top:calc(' + DY + '% - 20cqw)', '<b>↓</b><span>compre</span>');
@@ -1437,24 +1456,27 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
     const val = { out, rest: h.filter(c => !used.has(c)) };
     if (gcache.size > 300) gcache.clear(); gcache.set(key, val); return val;
   }
+  // ---- mao manual: posicao horizontal (hx, em cqw a partir do centro) de cada carta; so evita que uma cobra a outra ----
+  const SP = 3.8, XMAX = 50 - 9.6 / 2 - 1; let dragC = null, pinC = null, drag = null, noClickUntil = 0;
+  function hxFix() {
+    const pin = pinC; pinC = null;
+    hand.forEach(c => { if (c.hx == null) { const o = hand.filter(x => x !== c && x.hx != null); c.hx = o.length ? Math.max(...o.map(x => x.hx)) + SP : -17; } });
+    const a = hand.slice().sort((p, q) => p.hx - q.hx || (p === pin) - (q === pin)), n = a.length; if (!n) return;
+    if (a[0].hx < -XMAX) a[0].hx = -XMAX;
+    for (let i = 1; i < n; i++) if (a[i].hx < a[i - 1].hx + SP) a[i].hx = a[i - 1].hx + SP;
+    if (a[n - 1].hx > XMAX) { a[n - 1].hx = XMAX; for (let i = n - 2; i >= 0; i--) if (a[i].hx > a[i + 1].hx - SP) a[i].hx = a[i + 1].hx - SP; }
+  }
   function canBater() { return phase === 'discard' && hand.length === 10 && hand.some(c => groupsOf(hand.filter(x => x !== c)).rest.length === 0); }
   function layout() {
     const myDraw = turn === 0 && phase === 'draw', n = deck.length;
     deck.forEach((c, i) => { const k = n - 1 - i, kk = Math.min(k, 4); place(c, 'calc(' + DX + '% - ' + (kk * .3) + 'cqw)', 'calc(' + DY + '% - ' + (kk * .3) + 'cqw)', 0, 10 + (n - k), false, k === 0 && myDraw ? 'pick' : ''); });
     if (vira) place(vira, 'calc(' + DX + '% - 5.2cqw)', 'calc(' + DY + '% - 1cqw)', -11, 8, true, '', 1);   // vira (define o curinga): debaixo do monte, de frente, inclinada
-    const g = groupsOf(hand), cl = g.out.slice();
-    for (let i = 0; i < g.rest.length; i += 3) cl.push({ t: null, cs: g.rest.slice(i, i + 3) });          // sobras: de 3 em 3
-    if (cl.length > 1 && !cl[cl.length - 1].t && cl[cl.length - 1].cs.length === 1 && !cl[cl.length - 2].t) cl[cl.length - 2].cs.push(cl.pop().cs[0]);   // sobra de 1 vai para o grupo ao lado
-    const CW = 9.6, sp = 3.8, gap = 1.5, K = cl.length;                                                      // CW = largura da carta (cqw); sp = parte visivel de cada carta
-    const tot = cl.reduce((t, q) => t + (q.cs.length - 1) * sp + CW, 0) + (K - 1) * gap;
     S.querySelectorAll('.ck-tag').forEach(e => e.remove());
-    let idx = 0, L = -tot / 2;
-    cl.forEach(q => {
-      const xs = [];
-      q.cs.forEach((c, i) => { const x = L + i * sp + CW / 2; xs.push(x); place(c, 'calc(50% + ' + x + 'cqw)', HY + '%', 0, 100 + idx, true, 'hand'); idx++; });
-      if (q.t) { const a = xs[0], b = xs[xs.length - 1]; mkEl('ck-tag ' + q.k, 'left:calc(50% + ' + ((a + b) / 2) + 'cqw);top:calc(' + HY + '% + 3.6cqw);width:' + (b - a + CW) + 'cqw', q.t); }
-      L += (q.cs.length - 1) * sp + CW + gap;
-    });
+    hxFix();                                                                                                   // a mao e' do jogador: cada carta fica onde ele colocou (o jogo nao agrupa nem reordena)
+    hand.slice().sort((p, q) => p.hx - q.hx).forEach((c, i) => { if (c !== dragC) place(c, 'calc(50% + ' + c.hx + 'cqw)', c === selC ? 'calc(' + HY + '% - 3cqw)' : HY + '%', 0, 100 + i + (c === selC ? 50 : 0), true, 'hand'); });
+    if (selC && (!hand.includes(selC) || phase !== 'discard' || turn !== 0 || over)) selC = null;
+    dcEl.style.display = selC && selC !== dragC ? 'flex' : 'none';
+    if (selC) { dcEl.style.left = 'calc(50% + ' + Math.max(-26, Math.min(26, selC.hx)) + 'cqw)'; dcEl.style.top = 'calc(' + HY + '% - 14.5cqw)'; }
     disc.forEach((c, i) => { const top = i === disc.length - 1; place(c, 'calc(' + XX + '% + ' + c.ox + 'cqw)', 'calc(' + DY + '% + ' + c.oy + 'cqw)', c.rot, 20 + i, true, top && myDraw ? 'pick' : '', i >= disc.length - 3 ? 1 : 0); });
     for (let k = 1; k <= 2; k++) opp[k].forEach(c => place(c, PL[k].x + '%', PL[k].y + '%', 0, 5 + (c.vis ? 600 : 0), false, '', c.vis ? 1 : 0));
     lbDeck.textContent = 'monte · ' + n;
@@ -1463,34 +1485,99 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
     avEl.forEach((a, k) => { a.classList.toggle('on', turn === k && !over); if (k) a.querySelector('.ck-cnt').textContent = opp[k].length; });
     const tm = avEl[0].querySelector('.ck-tm'); tm.style.setProperty('--p', (left / TIME * 360) + 'deg'); tm.firstChild.textContent = left;
     btn.classList.toggle('ok', canBater());
-    if (!over) msg.textContent = turn !== 0 ? 'Jogando: ' + PL[turn].n + '…' : phase === 'draw' ? (disc.length ? 'Sua vez: compre do monte ou pegue o descarte' : 'Sua vez: compre do monte') : 'Toque numa carta para descartar';
+    if (!over) msg.textContent = turn !== 0 ? 'Jogando: ' + PL[turn].n + '…' : phase === 'draw' ? (disc.length ? 'Sua vez: compre do monte ou pegue o descarte' : 'Sua vez: compre do monte') : 'Toque numa carta e em Descartar (ou arraste para a lixeira)';
   }
   function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
   function ensureDeck() { if (deck.length) return; const top = disc.pop(); deck = shuffle(disc.splice(0)); if (top) disc.push(top); }
   function take(c) { cardSnd(); hand.push(c); phase = 'discard'; left = TIME; layout(); busy = true; later(() => busy = false, 500); }
   function throwCard(c) {
-    cardSnd(); hand.splice(hand.indexOf(c), 1); disc.push(c); phase = 'wait'; turn = 1; busy = true; layout();
+    cardSnd(); hand.splice(hand.indexOf(c), 1); c.hx = null; selC = null; disc.push(c); trashEl.classList.add('full'); phase = 'wait'; turn = 1; busy = true; layout();
     later(() => oppPlay(1), 900);
+  }
+  // bot bate: depois de algumas rodadas, de vez em quando um adversario monta 3 jogos de 3 cartas com as cartas que existem (mao dele + monte) e bate
+  let botTurns = 0;
+  function botWins(k) {
+    botTurns++; if (botTurns < 6 || Math.random() > .22) return false;
+    const pool = deck.concat(opp[k]), has = (s, r) => pool.find(c => c.s === s && c.r === r && c.r !== wildR);
+    for (let tries = 0; tries < 60; tries++) {
+      const used = new Set(), g = [], ok = (cs) => cs.every(c => c && !used.has(c)) && (cs.forEach(c => used.add(c)), g.push(cs), true);
+      const r0 = Math.floor(Math.random() * 13), ss = shuffle([0, 1, 2, 3]).slice(0, 3);
+      if (!ok(ss.map(s => has(s, r0)))) continue;
+      let good = true;
+      for (let q = 0; q < 2 && good; q++) { const s = Math.floor(Math.random() * 4), a = Math.floor(Math.random() * 11); good = ok([has(s, a), has(s, a + 1), has(s, a + 2)]); }
+      if (!good) continue;
+      const win = g.flat(), keep = opp[k].filter(c => !win.includes(c));
+      opp[k].splice(0, opp[k].length, ...win); deck = deck.filter(c => !win.includes(c)).concat(keep); shuffle(deck);
+      win.forEach(c => c.vis = true);
+      over = true; phase = 'over'; turn = k; msg.textContent = PL[k].n + ' bateu!'; layout(); later(() => ckEnd(null, k), 1100);
+      return true;
+    }
+    return false;
   }
   function oppPlay(k) {
     if (over) return; turn = k; phase = 'wait'; ensureDeck();
     const c = deck.pop(); opp[k].push(c); c.vis = true; cardSnd(); layout();
     later(() => { c.vis = false; layout(); }, 600);
     later(() => {
+      if (botWins(k)) return;
       const ok = opp[k].filter(x => x.r !== wildR), d = opp[k].splice(opp[k].indexOf((ok.length ? ok : opp[k])[Math.floor(Math.random() * (ok.length || opp[k].length))]), 1)[0]; disc.push(d); cardSnd(); layout();
       later(() => { if (k === 1) oppPlay(2); else { turn = 0; phase = 'draw'; left = TIME; busy = false; layout(); } }, 800);
     }, 1050);
   }
   S.addEventListener('click', e => {
+    if (Date.now() < noClickUntil) return;
+    if (selC && !e.target.closest('.ck-c,.ck-dc')) { selC = null; layout(); }
     const el = e.target.closest('.ck-c'); if (!el || busy || over || turn !== 0) return;
     const c = [].concat(deck, hand, disc).find(x => x.el === el); if (!c) return;
     if (phase === 'draw' && deck.length && c === deck[deck.length - 1]) { deck.pop(); take(c); }
     else if (phase === 'draw' && disc.length && c === disc[disc.length - 1]) { disc.pop(); take(c); }
     else if (phase === 'discard' && hand.includes(c)) {
       if (c.r === wildR) { msg.textContent = 'O curinga não pode ser descartado'; later(layout, 1600); }   // curinga fica na mao
-      else throwCard(c);
+      else { selC = selC === c ? null : c; layout(); }   // toque: a carta sobe e aparece o botao Descartar
     }
   });
+  // ---- arrastar cartas: reordenar a mao, jogar na lixeira, ou puxar do monte/descarte direto para um lugar da mao ----
+  const canTrash = () => phase === 'discard' && turn === 0 && !busy && !over;
+  const overTrash = e => { const m = S.getBoundingClientRect().width * .04; return [slotX, trashEl].some(el => { const R = el.getBoundingClientRect(); return e.clientX > R.left - m && e.clientX < R.right + m && e.clientY > R.top - m && e.clientY < R.bottom + m; }); };
+  S.addEventListener('pointerdown', e => {
+    if ((e.button || 0) > 0 || over || drag) return;
+    const el = e.target.closest('.ck-c'); if (!el) return;
+    const c = [].concat(deck, hand, disc).find(x => x.el === el); if (!c) return;
+    const myDraw = phase === 'draw' && turn === 0 && !busy;
+    const src = hand.includes(c) ? 'hand' : myDraw && deck.length && c === deck[deck.length - 1] ? 'deck' : myDraw && disc.length && c === disc[disc.length - 1] ? 'disc' : null;
+    if (!src) return;
+    const r = el.getBoundingClientRect();
+    drag = { c, src, el, id: e.pointerId, sx: e.clientX, sy: e.clientY, ox: e.clientX - (r.left + r.width / 2), oy: e.clientY - (r.top + r.height / 2), moved: false };
+  });
+  document.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.moved) { if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 6) return; drag.moved = true; dragC = drag.c; if (selC === drag.c) selC = null; drag.el.classList.add('drag'); }
+    const R = S.getBoundingClientRect();
+    drag.el.style.left = (e.clientX - drag.ox - R.left) + 'px'; drag.el.style.top = (e.clientY - drag.oy - R.top) + 'px';
+    const t = drag.src === 'hand' && canTrash();
+    trashEl.classList.toggle('hot', t && overTrash(e));
+    e.preventDefault();
+  }, { passive: false });
+  const dragEnd = (e, cancel) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const d = drag; drag = null; dragC = null; trashEl.classList.remove('hot');
+    if (!d.moved) return;                                   // so um toque: o clique trata (comprar / descartar)
+    noClickUntil = Date.now() + 350;
+    if (cancel) { layout(); return; }
+    const R = S.getBoundingClientRect(), u = R.width / 100, hx = Math.max(-XMAX, Math.min(XMAX, (e.clientX - d.ox - R.left) / u - 50));
+    if (d.src === 'hand') {
+      if (overTrash(e) && canTrash()) {
+        if (d.c.r === wildR) { msg.textContent = 'O curinga não pode ser descartado'; later(layout, 1600); layout(); }
+        else throwCard(d.c);
+        return;
+      }
+      d.c.hx = hx; pinC = d.c; layout(); return;
+    }
+    if ((e.clientY - d.oy - R.top) / R.height > .74) { (d.src === 'deck' ? deck : disc).pop(); d.c.hx = hx; pinC = d.c; take(d.c); }   // soltou na mao: a carta fica onde voce largou
+    else layout();
+  };
+  document.addEventListener('pointerup', e => dragEnd(e, false));
+  document.addEventListener('pointercancel', e => dragEnd(e, true));
   // ---- tela de fim da rodada: jogo de cada jogador (grupos feitos com etiqueta e cartas soltas) + revanche ----
   let endEl = null, endTk = null;
   function endClear() { cfStop(); clearInterval(endTk); endTk = null; if (endEl) { endEl.remove(); endEl = null; } }
@@ -1516,6 +1603,10 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
     row.append(who, hd); return row;
   }
   // ---- comemoracao: aplausos (palmas sintetizadas) + confetes rapidos na tela toda ----
+  function loseSnd() {                              // duas notas descendo (tom triste curto)
+    if (typeof AC === 'undefined' || !AC || muted) return;
+    try { [[392, 0], [311, .22], [262, .44]].forEach(([f, d]) => { const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime + d; o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.18, t + .03); g.gain.exponentialRampToValueAtTime(.0001, t + .5); o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + .55); }); } catch (e) {}
+  }
   let cfCv = null, cfRaf = 0;
   function cfStop() { cancelAnimationFrame(cfRaf); cfRaf = 0; if (cfCv) { cfCv.remove(); cfCv = null; } }
   function applause() {
@@ -1555,13 +1646,13 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
       cfRaf = requestAnimationFrame(frame);
     })(T0);
   }
-  function ckEnd(cut) {
-    endClear(); confetti(); applause();
-    const hr = hand.filter(x => x !== cut);
-    const el = document.createElement('div'); el.className = 'ke';
-    el.innerHTML = '<div class="ke-hd"><h2>Parabéns!</h2><p>Você venceu o jogo</p><div class="ke-pill">BATEU COM ' + hr.length + ' CARTAS - VIRA ' + RK[vira.r] + SU[vira.s] + '</div></div><div class="ke-rows"></div>' +
+  function ckEnd(cut, w) {                          // w = quem bateu (0 = voce, 1/2 = adversario)
+    endClear(); w = w || 0; if (w === 0) { confetti(); applause(); } else loseSnd();
+    const hr = hand.filter(x => x !== cut), wn = w ? PL[w].n : '';
+    const el = document.createElement('div'); el.className = 'ke' + (w ? ' lose' : '');
+    el.innerHTML = '<div class="ke-hd"><h2>' + (w ? 'Derrota' : 'Parabéns!') + '</h2><p>' + (w ? wn + ' venceu o jogo' : 'Você venceu o jogo') + '</p><div class="ke-pill">' + (w ? wn.toUpperCase() + ' BATEU' : 'BATEU') + ' COM ' + hr.length + ' CARTAS - VIRA ' + RK[vira.r] + SU[vira.s] + '</div></div><div class="ke-rows"></div>' +
       '<div class="ke-rm"><div class="ke-rh"><b>Quer revanche?</b><span class="kc">0/2 aceitaram</span><span class="kt">20s</span></div><p>Cacheta · Entrada: R$ 0</p><div class="ke-bt"><button type="button" class="vol">← VOLTAR</button><button type="button" class="rev">↻ REVANCHE</button></div></div>';
-    el.querySelector('.ke-rows').append(endRow(0, handsOf(hr), true), endRow(1, handsOf(opp[1]), false), endRow(2, handsOf(opp[2]), false));
+    el.querySelector('.ke-rows').append(endRow(0, handsOf(hr), w === 0), endRow(1, handsOf(opp[1]), w === 1), endRow(2, handsOf(opp[2]), w === 2));
     S.appendChild(el); endEl = el;
     const kc = el.querySelector('.kc'), kt = el.querySelector('.kt'), rev = el.querySelector('.rev'); let t = 20;
     endTk = setInterval(() => { t--; kt.textContent = t + 's'; if (t <= 0) { clearInterval(endTk); endTk = null; rev.disabled = true; rev.textContent = 'TEMPO ESGOTADO'; } }, 1000);
@@ -1583,7 +1674,7 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
   function start() {
     build(); clean(); myProfile(); over = false; busy = true; phase = 'wait'; turn = 0; left = TIME;
     const all = []; for (let s = 0; s < 4; s++) for (let r = 0; r < 13; r++) all.push([s, r]);
-    wildR = -1; vira = null; cards = []; badge.textContent = ''; deck = shuffle(all).map(a => mk(a[0], a[1])); hand = []; disc = []; opp = [null, [], []];
+    wildR = -1; vira = null; cards = []; badge.textContent = ''; deck = shuffle(all).map(a => mk(a[0], a[1])); hand = []; disc = []; opp = [null, [], []]; botTurns = 0; selC = null; trashEl.classList.remove('full');
     layout();
     let t = 450;
     for (let i = 0; i < 9; i++) for (let k = 0; k < 3; k++) { const kk = k; later(() => { cardSnd(.55, 1.2 + Math.random() * .25); const c = deck.pop(); if (kk === 0) hand.push(c); else { c.vis = true; opp[kk].push(c); later(() => { c.vis = false; layout(); }, 520); } layout(); }, t); t += 85; }
