@@ -232,10 +232,10 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #ckGame .ck-msg{position:absolute;left:0;right:0;top:97%;transform:translateY(-50%);text-align:center;font:600 3.2cqw system-ui,sans-serif;color:#e9c36d;text-shadow:0 .2cqw .5cqw #000;z-index:400}
 #ckGame .ke{position:absolute;inset:0;z-index:1000;display:flex;flex-direction:column;background:#0c2417;color:#f2efe8;font-family:system-ui,sans-serif;animation:keIn .4s both}
 @keyframes keIn{from{opacity:0}to{opacity:1}}
-#ckGame .ke-hd{text-align:center;padding:9cqw 4cqw 5cqw;background:linear-gradient(#14472a,#0f3a22)}
-#ckGame .ke-hd h2{margin:0;font:700 8cqw Georgia,serif;color:#f6e3a6}
-#ckGame .ke-hd p{margin:1.5cqw 0 0;font-size:3.8cqw;color:#e8e2d0}
-#ckGame .ke-pill{display:inline-block;margin-top:4cqw;padding:1.4cqw 4cqw;border-radius:9cqw;border:.3cqw solid #d9b25f;background:#1b1306;color:#f6e3a6;font:700 2.6cqw system-ui,sans-serif;letter-spacing:.2cqw}
+#ckGame .ke-hd{text-align:center;padding:5cqw 4cqw 3.5cqw;background:linear-gradient(#14472a,#0f3a22)}
+#ckGame .ke-hd h2{margin:0;font:700 5.6cqw Georgia,serif;color:#f6e3a6}
+#ckGame .ke-hd p{margin:1cqw 0 0;font-size:2.8cqw;color:#e8e2d0}
+#ckGame .ke-pill{display:inline-block;margin-top:2.6cqw;padding:1cqw 3cqw;border-radius:9cqw;border:.3cqw solid #d9b25f;background:#1b1306;color:#f6e3a6;font:700 2.1cqw system-ui,sans-serif;letter-spacing:.2cqw}
 #ckGame .ke-rows{flex:1;display:flex;flex-direction:column;background:#191510}
 #ckGame .ke-row{flex:1;display:flex;align-items:center;gap:2.5cqw;padding:2cqw 3cqw;border-top:.2cqw solid rgba(255,255,255,.08)}
 #ckGame .ke-row:first-child{border-top:0}
@@ -1493,7 +1493,7 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
   });
   // ---- tela de fim da rodada: jogo de cada jogador (grupos feitos com etiqueta e cartas soltas) + revanche ----
   let endEl = null, endTk = null;
-  function endClear() { clearInterval(endTk); endTk = null; if (endEl) { endEl.remove(); endEl = null; } }
+  function endClear() { cfStop(); clearInterval(endTk); endTk = null; if (endEl) { endEl.remove(); endEl = null; } }
   function handsOf(h) {                              // grupos feitos (com etiqueta) e sobras de 3 em 3 (sem etiqueta), como na mesa
     const g = groupsOf(h), cl = g.out.slice();
     for (let i = 0; i < g.rest.length; i += 3) cl.push({ t: null, cs: g.rest.slice(i, i + 3) });
@@ -1515,8 +1515,48 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
     });
     row.append(who, hd); return row;
   }
+  // ---- comemoracao: aplausos (palmas sintetizadas) + confetes rapidos na tela toda ----
+  let cfCv = null, cfRaf = 0;
+  function cfStop() { cancelAnimationFrame(cfRaf); cfRaf = 0; if (cfCv) { cfCv.remove(); cfCv = null; } }
+  function applause() {
+    if (typeof AC === 'undefined' || !AC || muted) return;
+    try {
+      const sr = AC.sampleRate, n = Math.floor(sr * .05), b = AC.createBuffer(1, n, sr), d = b.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (sr * .008));   // uma palma = ruido curto que cai rapido
+      const t0 = AC.currentTime + .05;
+      for (let i = 0; i < 70; i++) {
+        const at = t0 + Math.random() * 2.2, env = Math.sin(Math.PI * Math.min(1, (at - t0) / 2.2)) * .75 + .25;
+        const src = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+        src.buffer = b; src.playbackRate.value = .8 + Math.random() * .6;
+        f.type = 'bandpass'; f.frequency.value = 1400 + Math.random() * 2200; f.Q.value = .7;
+        g.gain.value = (.12 + Math.random() * .18) * env;
+        src.connect(f); f.connect(g); g.connect(AC.destination); src.start(at);
+      }
+    } catch (e) {}
+  }
+  function confetti() {
+    cfStop();
+    const cv = document.createElement('canvas'), W = innerWidth, H = innerHeight, dpr = Math.min(2, devicePixelRatio || 1);
+    cv.width = W * dpr; cv.height = H * dpr;
+    cv.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:99999';
+    document.body.appendChild(cv); cfCv = cv;
+    const c = cv.getContext('2d'); c.scale(dpr, dpr);
+    const col = ['#f6e3a6', '#d9b25f', '#2fbf6a', '#e63946', '#4dabf7', '#ff9f1c', '#ffffff', '#c77dff'];
+    const P = []; for (let i = 0; i < 170; i++) P.push({ x: Math.random() * W, y: -20 - Math.random() * H * .6, vx: (Math.random() - .5) * 3, vy: 3 + Math.random() * 5, w: 6 + Math.random() * 7, h: 4 + Math.random() * 6, r: Math.random() * 6.28, vr: (Math.random() - .5) * .35, c: col[i % col.length], ph: Math.random() * 6.28 });
+    const T0 = performance.now(), DUR = 2800;
+    (function frame(now) {
+      const t = now - T0; c.clearRect(0, 0, W, H);
+      if (t > DUR || !cfCv) { cfStop(); return; }
+      const fade = t > DUR - 600 ? (DUR - t) / 600 : 1; c.globalAlpha = fade;
+      P.forEach(p => {
+        p.x += p.vx + Math.sin(t / 300 + p.ph) * 1.2; p.y += p.vy; p.r += p.vr;
+        c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.scale(1, Math.cos(p.r * 1.7)); c.fillStyle = p.c; c.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); c.restore();
+      });
+      cfRaf = requestAnimationFrame(frame);
+    })(T0);
+  }
   function ckEnd(cut) {
-    endClear();
+    endClear(); confetti(); applause();
     const hr = hand.filter(x => x !== cut);
     const el = document.createElement('div'); el.className = 'ke';
     el.innerHTML = '<div class="ke-hd"><h2>Parabéns!</h2><p>Você venceu o jogo</p><div class="ke-pill">BATEU COM ' + hr.length + ' CARTAS - VIRA ' + RK[vira.r] + SU[vira.s] + '</div></div><div class="ke-rows"></div>' +
