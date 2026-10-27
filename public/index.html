@@ -227,6 +227,7 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
 #ckGame .ck-tm::before{content:"";position:absolute;inset:.7cqw;border-radius:50%;background:#1a1109}
 #ckGame .ck-tm span{position:relative}
 #ckGame .ck-av.on .ck-tm{display:flex}
+#ckGame .ck-av.off{opacity:.35;filter:grayscale(1)}
 #ckGame .ck-chat{position:absolute;left:-.6cqw;bottom:-.4cqw;width:4.2cqw;height:4.2cqw;border-radius:50%;background:#14100b;border:.3cqw solid #d9b25f;color:#fff;font-size:2.2cqw;line-height:3.6cqw;text-align:center}
 #ckGame .ck-cnt{position:absolute;right:-1cqw;bottom:-1cqw;min-width:5cqw;height:5cqw;border-radius:50%;background:#14233f;border:.3cqw solid #d9b25f;color:#fff;font:700 2.8cqw/5cqw system-ui,sans-serif;text-align:center}
 #ckGame .ck-bt{position:absolute;left:50%;top:82.2%;transform:translate(-50%,-50%);z-index:400;border:0;font:800 3cqw system-ui,sans-serif;letter-spacing:.25cqw;color:#cdbf9c;background:#5b4c34;border-radius:5cqw;padding:1.2cqw 5cqw;opacity:.8;cursor:default}
@@ -691,7 +692,7 @@ body.fs{overflow:hidden;padding:0;min-height:0;height:100vh;height:100dvh}
   <input id="name" type="hidden">
   <div class="lb-tabs" role="tablist">
     <button class="lb-tab on" data-p="pOnline" role="tab"><b>SINUCA</b><small><i class="dot"></i><span class="js-onl">—</span> jogando</small></button>
-    <button class="lb-tab" data-p="pCacheta" role="tab"><b>CACHETA</b><small>teste</small></button>
+    <button class="lb-tab" data-p="pCacheta" role="tab"><b>CACHETA</b><small>3 jogadores</small></button>
   </div>
   <section class="lb-panel on" id="pOnline"><div class="lb-rooms" id="lbRooms"><button class="lb-tile art" data-room="0"><span class="lb-tag">POPULAR</span><span class="lb-v">Grátis</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="0.25"><span class="lb-v">R$ 0,25</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="1"><span class="lb-v">R$ 1</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="2"><span class="lb-v">R$ 2</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="5"><span class="lb-v">R$ 5</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="10"><span class="lb-v">R$ 10</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="25"><span class="lb-v">R$ 25</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button><button class="lb-tile art" data-room="50"><span class="lb-v">R$ 50</span><span class="lb-pill"><span class="rn">0</span> 👥</span></button></div></section>
   <section class="lb-panel" id="pCacheta"><div class="ck-rooms" id="ckRooms"><button type="button" class="ck-room" data-croom="0" aria-label="Cacheta Grátis"></button><button type="button" class="ck-room" data-croom="0.25" aria-label="Cacheta R$ 0,25"></button><button type="button" class="ck-room" data-croom="1" aria-label="Cacheta R$ 1"></button><button type="button" class="ck-room" data-croom="2" aria-label="Cacheta R$ 2"></button><button type="button" class="ck-room" data-croom="5" aria-label="Cacheta R$ 5"></button><button type="button" class="ck-room" data-croom="10" aria-label="Cacheta R$ 10"></button><button type="button" class="ck-room" data-croom="25" aria-label="Cacheta R$ 25"></button><button type="button" class="ck-room" data-croom="50" aria-label="Cacheta R$ 50"></button></div></section>
@@ -1083,6 +1084,7 @@ function connect(then) {
   ws.onopen = () => { $('status').textContent = ''; then(); };
   ws.onmessage = e => { let m; try { m = JSON.parse(e.data); } catch (x) { return; } onMsg(m); };
   ws.onclose = () => {
+    if (window.ckClosed) window.ckClosed();
     if (demoMode) return;
     showLobby();
     $('status').textContent = 'Conexão perdida. Recarregue a página para jogar de novo.';
@@ -1092,6 +1094,7 @@ function send(o) { connect(() => ws.send(JSON.stringify(o))); }
 function nm() { return $('name').value.trim() || 'Jogador'; }
 
 function onMsg(m) {
+  if (m.t && m.t.charAt(0) === 'c' && m.t.charAt(1) === 'k') { if (window.ckOnMsg) window.ckOnMsg(m); return; }   // mensagens da Cacheta
   if (demoMode) return;
   if (m.t === 'wait') { /* sem texto: o seu perfil ja aparece no card da sala */ }
   else if (m.t === 'error') { clearMine(); $('status').textContent = m.m; }
@@ -1374,13 +1377,14 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
   document.querySelectorAll('.lb-panel').forEach(p => p.classList.toggle('on', p.id === t.dataset.p));
 }; });
 
-// ---------- CACHETA: mesa de teste (visual, sem servidor) ----------
+// ---------- CACHETA: mesa online (as regras e o dinheiro ficam no servidor; aqui so desenha e envia as jogadas) ----------
 (function () {
   const G = document.getElementById('ckGame'), S = document.getElementById('ckStage'); if (!G || !S) return;
   const SU = ['♠', '♥', '♦', '♣'], RK = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
   const DX = 40.5, XX = 59.5, DY = 40, HY = 89.5, TIME = 25;
   const PL = [{ n: 'Você', img: 'a05', x: 50, y: 68.5 }, { n: 'Jogador 2', img: 'a11', x: 17.5, y: 20 }, { n: 'Jogador 3', img: 'a03', x: 82.5, y: 20 }];
   let deck, hand, disc, opp, vira, phase, turn, busy, left, tick, built = false, over, timers = [];
+  let online = false, matched = false, dealing = false, dealt = false, dl = 0, pend = null, pendEnd = null, pendAt = null, roomId = '0', myStake = 0, wd = 0;
   let avEl = [], badge, msg, btn, lbDeck, arD, arX, slotX, slotD, trashEl, dcEl, selC = null;
   const TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v7M14 10v7"/></svg>';
   const later = (f, ms) => { const t = setTimeout(f, ms); timers.push(t); return t; };
@@ -1406,7 +1410,7 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
     btn = document.createElement('button'); btn.className = 'ck-bt'; btn.type = 'button'; btn.textContent = 'BATER!'; S.appendChild(btn);
     badge = mkEl('ck-lb', 'left:50%;top:54%;font-size:3cqw;color:#ffe9a0', '');
     msg = mkEl('ck-msg', '');
-    btn.onclick = () => { if (!btn.classList.contains('ok') || over) return; const cut = hand.find(c => groupsOf(hand.filter(x => x !== c)).rest.length === 0); over = true; phase = 'over'; msg.textContent = '🎉 Você bateu! Fim da rodada.'; layout(); later(() => ckEnd(cut), 900); };
+    btn.onclick = () => { if (!btn.classList.contains('ok') || over || busy || !matched) return; busy = true; ckSend({ t: 'ckbater' }); clearTimeout(wd); wd = setTimeout(() => { busy = false; layout(); }, 3000); };
   }
   // simbolos no meio: A grande, 2-10 com a disposicao de baralho, J/Q/K com a letra grande
   const PIP = [[[.5, .5]], [[.5, 0], [.5, 1]], [[.5, 0], [.5, .5], [.5, 1]], [[0, 0], [1, 0], [0, 1], [1, 1]], [[0, 0], [1, 0], [.5, .5], [0, 1], [1, 1]], [[0, 0], [1, 0], [0, .5], [1, .5], [0, 1], [1, 1]],
@@ -1423,7 +1427,7 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
     el.innerHTML = '<div class="ck-in"><div class="ck-b">◆</div><div class="ck-f' + (s === 1 || s === 2 ? ' red' : '') + '">' + (img ? '<span class="im" style="background-position:' + (r / 12 * 100).toFixed(3) + '% ' + (s / 3 * 100).toFixed(3) + '%"></span>' : '<i>' + RK[r] + '<s>' + SU[s] + '</s></i><i class="br">' + RK[r] + '<s>' + SU[s] + '</s></i>' + faceHtml(s, r)) + '</div></div>';
     S.appendChild(el); const o = { el, s, r, vis: false, rot: (Math.random() - .5) * 14, ox: (Math.random() - .5) * 1.8, oy: (Math.random() - .5) * 1.8 }; cards.push(o); return o;
   };
-  const markWild = () => cards.forEach(c => c.el.querySelector('.ck-f').classList.toggle('wild', c.r === wildR));
+  const markWild = () => cards.forEach(c => c.el.querySelector('.ck-f').classList.toggle('wild', c.id !== -1 && c.r === wildR));
   function place(c, x, y, r, z, up, cls, op) {
     const e = c.el; e.className = 'ck-c' + (cls ? ' ' + cls : '') + (up ? ' up' : '');
     e.style.left = x; e.style.top = y; e.style.setProperty('--r', r + 'deg'); e.style.zIndex = z; e.style.opacity = op == null ? 1 : op;
@@ -1496,50 +1500,97 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
     btn.classList.toggle('ok', canBater());
     if (!over) msg.textContent = turn !== 0 ? 'Jogando: ' + PL[turn].n + '…' : phase === 'draw' ? (disc.length ? 'Sua vez: compre do monte ou pegue o descarte' : 'Sua vez: compre do monte') : 'Toque numa carta e em Descartar (ou arraste para a lixeira)';
   }
-  function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-  function ensureDeck() { if (deck.length) return; const top = disc.pop(); deck = shuffle(disc.splice(0)); if (top) disc.push(top); }
-  function take(c, at) { cardSnd(); hand.push(c); if (at != null && at < hand.length - 1) { const j = hand.length - 1; [hand[at], hand[j]] = [hand[j], hand[at]]; } phase = 'discard'; left = TIME; layout(); busy = true; later(() => busy = false, 500); }
-  function throwCard(c) {
-    cardSnd(); dropHand(c); selC = null; disc.push(c); trashEl.classList.add('full'); phase = 'wait'; turn = 1; busy = true; layout();
-    later(() => oppPlay(1), 900);
+  // ---- ONLINE: o servidor manda o estado (ckstate); a tela so desenha e envia as jogadas (ckdraw / ckdiscard / ckbater) ----
+  const ckSend = o => { if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); };
+  function newHidden() { const o = mk(0, 0); o.id = -1; return o; }       // carta virada: a tela nao sabe qual e
+  function refact(o, id) {                                                  // vira a carta de frente com o valor real
+    o.id = id; o.s = (id / 13) | 0; o.r = id % 13;
+    const f = o.el.querySelector('.ck-f');
+    f.classList.toggle('red', o.s === 1 || o.s === 2); f.classList.toggle('wild', o.r === wildR);
+    f.innerHTML = '<span class="im" style="background-position:' + (o.r / 12 * 100).toFixed(3) + '% ' + (o.s / 3 * 100).toFixed(3) + '%"></span>';
   }
-  // bot bate: depois de algumas rodadas, de vez em quando um adversario monta 3 jogos de 3 cartas com as cartas que existem (mao dele + monte) e bate
-  let botTurns = 0;
-  function botWins(k) {
-    botTurns++; if (botTurns < 6 || Math.random() > .22) return false;
-    const pool = deck.concat(opp[k]), has = (s, r) => pool.find(c => c.s === s && c.r === r && c.r !== wildR);
-    for (let tries = 0; tries < 60; tries++) {
-      const used = new Set(), g = [], ok = (cs) => cs.every(c => c && !used.has(c)) && (cs.forEach(c => used.add(c)), g.push(cs), true);
-      const r0 = Math.floor(Math.random() * 13), ss = shuffle([0, 1, 2, 3]).slice(0, 3);
-      if (!ok(ss.map(s => has(s, r0)))) continue;
-      let good = true;
-      for (let q = 0; q < 2 && good; q++) { const s = Math.floor(Math.random() * 4), a = Math.floor(Math.random() * 11); good = ok([has(s, a), has(s, a + 1), has(s, a + 2)]); }
-      if (!good) continue;
-      const win = g.flat(), keep = opp[k].filter(c => !win.includes(c));
-      opp[k].splice(0, opp[k].length, ...win); deck = deck.filter(c => !win.includes(c)).concat(keep); shuffle(deck);
-      win.forEach(c => c.vis = true);
-      over = true; phase = 'over'; turn = k; msg.textContent = PL[k].n + ' bateu!'; layout(); later(() => ckEnd(null, k), 1100);
-      return true;
+  const hideCard = o => { o.id = -1; o.vis = false; };
+  function kill(o) { const i = cards.indexOf(o); if (i >= 0) cards.splice(i, 1); o.el.remove(); }
+  function waitReply() { clearTimeout(wd); wd = setTimeout(() => { busy = false; layout(); }, 3000); }
+  function askDraw(from, at) {                                              // comprar: o servidor sorteia/entrega a carta
+    if (busy || over || !matched || turn !== 0 || phase !== 'draw') return;
+    busy = true; pendAt = at == null ? null : at; ckSend({ t: 'ckdraw', from }); waitReply(); layout();
+  }
+  function throwCard(c) {                                                   // descartar: some da mao na hora; o servidor confirma
+    cardSnd(); dropHand(c); selC = null; disc.push(c); trashEl.classList.add('full'); phase = 'wait'; busy = true; layout();
+    ckSend({ t: 'ckdiscard', c: c.id }); waitReply();
+  }
+  // estado do servidor -> mesa. Primeiro move as cartas conforme o evento (para animar), depois confere as contagens (conserta qualquer diferenca)
+  function applyState(st) {
+    wildR = st.wild; const ev = st.ev || {};
+    if (!vira) vira = newHidden();
+    if (vira.id !== st.vira) refact(vira, st.vira);
+    const want = new Set(st.hand);
+    for (const o of hand.slice()) if (!want.has(o.id)) {                    // carta que saiu da minha mao
+      dropHand(o);
+      if (ev.a === 'X' && ev.w === 0 && ev.c === o.id) disc.push(o); else { hideCard(o); deck.unshift(o); }
     }
-    return false;
+    const have = new Set(hand.map(o => o.id));
+    for (const id of st.hand) {                                             // carta nova na minha mao (do monte ou do descarte)
+      if (have.has(id)) continue;
+      const o = ev.a === 'T' && ev.w === 0 && disc.length ? disc.pop() : (deck.pop() || newHidden());
+      refact(o, id); hand.push(o); have.add(id);
+      if (pendAt != null && pendAt < hand.length - 1) { const j = hand.length - 1; [hand[pendAt], hand[j]] = [hand[j], hand[pendAt]]; }
+      pendAt = null;
+    }
+    for (let k = 1; k <= 2; k++) {                                          // adversarios: so a quantidade de cartas e conhecida
+      let d = st.cnt[k] - opp[k].length;
+      while (d > 0) {
+        const o = ev.a === 'T' && ev.w === k && disc.length ? disc.pop() : (deck.pop() || newHidden());
+        hideCard(o); o.vis = true; opp[k].push(o); later(() => { o.vis = false; layout(); }, 600); d--;
+      }
+      while (d < 0) {
+        const o = opp[k].pop();
+        if (ev.a === 'X' && ev.w === k && ev.c !== undefined) { refact(o, ev.c); o.vis = false; disc.push(o); } else { hideCard(o); deck.unshift(o); }
+        d++;
+      }
+    }
+    while (deck.length < st.deck) deck.unshift(newHidden());
+    while (deck.length > st.deck) kill(deck.shift());
+    while (disc.length > st.discN) kill(disc.shift());
+    while (disc.length < st.discN) disc.unshift(newHidden());
+    st.dt.forEach((id, i) => { const o = disc[disc.length - st.dt.length + i]; if (o && o.id !== id) refact(o, id); });
+    turn = st.turn; phase = st.turn === 0 ? st.phase : 'wait';
+    dl = (st._at || performance.now()) + st.tl; left = Math.max(0, Math.min(TIME, Math.ceil((dl - performance.now()) / 1000)));
+    st.alive.forEach((a, k) => avEl[k].classList.toggle('off', !a));
+    markWild(); badge.textContent = 'Curinga: ' + RK[wildR] + '  (vira ' + RK[vira.r] + SU[vira.s] + ')';
+    trashEl.classList.toggle('full', disc.length > 0);
+    busy = false; clearTimeout(wd);
+    if (ev.a === 'D' || ev.a === 'T' || (ev.a === 'X' && ev.w !== 0)) cardSnd();
+    layout();
   }
-  function oppPlay(k) {
-    if (over) return; turn = k; phase = 'wait'; ensureDeck();
-    const c = deck.pop(); opp[k].push(c); c.vis = true; cardSnd(); layout();
-    later(() => { c.vis = false; layout(); }, 600);
+  // distribuicao (animacao): 9 cartas para cada um, depois a vira. As cartas da minha mao vem do servidor.
+  function dealAnim(st) {
+    dealing = true; busy = true; phase = 'wait'; turn = st.turn; wildR = -1;
+    deck = []; for (let i = 0; i < 52; i++) deck.push(newHidden());
+    layout();
+    let t = 450;
+    for (let i = 0; i < 9; i++) for (let k = 0; k < 3; k++) {
+      const ii = i, kk = k;
+      later(() => {
+        cardSnd(.55, 1.2 + Math.random() * .25); const c = deck.pop();
+        if (kk === 0) { refact(c, st.hand[ii]); hand.push(c); } else { c.vis = true; opp[kk].push(c); later(() => { c.vis = false; layout(); }, 520); }
+        layout();
+      }, t); t += 85;
+    }
+    later(() => { cardSnd(); const v = deck.pop(); refact(v, st.vira); vira = v; wildR = st.wild; markWild(); badge.textContent = 'Curinga: ' + RK[wildR] + '  (vira ' + RK[v.r] + SU[v.s] + ')'; layout(); }, t + 200);
     later(() => {
-      if (botWins(k)) return;
-      const ok = opp[k].filter(x => x.r !== wildR), d = opp[k].splice(opp[k].indexOf((ok.length ? ok : opp[k])[Math.floor(Math.random() * (ok.length || opp[k].length))]), 1)[0]; disc.push(d); cardSnd(); layout();
-      later(() => { if (k === 1) oppPlay(2); else { turn = 0; phase = 'draw'; left = TIME; busy = false; layout(); } }, 800);
-    }, 1050);
+      dealing = false; busy = false; applyState(pend || st); pend = null;
+      if (pendEnd) { const e = pendEnd; pendEnd = null; ckEnd(e); }
+    }, t + 800);
   }
   S.addEventListener('click', e => {
     if (Date.now() < noClickUntil) return;
     if (selC && !e.target.closest('.ck-c,.ck-dc')) { selC = null; layout(); }
     const el = e.target.closest('.ck-c'); if (!el || busy || over || turn !== 0) return;
     const c = [].concat(deck, hand, disc).find(x => x.el === el); if (!c) return;
-    if (phase === 'draw' && deck.length && c === deck[deck.length - 1]) { deck.pop(); take(c); }
-    else if (phase === 'draw' && disc.length && c === disc[disc.length - 1]) { disc.pop(); take(c); }
+    if (phase === 'draw' && deck.length && c === deck[deck.length - 1]) askDraw('deck');
+    else if (phase === 'draw' && disc.length && c === disc[disc.length - 1]) askDraw('disc');
     else if (phase === 'discard' && hand.includes(c)) {
       if (c.r === wildR) { msg.textContent = 'O curinga não pode ser descartado'; later(layout, 1600); }   // curinga fica na mao
       else { selC = selC === c ? null : c; layout(); }   // toque: a carta sobe e aparece o botao Descartar
@@ -1583,7 +1634,7 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
       if (inHand) { const i = hand.indexOf(d.c), j = nearSlot(hx, hand.length); if (j !== i) [hand[i], hand[j]] = [hand[j], hand[i]]; }   // solta sobre outro lugar: as duas cartas trocam
       layout(); return;
     }
-    if (inHand) { (d.src === 'deck' ? deck : disc).pop(); take(d.c, nearSlot(hx, 9)); }   // soltou na mao: a carta ocupa esse lugar e a que estava la vai para o lugar extra
+    if (inHand) askDraw(d.src === 'deck' ? 'deck' : 'disc', nearSlot(hx, 9));   // soltou na mao: a carta ocupa esse lugar e a que estava la vai para o lugar extra
     else layout();
   };
   document.addEventListener('pointerup', e => dragEnd(e, false));
@@ -1656,23 +1707,33 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
       cfRaf = requestAnimationFrame(frame);
     })(T0);
   }
-  function ckEnd(cut, w) {                          // w = quem bateu (0 = voce, 1/2 = adversario)
-    endClear(); w = w || 0; if (w === 0) { confetti(); applause(); } else loseSnd();
-    const hr = hand.filter(x => x !== cut), wn = w ? PL[w].n : '';
-    const el = document.createElement('div'); el.className = 'ke' + (w ? ' lose' : '');
-    el.innerHTML = '<div class="ke-hd"><h2>' + (w ? 'Derrota' : 'Parabéns!') + '</h2><p>' + (w ? wn + ' venceu o jogo' : 'Você venceu o jogo') + '</p><div class="ke-pill">' + (w ? wn.toUpperCase() + ' BATEU' : 'BATEU') + ' COM ' + hr.length + ' CARTAS - VIRA ' + RK[vira.r] + SU[vira.s] + '</div></div><div class="ke-rows"></div>' +
-      '<div class="ke-rm"><div class="ke-rh"><b>Quer revanche?</b><span class="kc">0/2 aceitaram</span><span class="kt">20s</span></div><p>Cacheta · Entrada: ' + entry + '</p><div class="ke-bt"><button type="button" class="vol">← VOLTAR</button><button type="button" class="rev">↻ REVANCHE</button></div></div>';
-    el.querySelector('.ke-rows').append(endRow(0, handsOf(hr), w === 0), endRow(1, handsOf(opp[1]), w === 1), endRow(2, handsOf(opp[2]), w === 2));
+  function ckEnd(E) {                               // E = resultado vindo do servidor (E.w: 0 = voce, 1/2 = adversario; E.left = voce saiu/perdeu por faltas)
+    endClear(); over = true; matched = false; busy = false; phase = 'over'; clearTimeout(wd);
+    if (E.wild !== undefined) wildR = E.wild;
+    const w = E.left ? -1 : E.w, me = w === 0, wn = w > 0 ? PL[w].n : '';
+    if (me) { confetti(); applause(); } else loseSnd();
+    const brl = v => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const title = E.left ? 'Você perdeu' : me ? 'Parabéns!' : 'Derrota';
+    const sub = E.left ? (E.note || 'Você saiu da partida') : me ? (E.how === 'wo' ? 'Os outros jogadores saíram' : 'Você venceu o jogo') : wn + ' venceu o jogo';
+    const pill = E.left ? 'PERDEU A APOSTA' : E.how === 'wo' ? (me ? 'VITÓRIA POR W.O.' : wn.toUpperCase() + ' VENCEU POR W.O.') :
+      (me ? 'BATEU' : wn.toUpperCase() + ' BATEU') + ' COM ' + E.hands[w].length + ' CARTAS - VIRA ' + RK[E.vira % 13] + SU[(E.vira / 13) | 0];
+    const money = !(E.stake > 0) ? 'Entrada: Grátis' : 'Entrada: ' + entry + (me ? ' · Você ganhou ' + brl(E.prize) : ' · Você perdeu ' + brl(E.stake));
+    const el = document.createElement('div'); el.className = 'ke' + (me ? '' : ' lose');
+    el.innerHTML = '<div class="ke-hd"><h2>' + title + '</h2><p>' + sub + '</p><div class="ke-pill">' + pill + '</div></div><div class="ke-rows"></div>' +
+      '<div class="ke-rm"><div class="ke-rh"><b>Jogar de novo?</b></div><p>Cacheta · ' + money + '</p><div class="ke-bt"><button type="button" class="vol">← VOLTAR</button><button type="button" class="rev">↻ JOGAR DE NOVO</button></div></div>';
+    if (!E.left) {
+      const mkTmp = id => { const o = mk((id / 13) | 0, id % 13); o.el.remove(); cards.pop(); o.id = id; if (o.r === wildR) o.el.querySelector('.ck-f').classList.add('wild'); return o; };
+      E.hands.forEach((h, k) => {
+        const row = endRow(k, handsOf(h.map(mkTmp)), w === k);
+        if (!h.length) row.querySelector('.ke-hand').textContent = 'saiu da partida';
+        el.querySelector('.ke-rows').append(row);
+      });
+    }
     S.appendChild(el); endEl = el;
-    const kc = el.querySelector('.kc'), kt = el.querySelector('.kt'), rev = el.querySelector('.rev'); let t = 20;
-    endTk = setInterval(() => { t--; kt.textContent = t + 's'; if (t <= 0) { clearInterval(endTk); endTk = null; rev.disabled = true; rev.textContent = 'TEMPO ESGOTADO'; } }, 1000);
     el.querySelector('.vol').onclick = () => document.getElementById('ckX').click();
-    rev.onclick = () => {                            // mesa de teste: os dois jogadores aceitam um depois do outro
-      clearInterval(endTk); endTk = null; rev.disabled = true; rev.textContent = 'AGUARDANDO...';
-      later(() => { kc.textContent = '1/2 aceitaram'; }, 700); later(() => { kc.textContent = '2/2 aceitaram'; }, 1400); later(start, 2100);
-    };
+    el.querySelector('.rev').onclick = () => { endClear(); resetTable(); queueRoom(roomId); };   // jogar de novo = entrar na fila da mesma sala (cobra a aposta de novo)
   }
-  function clean() { timers.forEach(clearTimeout); timers = []; clearInterval(tick); endClear(); S.querySelectorAll('.ck-c,.ck-tag').forEach(e => e.remove()); }
+  function clean() { timers.forEach(clearTimeout); timers = []; clearInterval(tick); clearTimeout(wd); endClear(); S.querySelectorAll('.ck-c,.ck-tag').forEach(e => e.remove()); }
   function myProfile() {                           // apelido e avatar da conta (os mesmos do cabecalho do lobby)
     const cn = document.getElementById('chipNick'), ca = document.getElementById('chipAv'), nick = cn && cn.textContent.trim();
     if (!nick) return;
@@ -1681,23 +1742,63 @@ document.querySelectorAll('.lb-tab').forEach(t => { t.onclick = () => {
     if (ca && ca.style.background && /url\(/.test(ca.style.background)) { ph.textContent = ''; ph.style.background = ca.style.background; }
     else if (ca && ca.textContent.trim()) { ph.textContent = ca.textContent.trim(); if (ca.style.background) ph.style.background = ca.style.background; }
   }
-  function start() {
-    build(); clean(); myProfile(); over = false; busy = true; phase = 'wait'; turn = 0; left = TIME;
-    const all = []; for (let s = 0; s < 4; s++) for (let r = 0; r < 13; r++) all.push([s, r]);
-    wildR = -1; vira = null; cards = []; badge.textContent = ''; deck = shuffle(all).map(a => mk(a[0], a[1])); hand = []; disc = []; opp = [null, [], []]; botTurns = 0; selC = null; trashEl.classList.remove('full');
-    layout();
-    let t = 450;
-    for (let i = 0; i < 9; i++) for (let k = 0; k < 3; k++) { const kk = k; later(() => { cardSnd(.55, 1.2 + Math.random() * .25); const c = deck.pop(); if (kk === 0) hand.push(c); else { c.vis = true; opp[kk].push(c); later(() => { c.vis = false; layout(); }, 520); } layout(); }, t); t += 85; }
-    later(() => { cardSnd(); const v = deck.pop(); vira = v; wildR = (v.r + 1) % 13; markWild(); badge.textContent = 'Curinga: ' + RK[wildR] + '  (vira ' + RK[v.r] + SU[v.s] + ')'; layout(); }, t + 200);
-    later(() => { phase = 'draw'; busy = false; left = TIME; layout(); }, t + 800);
-    tick = setInterval(() => {
-      if (over || turn !== 0 || busy || (phase !== 'draw' && phase !== 'discard')) return;
-      left--; if (left > 0) { layout(); return; }
-      if (phase === 'draw') { ensureDeck(); const c = deck.pop(); take(c); } else throwCard([...hand].reverse().find(x => x.r !== wildR) || hand[hand.length - 1]);   // tempo acabou: descarta a ultima carta que nao seja curinga
-    }, 1000);
+  function paintPlayer(k) {                         // nome e foto de quem esta na mesa (vem do servidor)
+    const a = avEl[k], n = PL[k].n || '?';
+    a.querySelector('.ck-nm').textContent = n;
+    a.querySelector('.ck-ph').innerHTML = n[0] + '<img src="/avatars/' + PL[k].img + '.webp" alt="" onerror="this.remove()">';
   }
-  document.querySelectorAll('#ckRooms .ck-room').forEach(t => t.addEventListener('click', () => { const v = t.dataset.croom; entry = v === '0' ? 'Grátis' : 'R$ ' + v.replace('.', ','); G.hidden = false; start(); }));
-  document.getElementById('ckX').addEventListener('click', () => { G.hidden = true; clean(); });
+  function resetTable() {
+    build(); clean(); myProfile();
+    over = false; busy = false; matched = false; dealing = false; dealt = false; pend = null; pendEnd = null; pendAt = null; selC = null;
+    wildR = -1; vira = null; cards = []; deck = []; hand = []; disc = []; opp = [null, [], []]; turn = 0; phase = 'wait'; left = TIME; badge.textContent = '';
+    trashEl.classList.remove('full'); btn.classList.remove('ok');
+    avEl.forEach((a, k) => { a.classList.remove('on', 'off'); if (k) a.style.visibility = 'hidden'; });   // adversarios aparecem quando a mesa fechar
+    tick = setInterval(() => {                      // relogio da vez: so mostra (quem manda e o servidor)
+      if (over || !matched || dealing) return;
+      const l = Math.max(0, Math.min(TIME, Math.ceil((dl - performance.now()) / 1000)));
+      if (l !== left) { left = l; layout(); }
+    }, 250);
+  }
+  function queueRoom(room) {
+    matched = false; dealt = false;
+    msg.textContent = 'Procurando jogadores… 1/3' + (room === '0' ? ' (na sala Grátis, se faltar gente entram robôs)' : '');
+    send({ t: 'ckqueue', room });
+  }
+  function ckClose() { online = false; matched = false; dealing = false; G.hidden = true; clean(); }
+  function ckToast(t) {
+    const e = document.createElement('div'); e.textContent = t;
+    e.style.cssText = 'position:fixed;left:50%;bottom:8%;transform:translateX(-50%);max-width:88vw;background:#1a1410;color:#ffe9a0;border:1px solid #d9b25f;padding:10px 16px;border-radius:12px;font:600 14px system-ui,sans-serif;z-index:100000;text-align:center';
+    document.body.appendChild(e); setTimeout(() => e.remove(), 4500);
+  }
+  window.ckOnMsg = m => {
+    if (m.t === 'ckwait') { if (online && !matched) msg.textContent = 'Procurando jogadores… ' + m.n + '/' + m.need + (roomId === '0' ? ' (na sala Grátis, se faltar gente entram robôs)' : ''); return; }
+    if (m.t === 'ckmatch') {
+      if (!online) return;
+      matched = true; myStake = m.stake || 0; roomId = String(m.room);
+      m.players.forEach((p, k) => { if (p.nick) PL[k].n = p.nick; if (p.av && p.av.id) PL[k].img = p.av.id; if (k) { paintPlayer(k); avEl[k].style.visibility = ''; } });
+      msg.textContent = 'Distribuindo as cartas…';
+      return;
+    }
+    if (m.t === 'ckstate') {
+      if (!online || !matched) return;
+      m._at = performance.now();
+      if (dealing) { pend = m; return; }
+      if (!dealt) { dealt = true; dealAnim(m); return; }
+      applyState(m); return;
+    }
+    if (m.t === 'ckend') { if (!online) return; if (dealing) { pendEnd = m; return; } ckEnd(m); return; }
+    if (m.t === 'ckerror') { ckClose(); ckToast(m.m); return; }
+    if (m.t === 'ckneedlogin') { ckClose(); if (window.__needLogin) window.__needLogin(); return; }
+  };
+  window.ckClosed = () => { if (online && !G.hidden) { const was = matched && !over; ckClose(); ckToast(was ? 'Conexão perdida. Você saiu da partida.' : 'Conexão perdida.'); } };
+  document.querySelectorAll('#ckRooms .ck-room').forEach(t => t.addEventListener('click', () => {
+    const v = t.dataset.croom; roomId = v; entry = v === '0' ? 'Grátis' : 'R$ ' + v.replace('.', ',');
+    online = true; G.hidden = false; resetTable(); queueRoom(v);
+  }));
+  document.getElementById('ckX').addEventListener('click', () => {
+    if (matched && !over && myStake > 0 && !confirm('Se sair agora você perde a aposta de R$ ' + myStake.toFixed(2).replace('.', ',') + '. Quer sair mesmo?')) return;
+    ckSend({ t: 'ckleave' }); ckClose();
+  });
 })();
 connect(() => {});   // conecta ao abrir a pagina: mostra quantos estao online (e ja acorda o servidor)
 $('name').value = (() => { try { return localStorage.getItem('sinuca-name') || ''; } catch (e) { return ''; } })();
