@@ -1591,6 +1591,14 @@ window.__ckCounts = m => {
     if (vira) place(vira, 'calc(' + DX + '% - 5.2cqw)', 'calc(' + DY + '% - 1cqw)', -11, 8, true, '', 1);   // vira (define o curinga): debaixo do monte, de frente, inclinada
     S.querySelectorAll('.ck-tag').forEach(e => e.remove());
     const HXS = handXs(); hand.forEach((c, i) => { if (c !== dragC) place(c, 'calc(50% + ' + HXS[i] + 'cqw)', c === selC ? 'calc(' + HY + '% - 3cqw)' : HY + '%', 0, 100 + i + (c === selC ? 50 : 0), true, 'hand'); });
+    if (wildR >= 0) { let st0 = 0; gsz.forEach(n => {                       // barrinha verde (Trinca / Sequência) embaixo de cada grupo valido da mao, durante a partida
+      const cs = hand.slice(st0, st0 + n), v = n >= 3 && !cs.includes(dragC) && cs.every(c => c.id >= 0) ? validGroup(cs) : null;
+      if (v) {
+        const x0 = HXS[st0], x1 = HXS[st0 + n - 1], t = document.createElement('div'); t.className = 'ck-tag'; t.textContent = v.k === 't' ? 'TRINCA' : 'SEQUÊNCIA';
+        t.style.left = 'calc(50% + ' + ((x0 + x1) / 2) + 'cqw)'; t.style.width = (x1 - x0 + 9.6) + 'cqw'; t.style.top = 'calc(' + HY + '% + 7.4cqw)'; S.appendChild(t);
+      }
+      st0 += n;
+    }); }
     if (selC && (!hand.includes(selC) || phase !== 'discard' || turn !== 0 || over)) selC = null;
     dcEl.style.display = selC && selC !== dragC ? 'flex' : 'none';
     if (selC) { dcEl.style.left = 'calc(50% + ' + Math.max(-26, Math.min(26, HXS[hand.indexOf(selC)])) + 'cqw)'; dcEl.style.top = 'calc(' + HY + '% - 14.5cqw)'; }
