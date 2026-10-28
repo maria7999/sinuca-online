@@ -1883,7 +1883,7 @@ window.__ckCounts = m => {
       if (!online) return;
       matched = true; myStake = m.stake || 0; roomId = String(m.room);
       nSeats = m.players.length; window.__ckSearch = false; hideSearch(); G.hidden = false;   // achou a mesa: fecha a janela e abre o jogo
-      PL[1].x = nSeats === 2 ? 50 : 17.5; avEl[1].style.left = PL[1].x + '%';                 // com 2 jogadores o adversario fica no centro
+      PL[1].x = nSeats === 2 ? 50 : 17.5; PL[1].y = nSeats === 2 ? 4.5 : 20; avEl[1].style.left = PL[1].x + '%'; avEl[1].style.top = PL[1].y + '%';                 // com 2 jogadores o adversario fica no centro
       m.players.forEach((p, k) => { if (p.nick) PL[k].n = p.nick; if (p.av && p.av.id) PL[k].img = p.av.id; if (k) { paintPlayer(k); avEl[k].style.visibility = ''; } });
       for (let k = nSeats; k < 3; k++) avEl[k].style.visibility = 'hidden';
       msg.textContent = 'Distribuindo as cartas…';
