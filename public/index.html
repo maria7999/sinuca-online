@@ -1484,16 +1484,18 @@ window.__ckCounts = m => {
     el.innerHTML = '<div class="ck-in"><div class="ck-b">◆</div><div class="ck-f' + (s === 1 || s === 2 ? ' red' : '') + '">' + (img ? '<span class="im" style="background-position:' + (r / 12 * 100).toFixed(3) + '% ' + (s / 3 * 100).toFixed(3) + '%"></span>' : '<i>' + RK[r] + '<s>' + SU[s] + '</s></i><i class="br">' + RK[r] + '<s>' + SU[s] + '</s></i>' + faceHtml(s, r)) + '</div></div>';
     S.appendChild(el); const o = { el, s, r, vis: false, rot: (Math.random() - .5) * 14, ox: (Math.random() - .5) * 1.8, oy: (Math.random() - .5) * 1.8 }; cards.push(o); return o;
   };
-  const markWild = () => cards.forEach(c => c.el.querySelector('.ck-f').classList.toggle('wild', c.id !== -1 && c.r === wildR));
+  const markWild = () => cards.forEach(c => c.el.querySelector('.ck-f').classList.toggle('wild', c.id !== -1 && isW(c)));
   function place(c, x, y, r, z, up, cls, op) {
     const e = c.el; e.className = 'ck-c' + (cls ? ' ' + cls : '') + (up ? ' up' : '');
     e.style.left = x; e.style.top = y; e.style.setProperty('--r', r + 'deg'); e.style.zIndex = z; e.style.opacity = op == null ? 1 : op;
   }
   // curinga = carta de valor seguinte ao da "vira" (primeira carta do descarte). wildR = valor (0..12) ou -1
-  let wildR = -1, cards = [];
+  let wildR = -1, wildS = -1, cards = [];
+  const isW = c => c.r === wildR && c.s === wildS;                 // curinga = UMA carta so (valor + naipe)
+  const setWild = id => { wildR = id < 0 ? -1 : id % 13; wildS = id < 0 ? -1 : (id / 13) | 0; };
   const pop = m => { let n = 0; while (m) { n += m & 1; m >>= 1; } return n; };
   function validGroup(cs) {
-    const nat = cs.filter(c => c.r !== wildR), ws = cs.filter(c => c.r === wildR), w = ws.length;
+    const nat = cs.filter(c => !isW(c)), ws = cs.filter(isW), w = ws.length;
     if (cs.length < 3 || nat.length < 2) return null;
     if (nat.every(c => c.r === nat[0].r)) {                       // trinca: mesmo valor, naipes diferentes (curinga completa)
       if (new Set(nat.map(c => c.s)).size !== nat.length || cs.length > 4) return null;
@@ -1515,7 +1517,7 @@ window.__ckCounts = m => {
   }
   const gcache = new Map();
   function groupsOf(h) {
-    const key = wildR + '|' + h.map(c => c.s * 13 + c.r).join(','); if (gcache.has(key)) return gcache.get(key);
+    const key = wildR + ',' + wildS + '|' + h.map(c => c.s * 13 + c.r).join(','); if (gcache.has(key)) return gcache.get(key);
     const n = h.length, valid = [];
     for (let m = 7; m < (1 << n); m++) { if (pop(m) < 3) continue; const cs = []; for (let i = 0; i < n; i++) if (m >> i & 1) cs.push(h[i]); const v = validGroup(cs); if (v) valid.push({ m, v }); }
     const memo = new Map();
@@ -1608,7 +1610,7 @@ window.__ckCounts = m => {
   function refact(o, id) {                                                  // vira a carta de frente com o valor real
     o.id = id; o.s = (id / 13) | 0; o.r = id % 13;
     const f = o.el.querySelector('.ck-f');
-    f.classList.toggle('red', o.s === 1 || o.s === 2); f.classList.toggle('wild', o.r === wildR);
+    f.classList.toggle('red', o.s === 1 || o.s === 2); f.classList.toggle('wild', isW(o));
     f.innerHTML = '<span class="im" style="background-position:' + (o.r / 12 * 100).toFixed(3) + '% ' + (o.s / 3 * 100).toFixed(3) + '%"></span>';
   }
   const hideCard = o => { o.id = -1; o.vis = false; };
@@ -1624,7 +1626,7 @@ window.__ckCounts = m => {
   }
   // estado do servidor -> mesa. Primeiro move as cartas conforme o evento (para animar), depois confere as contagens (conserta qualquer diferenca)
   function applyState(st) {
-    wildR = st.wild; const ev = st.ev || {};
+    setWild(st.wild); const ev = st.ev || {};
     if (!vira) vira = newHidden();
     if (vira.id !== st.vira) refact(vira, st.vira);
     const want = new Set(st.hand);
@@ -1637,7 +1639,6 @@ window.__ckCounts = m => {
       if (have.has(id)) continue;
       const o = ev.a === 'T' && ev.w === 0 && disc.length ? disc.pop() : (deck.pop() || newHidden());
       refact(o, id); pushHand(o); have.add(id);
-      if (pendAt != null) moveHand(o, pendAt);
       pendAt = null;
     }
     for (let k = 1; k < nSeats; k++) {                                      // adversarios: so a quantidade de cartas e conhecida
@@ -1660,7 +1661,7 @@ window.__ckCounts = m => {
     turn = st.turn; phase = st.turn === 0 ? st.phase : 'wait';
     dl = (st._at || performance.now()) + st.tl; left = Math.max(0, Math.min(TIME, Math.ceil((dl - performance.now()) / 1000)));
     st.alive.forEach((a, k) => avEl[k].classList.toggle('off', !a));
-    markWild(); badge.textContent = 'Curinga: ' + RK[wildR] + '  (vira ' + RK[vira.r] + SU[vira.s] + ')';
+    markWild(); badge.textContent = 'Curinga: ' + RK[wildR] + SU[wildS] + '  (vira ' + RK[vira.r] + SU[vira.s] + ')';
     trashEl.classList.toggle('full', disc.length > 0);
     busy = false; clearTimeout(wd);
     if (ev.a === 'D' || ev.a === 'T' || (ev.a === 'X' && ev.w !== 0)) cardSnd();
@@ -1668,7 +1669,7 @@ window.__ckCounts = m => {
   }
   // distribuicao (animacao): 9 cartas para cada um, depois a vira. As cartas da minha mao vem do servidor.
   function dealAnim(st) {
-    dealing = true; busy = true; phase = 'wait'; turn = st.turn; wildR = -1;
+    dealing = true; busy = true; phase = 'wait'; turn = st.turn; setWild(-1);
     deck = []; for (let i = 0; i < 52; i++) deck.push(newHidden());
     layout();
     let t = 450;
@@ -1680,7 +1681,7 @@ window.__ckCounts = m => {
         layout();
       }, t); t += 85;
     }
-    later(() => { cardSnd(); const v = deck.pop(); refact(v, st.vira); vira = v; wildR = st.wild; markWild(); badge.textContent = 'Curinga: ' + RK[wildR] + '  (vira ' + RK[v.r] + SU[v.s] + ')'; layout(); }, t + 200);
+    later(() => { cardSnd(); const v = deck.pop(); refact(v, st.vira); vira = v; setWild(st.wild); markWild(); badge.textContent = 'Curinga: ' + RK[wildR] + SU[wildS] + '  (vira ' + RK[v.r] + SU[v.s] + ')'; layout(); }, t + 200);
     later(() => {
       dealing = false; busy = false; applyState(pend || st); pend = null;
       if (pendEnd) { const e = pendEnd; pendEnd = null; ckEnd(e); }
@@ -1694,7 +1695,7 @@ window.__ckCounts = m => {
     if (phase === 'draw' && deck.length && c === deck[deck.length - 1]) askDraw('deck');
     else if (phase === 'draw' && disc.length && c === disc[disc.length - 1]) askDraw('disc');
     else if (phase === 'discard' && hand.includes(c)) {
-      if (c.r === wildR) { msg.textContent = 'O curinga não pode ser descartado'; later(layout, 1600); }   // curinga fica na mao
+      if (isW(c)) { msg.textContent = 'O curinga não pode ser descartado'; later(layout, 1600); }   // curinga fica na mao
       else { selC = selC === c ? null : c; layout(); }   // toque: a carta sobe e aparece o botao Descartar
     }
   });
@@ -1729,14 +1730,14 @@ window.__ckCounts = m => {
     const R = S.getBoundingClientRect(), u = R.width / 100, hx = (e.clientX - d.ox - R.left) / u - 50, inHand = (e.clientY - d.oy - R.top) / R.height > .66;
     if (d.src === 'hand') {
       if (overTrash(e) && canTrash()) {
-        if (d.c.r === wildR) { msg.textContent = 'O curinga não pode ser descartado'; later(layout, 1600); layout(); }
+        if (isW(d.c)) { msg.textContent = 'O curinga não pode ser descartado'; later(layout, 1600); layout(); }
         else throwCard(d.c);
         return;
       }
       if (inHand) moveHand(d.c, hx);   // solta no meio de um grupo: a carta encaixa ali (o grupo cresce); no vao entre grupos: vira grupo novo
       layout(); return;
     }
-    if (inHand) askDraw(d.src === 'deck' ? 'deck' : 'disc', hx);   // soltou na mao: a carta ocupa esse lugar e a que estava la vai para o lugar extra
+    if (inHand) askDraw(d.src === 'deck' ? 'deck' : 'disc');   // soltou na mao: a carta ocupa esse lugar e a que estava la vai para o lugar extra
     else layout();
   };
   document.addEventListener('pointerup', e => dragEnd(e, false));
@@ -1811,7 +1812,7 @@ window.__ckCounts = m => {
   }
   function ckEnd(E) {                               // E = resultado vindo do servidor (E.w: 0 = voce, 1/2 = adversario; E.left = voce saiu/perdeu por faltas)
     endClear(); over = true; matched = false; busy = false; phase = 'over'; clearTimeout(wd);
-    if (E.wild !== undefined) wildR = E.wild;
+    if (E.wild !== undefined) setWild(E.wild);
     const hasRes = !!(E.hands && E.hands.length);       // resultado completo: quem ganhou + cartas de todos (tambem na derrota por ficar sem jogar)
     const w = E.left && !hasRes ? -1 : E.w, me = w === 0, wn = w > 0 ? PL[w].n : '';
     const again = E.left && leftShown; leftShown = !!E.left;   // a tela de derrota e atualizada quando o resultado chega: nao repete o som
@@ -1826,7 +1827,7 @@ window.__ckCounts = m => {
     el.innerHTML = '<div class="ke-hd"><h2>' + title + '</h2><p>' + sub + '</p><div class="ke-pill">' + pill + '</div></div><div class="ke-rows"></div>' +
       '<div class="ke-rm"><div class="ke-rh"><b>Jogar de novo?</b></div><p>Cacheta · ' + money + '</p><div class="ke-bt"><button type="button" class="vol">← VOLTAR</button><button type="button" class="rev">↻ JOGAR DE NOVO</button></div></div>';
     if (hasRes) {
-      const mkTmp = id => { const o = mk((id / 13) | 0, id % 13); o.el.remove(); cards.pop(); o.id = id; if (o.r === wildR) o.el.querySelector('.ck-f').classList.add('wild'); return o; };
+      const mkTmp = id => { const o = mk((id / 13) | 0, id % 13); o.el.remove(); cards.pop(); o.id = id; if (isW(o)) o.el.querySelector('.ck-f').classList.add('wild'); return o; };
       E.hands.forEach((h, k) => {
         const row = endRow(k, handsOf(h.map(mkTmp)), w === k);
         if (!h.length) row.querySelector('.ke-hand').textContent = 'saiu da partida';
@@ -1855,7 +1856,7 @@ window.__ckCounts = m => {
   function resetTable() {
     build(); clean(); myProfile();
     over = false; leftShown = false; busy = false; matched = false; dealing = false; dealt = false; pend = null; pendEnd = null; pendAt = null; selC = null;
-    wildR = -1; vira = null; cards = []; deck = []; hand = []; gsz = []; disc = []; opp = [null, [], []]; turn = 0; phase = 'wait'; left = TIME; badge.textContent = '';
+    setWild(-1); vira = null; cards = []; deck = []; hand = []; gsz = []; disc = []; opp = [null, [], []]; turn = 0; phase = 'wait'; left = TIME; badge.textContent = '';
     trashEl.classList.remove('full'); btn.classList.remove('ok');
     avEl.forEach((a, k) => { a.classList.remove('on', 'off'); if (k) a.style.visibility = 'hidden'; });   // adversarios aparecem quando a mesa fechar
     tick = setInterval(() => {                      // relogio da vez: so mostra (quem manda e o servidor)
